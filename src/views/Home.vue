@@ -6,12 +6,12 @@ button(@click='onClick') click {{count}} times.
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent(function() {
-  let count = ref(0)
+    let count = ref(0)
 
-  const onClick = () => {
-    count.value += 1
-  }
+    const onClick = () => {
+        count.value += 1
+    }
 
-  return {count, onClick}
+    return {count, onClick}
 })
 </script>

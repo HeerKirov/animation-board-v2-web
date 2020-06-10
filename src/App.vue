@@ -1,30 +1,29 @@
-<template>
-  <div id="app">
-    <router-view/>
-    <div>
-      <router-link to="/">Home</router-link>
-      <router-link to="/about">About</router-link>
-    </div>
-  </div>
+<template lang="pug">
+div
+  TopBar
+  div.container(style="height: 640px")
+    Breadcrumb
+    router-view
+  Footer
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import TopBar from "@/components/TopBar.vue"
+import Breadcrumb from "@/components/Breadcrumb.vue"
+import Footer from "@/components/Footer.vue"
 
 export default defineComponent({
-  setup() {
-    return {}
-  }
+    components: {TopBar, Breadcrumb, Footer},
+    setup() {
+        return {}
+    }
 })
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 </style>
