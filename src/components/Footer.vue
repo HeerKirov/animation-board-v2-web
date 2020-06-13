@@ -1,7 +1,8 @@
 <template lang="pug">
-div.div-footer
-  div.div-title Animation Board @ Heer Kirov
-  a.div-case(:href='caseURL', target='_blank') {{caseNumber}}
+footer.footer.mt-5
+    div.content.has-text-centered
+        div.div-title Animation Board @ Heer Kirov
+        a.div-case(:href='caseURL', target='_blank') {{caseNumber}}
 </template>
 
 <script lang="ts">

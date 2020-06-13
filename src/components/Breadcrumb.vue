@@ -81,8 +81,6 @@ function useBreadcrumb(route: RouteLocationNormalizedLoaded) {
                 }
             }
         }
-
-        console.log(breadcrumb)
     })
 
     return breadcrumb

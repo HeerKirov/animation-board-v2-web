@@ -1,5 +1,5 @@
 <template lang="pug">
-NavBar.is-dark
+NavBar
     template(v-slot:brand)
         router-link.navbar-item(to="/") Animation Board
     div.navbar-start
@@ -12,7 +12,7 @@ NavBar.is-dark
                     i.fa.mr-1(:class="subItem.iconClass")
                     span(:class="subItem.spanClass") {{subItem.name}}
     div.navbar-end
-        template(v-if="false")
+        template(v-if="true")
             div.navbar-item.buttons
                 router-link.button.is-primary(to="/login") 登录
                 button.button.is-light 注册
@@ -29,7 +29,7 @@ NavBar.is-dark
 import { defineComponent, ref, reactive, watch, toRef, isReactive, isRef } from 'vue'
 import { useRoute, RouteLocationNormalizedLoaded } from "vue-router"
 import { navigationItems } from '@/router/nav'
-import NavBar from "@/elements/NavBar.vue"
+import NavBar from "@/components/elements/NavBar.vue"
 
 const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
