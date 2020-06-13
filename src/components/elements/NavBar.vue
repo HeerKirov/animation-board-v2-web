@@ -1,5 +1,5 @@
 <template lang="pug">
-div.navbar(aria-label='main navigation', role="navigation")
+div.navbar.is-white(aria-label='main navigation', role="navigation")
   div.navbar-brand
     slot(name="brand")
     a.navbar-burger.burger(aria-label='menu', aria-expanded='false', data-target="topbar-menu", role="button", @click="onActive")

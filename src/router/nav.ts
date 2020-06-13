@@ -1,117 +1,76 @@
-export const navigationItems: Array<NavigationItem> = [
+export const topBarItems: TopBarItem[] = [
     {
         name: '日记',
         icon: 'fa-book',
         color: 'info',
-        link: '/personal/records',
-        breadcrumbLink: '',
-        meta: 'record',
-        children: [
-            {
-                name: '书签',
-                icon: 'fa-thumb-tack',
-                link: '/diary',
-                meta: 'diary'
-            },
-            {
-                name: '动态',
-                icon: 'fa-quote-left',
-                link: '/activity',
-                meta: 'activity'
-            },
-            {
-                name: '足迹',
-                icon: 'fa-book',
-                link: '/history',
-                meta: 'history'
-            },
-            {
-                name: '发现',
-                icon: 'fa-search',
-                link: '/find',
-                meta: 'find'
-            }
-        ]
+        link: '/personal/records'
     },
     {
-        name: '评价',
+        name: '记录',
         icon: 'fa-bookmark',
-        color: 'warning',
-        link: '/personal/comments',
-        breadcrumbLink: '',
-        meta: 'comment',
-        children: [
-            {
-                name: '动态',
-                icon: 'fa-quote-right',
-                link: '/activity',
-                meta: 'activity'
-            },
-            {
-                name: '评分表',
-                icon: 'fa-star',
-                link: '/rank',
-                meta: 'rank'
-            },
-            {
-                name: '发现',
-                icon: 'fa-eye',
-                link: '/find',
-                meta: 'find'
-            },
-        ]
+        color: 'success',
+        link: '/personal/comments'
     },
     {
         name: '数据库',
         icon: 'fa-database',
         color: 'primary',
-        link: '/database',
-        breadcrumbLink: '',
-        meta: 'database',
-        children: [
-            {
-                name: '动画',
-                icon: 'fa-film',
-                link: '/animations/list',
-                meta: 'animation'
-            },
-            {
-                name: '标签',
-                icon: 'fa-tags',
-                link: '/tags/list',
-                meta: 'tag'
-            },
-            {
-                name: 'STAFF',
-                icon: 'fa-user',
-                link: '/staffs/list',
-                meta: 'staff'
-            }
-        ]
+        link: '/database'
     },
     {
         name: '统计',
         icon: 'fa-bar-chart',
         color: 'danger',
-        link: '/statistics',
-        meta: 'statistics'
+        link: '/statistics'
     }
 ]
 
-interface NavigationItem {
-    name: string
-    icon: string
-    color: string
-    link: string
-    breadcrumbLink?: string,
-    meta: string
-    notInNav?: boolean
-    children?: Array<NavigationSubItem>
+function secondaryBarItems(): {[type: string]: SecondaryBarItem[]} {
+    return {
+        'record': [
+            {name: 'diary', title: '书签', icon: 'fa-thumb-tack', link: '/personal/records/diary'},
+            {name: 'activity', title: '动态', icon: 'fa-quote-left', link: '/personal/records/activity'},
+            {name: 'history', title: '足迹', icon: 'fa-th-list', link: '/personal/records/history'},
+            {name: 'find', title: '发现', icon: 'fa-search', link: '/personal/records/find'},
+        ],
+        'comment': [
+            {name: 'activity', title: '动态', icon: 'fa-quote-right', link: '/personal/comments/activity'},
+            {name: 'rank', title: '评分表', icon: 'fa-star', link: '/personal/comments/rank'},
+            {name: 'find', title: '发现', icon: 'fa-eye', link: '/personal/comments/find'},
+        ],
+        'database': [
+            {name: 'animation', title: '动画', icon: 'fa-film', link: '/database/animations/list'},
+            {name: 'tag', title: '标签', icon: 'fa-tags', link: '/database/tags/list'},
+            {name: 'staff', title: 'STAFF', icon: 'fa-user', link: '/database/staffs/list'}
+        ],
+        'statistics': []
+    }
 }
 
-interface NavigationSubItem {
+export function useSecondaryBarItems(type: 'record'|'comment'|'database'|'statistics', active?: string): SecondaryBarItem[] {
+    let items = secondaryBarItems()[type]
+    if(active) {
+        for(let item of items) {
+            if(item.name === active) {
+                item.active = true
+                break
+            }
+        }
+    }
+    return items
+}
+
+interface TopBarItem {
     name: string
+    color: string
     icon: string
     link: string
-    meta: string
+}
+
+interface SecondaryBarItem {
+    name: string
+    title: string
+    icon: string
+    link: string
+    active?: boolean
 }
