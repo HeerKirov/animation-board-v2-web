@@ -1,6 +1,7 @@
 <template lang="pug">
 nav.tabs.is-boxed
     ul: li(v-for='item in items', :class='{"is-active": item.active}')
+        //- TODO 在safari浏览器上的显示有bug
         router-link(:to='item.link')
             i(v-if='item.icon').fa.mr-1(:class='item.icon')
             = '{{item.title}}'

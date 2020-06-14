@@ -15,7 +15,7 @@ NavBar
                 i.fa.pl-1.mr-1.fa-book(class=[`has-text-${item.color}`, item.icon])
                 span.pr-1= item.name
     div.navbar-end
-        template(v-if="true")
+        template(v-if="false")
             div.navbar-item.buttons
                 router-link.button.is-primary(to="/login") 登录
                 button.button.is-light 注册
@@ -37,11 +37,11 @@ const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export default defineComponent({
     components: {NavBar},
+    computed: {
+        emptyAvatar: () => emptyAvatar
+    },
     setup() {
-            
-        return {
-            emptyAvatar
-        }
+
     }
 })
 
