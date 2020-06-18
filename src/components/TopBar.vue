@@ -24,7 +24,7 @@ div.ui.top.fixed.menu.blue.inverted.top-bar
             a.right.item
                 i.envelope.icon
                 span 1
-            router-link.item(to="/user/info")
+            router-link.item.px-2(to="/user/info")
                 img.avatar(:src='emptyAvatar')
                 span.ml-1 Heer Kirov
 </template>
@@ -52,7 +52,7 @@ export default defineComponent({
     }
     .avatar {
         margin: -.4em 0px !important;
-        width: 30px !important;
-        height: 30px !important;
+        width: 28px !important;
+        height: 28px !important;
     }
 </style>
