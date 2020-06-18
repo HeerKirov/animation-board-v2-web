@@ -1,42 +1,41 @@
 <template lang="pug">
 -   
     const topBarItems = [
-        {name: '日记', icon: 'fa-book', color: 'info', link: '/personal/records'},
-        {name: '记录', icon: 'fa-bookmark', color: 'success', link: '/personal/comments'},
-        {name: '数据库', icon: 'fa-database', color: 'primary', link: '/database'},
-        {name: '统计', icon: 'fa-bar-chart', color: 'danger', link: '/statistics'}
+        {name: '日记', icon: 'book icon', color: 'info', link: '/personal/records'},
+        {name: '评价', icon: 'bookmark icon', color: 'warning', link: '/personal/comments'},
+        {name: '统计', icon: 'chart bar icon', color: 'danger', link: '/statistics'},
+        {name: '数据库', icon: 'database icon', color: 'primary', link: '/database'}
     ]
-NavBar
-    template(v-slot:brand)
-        router-link.navbar-item(to="/") Animation Board
-    div.navbar-start
+div.ui.top.fixed.menu.blue.inverted.top-bar
+    div.ui.container
+        router-link.item.header(to="/") Animation Board
         - for(let item of topBarItems)
-            router-link.navbar-item(to=item.link)
-                i.fa.pl-1.mr-1.fa-book(class=[`has-text-${item.color}`, item.icon])
-                span.pr-1= item.name
-    div.navbar-end
+            router-link.item.px-3(to=item.link)
+                i(class=item.icon)
+                span= item.name
         template(v-if="false")
-            div.navbar-item.buttons
-                router-link.button.is-primary(to="/login") 登录
-                button.button.is-light 注册
+            router-link.right.item(to="/login") 
+                i.sign.in.alternate.icon
+                span 登录
+            a.item 
+                i.user.circle.outline.icon
+                span 注册
         template(v-else)
-            a.navbar-item
-                i.fa.fa-envelope.ml-1.mr-1
-                span.mr-1 1
-            router-link.navbar-item(to="/user/info")
-                img.mr-2(:src='emptyAvatar')
-                span Heer Kirov
+            a.right.item
+                i.envelope.icon
+                span 1
+            router-link.item(to="/user/info")
+                img.avatar(:src='emptyAvatar')
+                span.ml-1 Heer Kirov
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, reactive, watch, toRef, isReactive, isRef } from 'vue'
 import { useRoute, RouteLocationNormalizedLoaded } from "vue-router"
-import NavBar from "@/components/elements/NavBar.vue"
 
 const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export default defineComponent({
-    components: {NavBar},
     computed: {
         emptyAvatar: () => emptyAvatar
     },
@@ -48,5 +47,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+    .top-bar {
+        height: 44px
+    }
+    .avatar {
+        margin: -.4em 0px !important;
+        width: 30px !important;
+        height: 30px !important;
+    }
 </style>

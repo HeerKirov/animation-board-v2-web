@@ -1,8 +1,7 @@
 <template lang="pug">
-div
-    TopBar
-    router-view
-    Footer
+TopBar
+router-view.view
+Footer
 </template>
 
 <script lang="ts">
@@ -19,8 +18,11 @@ export default defineComponent({
 </script>
 
 <style>
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    .view {
+        margin-top: 60px;
+    }
 </style>

@@ -1,30 +1,3 @@
-export const topBarItems: TopBarItem[] = [
-    {
-        name: '日记',
-        icon: 'fa-book',
-        color: 'info',
-        link: '/personal/records'
-    },
-    {
-        name: '记录',
-        icon: 'fa-bookmark',
-        color: 'success',
-        link: '/personal/comments'
-    },
-    {
-        name: '数据库',
-        icon: 'fa-database',
-        color: 'primary',
-        link: '/database'
-    },
-    {
-        name: '统计',
-        icon: 'fa-bar-chart',
-        color: 'danger',
-        link: '/statistics'
-    }
-]
-
 function secondaryBarItems(): {[type: string]: SecondaryBarItem[]} {
     return {
         'record': [
@@ -58,13 +31,6 @@ export function useSecondaryBarItems(type: 'record'|'comment'|'database'|'statis
         }
     }
     return items
-}
-
-interface TopBarItem {
-    name: string
-    color: string
-    icon: string
-    link: string
 }
 
 interface SecondaryBarItem {

@@ -1,8 +1,7 @@
 <template lang="pug">
-footer.footer.mt-5
-    div.content.has-text-centered
-        div.div-title Animation Board @ Heer Kirov
-        a.div-case(:href='caseURL', target='_blank') {{caseNumber}}
+footer.div-footer
+    div.div-title Animation Board @ Heer Kirov
+    a.div-case(:href='caseURL', target='_blank') {{caseNumber}}
 </template>
 
 <script lang="ts">
@@ -18,14 +17,15 @@ export default defineComponent(function () {
 </script>
 
 <style scoped>
-  .div-footer {
-    text-align: center;
-  }
-  .div-title {
-    font-size: 15px;
-  }
-  .div-case {
-    font-size: 10px;
-    color: #2c3e50;
-  }
+    .div-footer {
+        margin-top: 72px;
+        text-align: center;
+    }
+    .div-title {
+        font-size: 15px;
+    }
+    .div-case {
+        font-size: 10px;
+        color: #2c3e50;
+    }
 </style>

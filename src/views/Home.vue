@@ -1,5 +1,6 @@
 <template lang='pug'>
-button(@click='onClick').button click {{count}} times.
+div
+    button.ui.button(@click='onClick') click {{count}} times.
 </template>
 
 <script>

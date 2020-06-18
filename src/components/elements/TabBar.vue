@@ -1,8 +1,8 @@
 <template lang="pug">
-nav.tabs.is-boxed
-    ul: li(v-for='item in items', :class='{"is-active": item.active}')
+nav.tabs
+    ul: li(v-for='item in items')
         //- TODO 在safari浏览器上的显示有bug
-        router-link(:to='item.link')
+        router-link(:to='item.link', :class="item.active ? activeColor : ''")
             i(v-if='item.icon').fa.mr-1(:class='item.icon')
             = '{{item.title}}'
 </template>
@@ -18,9 +18,15 @@ interface TabItem {
 }
 
 export default defineComponent({
-    props: {items: (null as any) as PropType<TabItem[]>},
+    props: {
+        items: (null as any) as PropType<TabItem[]>,
+        color: String
+    },
     setup(props) {
-        return {items: props.items || []}
+        return {
+            items: props.items || [],
+            activeColor: props.color ? `has-text-${props.color}` : ''
+        }
     }
 })
 </script>
