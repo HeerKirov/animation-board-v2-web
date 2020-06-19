@@ -1,32 +1,34 @@
 <template lang="pug">
-div.container.level
-    div.level-left
-        TabBar(color='info', :items="[{title: '动画', icon: 'fa-film', link: '/database/animations/list'}, {title: '详情', icon: 'fa-info', link: '', active: true}]")
-    div.level-right
-        TabBar.mr-2(:items="[{title: '编辑', icon: 'fa-edit', link: '/database/animations/new'}]")
-section.hero.is-bold.is-info
-    div.hero-body
-        div.container.level
-            div.level-left
-                div
-                    h1.title.mb-0 某科学的超电磁炮T
-                    span.is-size-7(style='position: absolute') つある科学のレイルグン / 科学超电磁炮T
-            div.level-right
-                //- i.fa.fa-venus-mars.mr-1
-                //- = 'R12'
-                //- i.fa.fa-hand-grab-o.mr-1
-                //- = 'A'
+div.ui.container
+    div.ui.secondary.pointing.menu
+        router-link.item(v-for="item in barItems", :class="{active: item.name === 'detail'}", :to="item.link")
+            i(:class="item.icon")
+            = '{{item.title}}'
+        a.right.item 
+            i.edit.icon
+            = '编辑'
+    div.ui.grid
+        
+        div.hero-body
+            div.container.level
+                div.level-left
+                    div
+                        h1.title.mb-0 某科学的超电磁炮T
+                        span.is-size-7(style='position: absolute') つある科学のレイルグン / 魔法禁书目录外传
+                div.level-right
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { useRoute } from 'vue-router'
-import TabBar from '@/components/elements/TabBar.vue'
+import { secondaryBarItems, detailItem } from '@/router/secondary-bar'
 
 export default defineComponent({
-    components: {TabBar},
+    components: {},
+    computed: {
+        barItems: () => [secondaryBarItems.database.animation, detailItem]
+    },
     setup() {
-        const route = useRoute()
+
     }
 })
 </script>

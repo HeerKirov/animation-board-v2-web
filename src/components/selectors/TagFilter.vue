@@ -1,0 +1,3 @@
+<template lang="pug">
+a.ui.label 请选择...
+</template>

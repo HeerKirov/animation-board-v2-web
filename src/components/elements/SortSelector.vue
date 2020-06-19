@@ -28,15 +28,15 @@ type Direction = -1|1
 export default defineComponent({
     props: {
         items: (null as any) as PropType<SortSelectorItem[]>,
-        modelValue: String,
+        selected: String,
         direction: (null as any) as PropType<Direction>
     },
     setup(props, {emit}) {
-        const selected = ref(props.modelValue)
+        const selected = ref(props.selected)
         const direction = ref(props.direction || -1)
 
         watch(props, () => {
-            selected.value = props.modelValue
+            selected.value = props.selected
             direction.value = props.direction || -1
         })
 
@@ -53,7 +53,7 @@ export default defineComponent({
                 emit('changed', e)
             }else{
                 selected.value = name
-                emit('update:modelValue', name) 
+                emit('update:selected', name) 
 
                 const e: ChangedEvent = {
                     name,
