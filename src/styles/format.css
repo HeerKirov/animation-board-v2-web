@@ -7,3 +7,7 @@
 
 .text-center {text-align: center}
 .text-right {text-align: right}
+
+.text-top {vertical-align: top}
+
+.is-weight {font-weight: 450}
