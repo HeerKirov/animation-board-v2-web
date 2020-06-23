@@ -71,13 +71,13 @@ div.ui.container
 
 <script>
 import { defineComponent, ref, watch } from 'vue'
-import TagFilter from '@/components/selectors/TagFilter.vue'
-import StaffFilter from '@/components/selectors/StaffFilter.vue'
-import SearchBox from '@/components/elements/SearchBox.vue'
-import SortSelector from '@/components/elements/SortSelector.vue'
-import ItemSelector from '@/components/elements/ItemSelector.vue'
-import PageSelector from '@/components/elements/PageSelector.vue'
-import DatePicker from '@/components/elements/DatePicker.vue'
+import TagFilter from '@/layouts/animation/list/TagFilter.vue'
+import StaffFilter from '@/layouts/animation/list/StaffFilter.vue'
+import SearchBox from '@/components/SearchBox.vue'
+import SortSelector from '@/components/SortSelector.vue'
+import ItemSelector from '@/components/ItemSelector.vue'
+import PageSelector from '@/components/PageSelector.vue'
+import DatePicker from '@/components/DatePicker.vue'
 import { secondaryBarItems } from '@/router/secondary-bar'
 
 const img = require('@/assets/empty_avatar.jpg')

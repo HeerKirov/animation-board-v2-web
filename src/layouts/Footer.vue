@@ -19,6 +19,7 @@ export default defineComponent(function () {
 <style scoped>
     .div-footer {
         margin-top: 72px;
+        margin-bottom: 36px;
         text-align: center;
     }
     .div-title {

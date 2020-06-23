@@ -7,15 +7,15 @@ interface SecondaryBarItem {
 
 export const secondaryBarItems: {[t: string]: {[r: string]: SecondaryBarItem}} = {
     record: {
-        diary: {name: 'diary', title: '书签', icon: 'fa-thumb-tack', link: '/personal/records/diary'},
-        activity: {name: 'activity', title: '动态', icon: 'fa-quote-left', link: '/personal/records/activity'},
+        diary: {name: 'diary', title: '订阅', icon: 'thumbtack icon', link: '/personal/records/diary'},
+        activity: {name: 'activity', title: '动态', icon: 'quote left icon', link: '/personal/records/activity'},
         history: {name: 'history', title: '足迹', icon: 'fa-th-list', link: '/personal/records/history'},
-        find: {name: 'find', title: '发现', icon: 'fa-search', link: '/personal/records/find'},
+        find: {name: 'find', title: '发现', icon: 'search icon', link: '/personal/records/find'},
     },
     comment: {
-        activity: {name: 'activity', title: '动态', icon: 'fa-quote-right', link: '/personal/comments/activity'},
-        rank: {name: 'rank', title: '评分表', icon: 'fa-star', link: '/personal/comments/rank'},
-        find: {name: 'find', title: '发现', icon: 'fa-eye', link: '/personal/comments/find'},
+        activity: {name: 'activity', title: '动态', icon: 'quote right icon', link: '/personal/comments/activity'},
+        rank: {name: 'rank', title: '评分表', icon: 'star icon', link: '/personal/comments/rank'},
+        find: {name: 'find', title: '发现', icon: 'eye icon', link: '/personal/comments/find'},
     },
     database: {
         animation: {name: 'animation', title: '动画', icon: 'film icon', link: '/database/animations/list'},

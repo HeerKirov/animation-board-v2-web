@@ -6,8 +6,8 @@ Footer
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import TopBar from "@/components/TopBar.vue"
-import Footer from "@/components/Footer.vue"
+import TopBar from "@/layouts/TopBar.vue"
+import Footer from "@/layouts/Footer.vue"
 
 export default defineComponent({
     components: {TopBar, Footer},
