@@ -37,9 +37,10 @@ div.ui.centered.grid
                             div This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. This is a part of description. 
         div.ui.grid
             div.four.wide.column
-                div.ui.teal.large.fluid.label 
-                    span.px-3 TV & Web
-                    div.detail.ml-1 24分钟
+                div.ui.teal.large.fluid.label.text-center
+                    span TV & Web
+                    //- 只有1集时，不显示【平均】字样
+                    div.detail.ml-1 平均24分钟
             div.twelve.wide.column.pl-0
                 span.ui.left.pointing.basic.label.large 2020年4月
                 span.ml-3.is-weight 已发布15话，共24话
@@ -62,12 +63,8 @@ div.ui.centered.grid
                         router-link.ui.tertiary.mini.button(to='') 有谁来着
             div.six.wide.column
                 DiaryPanel
-            div.six.wide.column(v-if="true")
-                div.ui.segment
-                    i.bookmark.icon
-            div.six.wide.column(v-else)
-                div.ui.placeholder.segment.min-height-0
-                    i.bookmark.icon
+            div.six.wide.column
+                CommentPanel
         template(v-if="true")
             div.ui.divider
             div.sub-title.mb-2 相关动画
@@ -84,12 +81,13 @@ div.ui.centered.grid
 <script lang="ts">
 import { defineComponent } from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
+import CommentPanel from './CommentPanel.vue'
 import { secondaryBarItems, detailItem } from '@/router/secondary-bar'
 
 const img = require('@/assets/empty_avatar.jpg')
 
 export default defineComponent({
-    components: {DiaryPanel},
+    components: {DiaryPanel, CommentPanel},
     computed: {
         img: () => img,
         barItems: () => [secondaryBarItems.database.animation, detailItem]
@@ -105,11 +103,11 @@ export default defineComponent({
         display: inline-block;
         vertical-align: top;
         margin-left: 10px;
-        font-weight: 450;
+        font-weight: 525;
         font-size: 12px;
     }
     .sub-title {
-        font-weight: 450;
+        font-weight: 525;
         font-size: 12px;
     }
     .cover-image {
