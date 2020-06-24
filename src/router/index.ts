@@ -8,6 +8,11 @@ export default createRouter({
             component: () => import('@/views/Home.vue')
         },
         {
+            path: '/login',
+            component: () => import('@/views/Login.vue'),
+            meta: {hideFooter: true}
+        },
+        {
             path: '/database',
             redirect: '/database/animations/list'
         },

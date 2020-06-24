@@ -1,17 +1,25 @@
 <template lang="pug">
-footer.div-footer
+footer.div-footer(v-if="visible")
     div.div-title Animation Board @ Heer Kirov
     a.div-case(:href='caseURL', target='_blank') {{caseNumber}}
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
 import config from "@/config"
 
 export default defineComponent(function () {
+    const visible = ref(true)
+
+    const route = useRoute()
+
+    watchEffect(() => visible.value = !route.meta.hideFooter)
+
     return {
-        caseNumber: config.CASE_NUMBER,
-        caseURL: config.CASE_URL
+        visible,
+        caseNumber: config.CASE.NUMBER,
+        caseURL: config.CASE.URL
     }
 })
 </script>
