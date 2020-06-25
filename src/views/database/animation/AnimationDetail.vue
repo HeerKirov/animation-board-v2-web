@@ -1,6 +1,7 @@
 <template lang="pug">
 div.ui.container
-    DetailPanel
+    DetailPanel(v-if="false")
+    EditPanel(v-else)
 </template>
 
 <script lang="ts">

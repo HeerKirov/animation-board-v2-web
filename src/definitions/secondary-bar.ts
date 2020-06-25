@@ -31,3 +31,10 @@ export const detailItem: SecondaryBarItem = {
     icon: 'info icon',
     link: ''
 }
+
+export const editItem: SecondaryBarItem = {
+    name: 'edit',
+    title: '编辑',
+    icon: 'edit icon',
+    link: ''
+}

@@ -32,6 +32,7 @@ export default defineComponent({
         limit: Number,
         offset: Number
     },
+    emits: ['changed', 'update:offset'],
     setup(props, {emit}) {
         const originData = useOriginData(props, emit)
 
@@ -43,7 +44,7 @@ export default defineComponent({
     }
 })
 
-function useOriginData(props: any, emit: (fn: string, ...args: any) => void) {
+function useOriginData(props: any, emit: (fn: any, ...args: any) => void) {
     const originData = reactive({
         total: validTotal(props.total),
         limit: validLimit(props.limit),

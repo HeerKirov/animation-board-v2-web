@@ -82,7 +82,7 @@ div.ui.centered.grid
 import { defineComponent } from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
-import { secondaryBarItems, detailItem } from '@/router/secondary-bar'
+import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 
 const img = require('@/assets/empty_avatar.jpg')
 

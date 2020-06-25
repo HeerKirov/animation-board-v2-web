@@ -78,7 +78,8 @@ import SortSelector from '@/components/SortSelector.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import PageSelector from '@/components/PageSelector.vue'
 import DatePicker from '@/components/DatePicker.vue'
-import { secondaryBarItems } from '@/router/secondary-bar'
+import { secondaryBarItems } from '@/definitions/secondary-bar'
+import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, withoutColor } from '@/definitions/animation-definition'
 
 const img = require('@/assets/empty_avatar.jpg')
 
@@ -89,20 +90,16 @@ const orders = [
     {name: 'SEX_LIMIT_LEVEL', title: '分级', icon: 'venus mars icon', forceIcon: true, argument: ['sex_limit_level,violence_limit_level', 'create_time']},
     {name: 'VIOLENCE_LIMIT_LEVEL', title: '分级', icon: 'hand rock outline icon', forceIcon: true, argument: ['violence_limit_level,sex_limit_level', 'create_time']}
 ]
-const publishTypes = [{name: 'TV_AND_WEB', title: 'TV&Web'}, {name: 'OVA_AND_OAD', title: 'OVA&OAD'}, {name: 'MOVIE', title: '剧场版动画'}]
-const originalWorkTypes = [{name: 'MANGA', title: '漫画'}, {name: 'NOVEL', title: '小说'}, {name: 'GAME', title: '游戏'}, {name: 'ORIGINAL', title: '原创'}, {name: 'OTHER', title: '其他'}]
-const sexLimitLevels = [{name: 'ALL', title: '全年龄'}, {name: 'R12', title: 'R12'}, {name: 'R15', title: 'R15'}, {name: 'R17', title: 'R17'}, {name: 'R18', title: 'R18'}]
-const violenceLimitLevels = [{name: 'NO', title: '无暴力'}, {name: 'NORMAL', title: 'A'}, {name: 'MILD', title: 'B'}, {name: 'SEVERE', title: 'C'}, {name: 'RESTRICTED', title: 'D'}]
 
 export default defineComponent({
     components: {TagFilter, StaffFilter, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
     computed: {
         barItems: () => secondaryBarItems.database,
         orders: () => orders,
-        publishTypes: () => publishTypes,
-        originalWorkTypes: () => originalWorkTypes,
-        sexLimitLevels: () => sexLimitLevels,
-        violenceLimitLevels: () => violenceLimitLevels
+        publishTypes: () => withoutColor(publishTypes),
+        originalWorkTypes: () => withoutColor(originalWorkTypes),
+        sexLimitLevels: () => withoutColor(sexLimitLevels),
+        violenceLimitLevels: () => withoutColor(violenceLimitLevels)
     },
     setup() {
         const openMoreFilter = ref(false)

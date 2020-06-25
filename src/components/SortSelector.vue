@@ -31,6 +31,7 @@ export default defineComponent({
         selected: String,
         direction: (null as any) as PropType<Direction>
     },
+    emits: ['changed', 'update:selected', 'update:direction'],
     setup(props, {emit}) {
         const selected = ref(props.selected)
         const direction = ref(props.direction || -1)
