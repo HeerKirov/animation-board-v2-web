@@ -64,13 +64,13 @@ div.ui.container
                 template(v-if='!openMoreFilter')
                     div.ui.divider
                     button.ui.tertiary.mini.button(style="margin: 0 2.5px !important", @click="onOpenMoreFilter") 更多筛选条件...
-            PageSelector(:total="414", :limit="20", @changed="onPageChanged")
+            PageSelector(:total="448", :limit="20", v-model:offset="offset", @changed="onPageChanged")
             div 共414条记录
 
 </template>
 
 <script>
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, watchEffect, reactive, toRef, computed } from 'vue'
 import TagFilter from '@/layouts/animation/list/TagFilter.vue'
 import StaffFilter from '@/layouts/animation/list/StaffFilter.vue'
 import SearchBox from '@/components/SearchBox.vue'
@@ -80,6 +80,8 @@ import PageSelector from '@/components/PageSelector.vue'
 import DatePicker from '@/components/DatePicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, withoutColor } from '@/definitions/animation-definition'
+import {useSWR} from '@/functions/swr'
+import config from '@/config'
 
 const img = require('@/assets/empty_avatar.jpg')
 
@@ -102,6 +104,15 @@ export default defineComponent({
         violenceLimitLevels: () => withoutColor(violenceLimitLevels)
     },
     setup() {
+        const fetcher = reactive({query: {limit: 20, offset}})
+        watch(fetcher, v => console.log(`offset changed: ${v.query.offset}`))
+
+        const { loading, data, error } = useSWR(`${config.SERVER_URL}/api/database/animations`, 'GET', fetcher)
+
+        watchEffect(() => console.log(loading.value))
+        watchEffect(() => console.log(data.value))
+        watchEffect(() => console.log(error.value))
+
         const openMoreFilter = ref(false)
 
         const onOpenMoreFilter = () => {
@@ -116,24 +127,17 @@ export default defineComponent({
             
         }
 
+        const offset = toRef(fetcher.query, 'offset')
         const onPageChanged = e => {
-
+            
         }
 
-        const list = [
-            "辉夜大小姐想让我告白？ ～天才们的恋爱头脑战～",
-            "某科学的超电磁炮T",
-            "隐瞒之事",
-            "邪神与厨二病少女",
-            "BNA",
-            "放学后海堤日记",
-            "转生成为了只有乙女游戏破灭Flag的邪恶大小姐",
-            "恋爱小行星"
-        ]
+        const list = computed(() => data.value ? data.value.result.map(i => i.title) : [])
 
         return {
             openMoreFilter, onOpenMoreFilter,
-            sortValue, sortDirection, onSortChanged, onPageChanged,
+            sortValue, sortDirection, onSortChanged, 
+            offset, onPageChanged,
             list, 
             img
         }
