@@ -63,8 +63,20 @@ export default createRouter({
         {
             name: 'Staff.List',
             path: '/database/staffs/list',
-            component: () => import('@/views/NotFound.vue'),
+            component: () => import('@/views/database/staff/StaffList.vue'),
             meta: {nav: ['database', 'staff']}
+        },
+        {
+            name: 'Staff.New',
+            path: '/database/staffs/new',
+            component: () => import('@/views/database/staff/StaffNew.vue'),
+            meta: {nav: ['database', 'staff', '@new']}
+        },
+        {
+            name: 'Staff.Detail',
+            path: '/database/staffs/detail/:id',
+            component: () => import('@/views/database/staff/StaffDetail.vue'),
+            meta: {nav: ['database', 'staff', '@detail']}
         },
         {
             name: 'Record',

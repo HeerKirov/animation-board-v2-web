@@ -16,7 +16,7 @@ div.ui.container
                 SearchBox
                 div.ui.divider
                 SortSelector.px-2(:items="orders")
-                div.mt-2 共45条记录
+            div.mt-2 共45条记录
 </template>
 
 <script lang="ts">
