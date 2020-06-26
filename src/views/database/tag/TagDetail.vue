@@ -6,8 +6,8 @@ div.ui.container
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
-import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
+import DetailPanel from '@/layouts/tag/detail/DetailPanel.vue'
+import EditPanel from '@/layouts/tag/edit/EditPanel.vue'
 
 export default defineComponent({
     components: {DetailPanel, EditPanel},

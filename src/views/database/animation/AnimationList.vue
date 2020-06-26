@@ -4,7 +4,7 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'animation'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        a.right.item 
+        router-link.right.item(:to="{name: 'Animation.New'}")
             i.plus.icon
             = '新建'
     div.ui.grid
@@ -12,10 +12,10 @@ div.ui.container
             div.ui.stackable.four.columns.grid
                 div.column(v-for="i in list")
                     div.ui.card
-                        router-link.image(to='/database/animations/detail/1')
+                        router-link.image(:to="{name: 'Animation.Detail', params: {id: 1}}")
                             img(:src='img')
                         div.content
-                            router-link.header.font-size-14(to='/database/animations/detail/1') {{i}}
+                            router-link.header.font-size-14(:to="{name: 'Animation.Detail', params: {id: 1}}") {{i}}
                             div.meta
                                 span.date.font-size-11 11/24话
                             label.font-size-11 2020年1月
