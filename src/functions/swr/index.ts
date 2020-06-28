@@ -1,13 +1,19 @@
 import axios, { Method } from 'axios'
-import { toRaw, watch, reactive, Ref, ref } from 'vue'
+import { toRaw, watch, reactive } from 'vue'
+
+export interface Fetcher {
+    headers?: any
+    query?: any
+    data?: any
+}
 
 export interface CommonResult {
-    status: 'LOADING'|'OK'|'ERROR'|'EXCEPTION'
+    status: 'OK' | 'ERROR' | 'EXCEPTION'
     code: number
     data: any
 }
 
-export async function request(url: string, method: Method, config?: {headers?: any, query?: any, data?: any}): Promise<CommonResult> {
+export async function request(url: string, method: Method, config?: Fetcher): Promise<CommonResult> {
     try {
         const res = await axios.request({
             url: url,
@@ -47,26 +53,27 @@ export async function request(url: string, method: Method, config?: {headers?: a
 }
 
 export interface SWResult {
-    loading: Ref<boolean>
-    data: Ref<any|null>
-    error: Ref<any|null>
+    loading: boolean
+    code: number | null
+    data: any | null
+    error: any | null
 }
 
-export function useSWR<T, E>(url: string, method: Method, fetcher?: {headers?: any, query?: any, data?: any}): SWResult {
-    const result: SWResult = {loading: ref(true), data: ref(null), error: ref(null)}
+export function useSWR(url: string, method: Method, fetcher?: Fetcher): SWResult {
+    const result: SWResult = reactive({loading: true, data: null, error: null, code: null})
 
-    watch(() => [url, fetcher], () => {
-        result.loading.value = true
-        request(url, method, toRaw(fetcher)).then(r => {
-            result.loading.value = false
-            if(r.status === 'OK') {
-                result.data.value = r.data
-                result.error.value = null
-            }else{
-                result.data.value = null
-                result.error.value = r.data
-            }
-        })
+    watch(() => [url, fetcher], async () => {
+        result.loading = true
+        const r = await request(toRaw(url), method, toRaw(fetcher))
+        result.loading = false
+        result.code = r.code
+        if(r.status === 'OK') {
+            result.data = r.data
+            result.error = null
+        }else{
+            result.data = null
+            result.error = r.data
+        }
     }, {deep: true, immediate: true})
 
     return result

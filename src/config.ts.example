@@ -1,12 +1,10 @@
 export default {
-    'SERVER_URL': 'http://localhost:8080',
-    'STORAGE_PREFIX': 'animation-board-v2',
     'CASE': {
         'NUMBER': '京ICP备12345678号',
         'URL': 'http://www.beian.miit.gov.cn'
     },
-    'BASIC_SERVICE': {
-        'API': 'http://basic-service',
-        'FRONTEND': 'http://basic-service'
-    }
+    'STORAGE_PREFIX': 'animation-board-v2',
+    'TOKEN_EFFECTIVE': 1000 * 60 * 60 * 24 * 7,
+    'SERVER_URL': 'http://localhost:8080',
+    'BASIC_SERVICE_URL': 'https://basic-service'
 }

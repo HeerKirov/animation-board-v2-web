@@ -107,11 +107,9 @@ export default defineComponent({
         const fetcher = reactive({query: {limit: 20, offset}})
         watch(fetcher, v => console.log(`offset changed: ${v.query.offset}`))
 
-        const { loading, data, error } = useSWR(`${config.SERVER_URL}/api/database/animations`, 'GET', fetcher)
+        const swr = useSWR(`${config.SERVER_URL}/api/database/animations`, 'GET', fetcher)
 
-        watchEffect(() => console.log(loading.value))
-        watchEffect(() => console.log(data.value))
-        watchEffect(() => console.log(error.value))
+        watchEffect(() => console.log(swr))
 
         const openMoreFilter = ref(false)
 
@@ -132,7 +130,7 @@ export default defineComponent({
             
         }
 
-        const list = computed(() => data.value ? data.value.result.map(i => i.title) : [])
+        const list = computed(() => swr.data ? swr.data['result'].map(i => i.title) : [])
 
         return {
             openMoreFilter, onOpenMoreFilter,

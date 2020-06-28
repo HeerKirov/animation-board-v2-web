@@ -8,10 +8,19 @@ Footer
 import { defineComponent } from 'vue'
 import TopBar from "@/layouts/TopBar.vue"
 import Footer from "@/layouts/Footer.vue"
+import { provideAuth } from '@/functions/auth'
+import config from '@/config'
 
 export default defineComponent({
     components: {TopBar, Footer},
     setup() {
+        provideAuth({
+            basicServiceUrl: config.BASIC_SERVICE_URL,
+            serverUrl: config.SERVER_URL,
+            storagePrefix: config.STORAGE_PREFIX,
+            tokenEffective: config.TOKEN_EFFECTIVE
+        })
+
         return {}
     }
 })

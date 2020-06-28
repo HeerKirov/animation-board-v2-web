@@ -4,25 +4,62 @@ div.ui.segment.login-modal
     div.ui.form
         div.field
             label 用户名
-            input.ui.input(placeholder="请输入用户名")
+            input.ui.input(placeholder="请输入用户名", v-model="form.username")
         div.field
             label 密码
-            input.ui.input(type="password", placeholder="请输入密码")
+            input.ui.input(type="password", placeholder="请输入密码", v-model="form.password")
         div.field
-            button.ui.green.button
+            button.ui.green.button(@click="onLogin")
                 i.sign.in.alternate.icon
                 = '登录'
-            div.ui.basic.red.label.ml-1 alert
+            div.ui.basic.red.label.ml-1(v-if="error") {{error}}
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, reactive, Ref, ref } from 'vue'
+import { useAuth, LoginError, LoginException } from '@/functions/auth'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
     setup() {
+        const router = useRouter()
+        const { login } = useAuth()
+        const form = reactive({username: '', password: ''})
+        const error: Ref<string | null> = ref(null)
 
+        const onLogin = async () => {
+            error.value = null
+            const validateResult = validate(form)
+            if(validateResult != null) {
+                error.value = validateResult
+                return
+            }
+
+            try {
+                await login(form.username, form.password)
+            }catch(e) {
+                const message = (e as LoginError).message as LoginException
+                if(message === 'Password wrong') {
+                    error.value = '密码错误。'
+                }else if(message === 'User not exist') {
+                    error.value = '用户不存在。'
+                }else{
+                    error.value = '此用户已被禁用。'
+                }
+                return
+            }
+            router.push({name: 'Home'})
+        }
+
+        return {form, error, onLogin}
     }
 })
+
+function validate(form: {username: string, password: string}): string | null {
+    if(!form.username) return '用户名不能为空。'
+    else if(!form.password) return '密码不能为空。'
+    return null
+}
 </script>
 
 <style scoped>
