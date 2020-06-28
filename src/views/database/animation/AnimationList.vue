@@ -70,7 +70,7 @@ div.ui.container
 </template>
 
 <script>
-import { defineComponent, ref, watch, watchEffect, reactive, toRef, computed } from 'vue'
+import { defineComponent, ref, watch, reactive, toRef, computed } from 'vue'
 import TagFilter from '@/layouts/animation/list/TagFilter.vue'
 import StaffFilter from '@/layouts/animation/list/StaffFilter.vue'
 import SearchBox from '@/components/SearchBox.vue'
@@ -80,7 +80,7 @@ import PageSelector from '@/components/PageSelector.vue'
 import DatePicker from '@/components/DatePicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, withoutColor } from '@/definitions/animation-definition'
-import {useSWR} from '@/functions/swr'
+import { useSWR } from '@/functions/server'
 import config from '@/config'
 
 const img = require('@/assets/empty_avatar.jpg')
@@ -104,12 +104,9 @@ export default defineComponent({
         violenceLimitLevels: () => withoutColor(violenceLimitLevels)
     },
     setup() {
-        const fetcher = reactive({query: {limit: 20, offset}})
-        watch(fetcher, v => console.log(`offset changed: ${v.query.offset}`))
+        const fetcher = reactive({limit: 20, offset: 0})
 
-        const swr = useSWR(`${config.SERVER_URL}/api/database/animations`, 'GET', fetcher)
-
-        watchEffect(() => console.log(swr))
+        const swr = useSWR(`/api/database/animations`, 'GET', fetcher)
 
         const openMoreFilter = ref(false)
 
@@ -125,7 +122,7 @@ export default defineComponent({
             
         }
 
-        const offset = toRef(fetcher.query, 'offset')
+        const offset = toRef(fetcher, 'offset')
         const onPageChanged = e => {
             
         }

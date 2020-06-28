@@ -4,10 +4,10 @@ div.ui.segment.login-modal
     div.ui.form
         div.field
             label 用户名
-            input.ui.input(placeholder="请输入用户名", v-model="form.username")
+            input.ui.input(placeholder="请输入用户名", v-model="form.username", @keydown.enter="focusPassword")
         div.field
             label 密码
-            input.ui.input(type="password", placeholder="请输入密码", v-model="form.password")
+            input.ui.input(ref="passwordBox", type="password", placeholder="请输入密码", v-model="form.password", @keydown.enter="onLogin")
         div.field
             button.ui.green.button(@click="onLogin")
                 i.sign.in.alternate.icon
@@ -24,6 +24,7 @@ export default defineComponent({
     setup() {
         const router = useRouter()
         const { login } = useAuth()
+
         const form = reactive({username: '', password: ''})
         const error: Ref<string | null> = ref(null)
 
@@ -51,7 +52,10 @@ export default defineComponent({
             router.push({name: 'Home'})
         }
 
-        return {form, error, onLogin}
+        const passwordBox: Ref<any> = ref(null)
+        const focusPassword = () => passwordBox.value.focus()
+
+        return {form, error, onLogin, focusPassword, passwordBox}
     }
 })
 

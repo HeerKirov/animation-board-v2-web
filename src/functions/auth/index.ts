@@ -1,5 +1,5 @@
 import { request } from '@/functions/swr'
-import { reactive, Ref, ref, provide, inject, InjectionKey, computed, watch } from 'vue'
+import { reactive, Ref, ref, provide, inject, InjectionKey, computed, watch, App } from 'vue'
 
 export interface AuthStats {
     isLogin: boolean | null
@@ -32,12 +32,7 @@ export function useAuth(): AuthResult {
     return inject(authInjectionKey)!
 }
 
-export function useAuthHeaders(): any {
-    const { token } = inject(authInjectionKey)!
-    return computedHeaders(token)
-}
-
-export function provideAuth(configuration: Configuration) {
+export function createAuth(configuration: Configuration) {
     const token: Ref<string | null> = ref(null)
     const tokenStats: TokenStats = {updateTime: null, expireTime: null}
     const stats: AuthStats = useStats(configuration, token)
@@ -46,8 +41,13 @@ export function provideAuth(configuration: Configuration) {
     const logout = () => doLogout(configuration, token, tokenStats)
 
     initializeByLocalStorage(configuration, token, tokenStats).catch(e => console.error(e))
+    //TODO 添加一个update token的机制
 
-    provide(authInjectionKey, {stats, token, login, logout})
+    return {
+        install(app: App) {
+            app.provide(authInjectionKey, {stats, token, login, logout})
+        }
+    }
 }
 
 function useStats(configuration: Configuration, tokenRef: Ref<string | null>) {
@@ -68,7 +68,7 @@ function useStats(configuration: Configuration, tokenRef: Ref<string | null>) {
                 console.error(`Getting stats failed. Error message is [${r.data}].`)
             }
         }
-    })
+    }, {immediate: true})
 
     return stats
 }
@@ -103,6 +103,7 @@ function doLogout(configuration: Configuration, tokenRef: Ref<string | null>, to
     tokenRef.value = null
     tokenStats.updateTime = null
     tokenStats.expireTime = null
+    //TODO 添加delete token的机制
 }
 
 export type LoginException = 'Password wrong' | 'User not exist' | 'User not enabled'
@@ -113,12 +114,8 @@ export class LoginError extends Error {
     }
 }
 
-export function toHeaders(token: Ref<string | null>): any {
+function toHeaders(token: Ref<string | null>): any {
     return token.value == null ? {} : {
         'Authorization': `Bearer ${token.value}`
     }
-}
-
-export function computedHeaders(token: Ref<string | null>): any {
-    return computed(() => toHeaders(token))
 }
