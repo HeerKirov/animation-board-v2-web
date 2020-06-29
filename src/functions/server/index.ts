@@ -1,7 +1,19 @@
 import { Method } from 'axios'
-import { InjectionKey, inject, reactive, App, watchEffect, watch, computed } from 'vue'
-import { useSWR as useSWR0, Fetcher } from '@/functions/swr'
-import { AuthResult } from '../auth'
+import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref } from 'vue'
+import { request as request0, RequestParam } from '@/functions/request'
+import { AuthResult } from '@/functions/auth'
+
+//== create server ==
+
+const configurationInjectionKey: InjectionKey<ServerConfiguration> = Symbol()
+
+export type ErrorHandler = (code: number, data: any, parentHandler?: ErrorHandler) => void
+
+export interface ServerConfiguration {
+    serverUrl: string
+    auth?: AuthResult | (() => AuthResult)
+    errorHandler?: ErrorHandler
+}
 
 export function createServer(configuration: ServerConfiguration) {
     return {
@@ -11,34 +23,130 @@ export function createServer(configuration: ServerConfiguration) {
     }
 }
 
-//TODO 需要一个异步返回的、非响应式的server封装请求函数
+//== request ==
 
-export function useSWR(url: string, method: Method, data?: any, errorHandler?: ErrorHandler) {
-    const configuration = inject(configurationInjectionKey)!
-    const serverUrl = configuration.serverUrl
-    const globalErrorHandler = configuration.errorHandler
-    const { headers, swrSwitch } = useAuth(configuration.auth)
-
-    const fetcher: Fetcher = reactive({[method === 'GET' ? 'query' : 'data']: data || undefined, headers, reactive: swrSwitch?.value})
-
-    if(swrSwitch) watch(swrSwitch, v => fetcher.reactive = v)
-
-    const handler = (code: number, data: any) => {
-        if(errorHandler != null) {
-            errorHandler(code, data, globalErrorHandler)
-        }else if(globalErrorHandler != null) {
-            globalErrorHandler(code, data)
-        }
-    }
-
-    return useSWR0(serverUrl + url, method, fetcher, handler)
+export interface RequestOptions {
+    errorHandler?: ErrorHandler
+    baseUrl?: string
 }
 
-function useAuth(auth?: AuthResult | (() => AuthResult)) {
-    if(auth == null) {
-        return {headers: undefined}
+export interface Response {
+    ok: boolean
+    data: any
+}
+
+export async function request(url: string, method: Method, data?: any, options?: RequestOptions): Promise<Response> {
+    const configuration = inject(configurationInjectionKey)!
+    const headers = getStaticHeaders(configuration.auth)
+
+    const param: RequestParam = {headers, [method === 'GET' ? 'query' : 'data']: data || undefined}
+
+    const r = await request0((options?.baseUrl || configuration.serverUrl) + url, method, param)
+
+    if(r.status === 'OK') {
+        return {ok: true, data: r.data}
+    }else{
+        if(options?.errorHandler != null) {
+            options.errorHandler(r.code, r.data, configuration.errorHandler)
+        }else if(configuration.errorHandler != null) {
+            configuration.errorHandler(r.code, r.data)
+        }
+        return {ok: false, data: undefined}
     }
-    const { token, stats } = typeof auth === 'function' ? auth() : auth
+}
+
+function getStaticHeaders(auth?: AuthResult | (() => AuthResult)) {
+    if(auth == null) {
+        return undefined
+    }
+    const { token } = typeof auth === 'function' ? auth() : auth
+    const headers: any = {}
+    if(token.value != null) {
+        headers['Authorization'] = `Bearer ${token.value}`
+    }
+    return headers
+}
+
+//== SWR ==
+
+type SWRUpdate = (data?: any, options?: SWROptions) => Promise<Response>
+
+export interface SWROptions extends RequestOptions {
+    method?: Method
+}
+
+export interface SWR {
+    loading: Ref<boolean>
+    data: Ref<any>
+    updateLoading: Ref<boolean>
+    update: SWRUpdate
+}
+
+export function useSWR(url: string, data?: any, options?: SWROptions): SWR {
+    const configuration = inject(configurationInjectionKey)!
+    const headers = useHeaders(configuration.auth)
+
+    const baseUrl = options?.baseUrl || configuration.serverUrl
+    const method = options?.method || 'GET'
+
+    const fetcher: RequestParam = reactive({[method == 'GET' ? 'query' : 'data']: data || undefined, headers})
+
+    const throwError
+        = options?.errorHandler != null ? ((code: number, data: any) => options.errorHandler?.(code, data, configuration.errorHandler))
+        : configuration.errorHandler != null ? configuration.errorHandler 
+        : undefined
+
+    const loadingRef = ref(true)
+    const dataRef = ref(null)
+    const updateLoadingRef = ref(false)
+
+    watch(() => [url, fetcher], async (_v, _o, onInvalidate) => {
+        let validate = true
+        onInvalidate(() => {validate = false})
+
+        loadingRef.value = true
+        const r = await request0(baseUrl + toRaw(url), method, toRaw(fetcher))
+        if(!validate) return
+        loadingRef.value = false
+        if(r.status === 'OK') {
+            dataRef.value = r.data
+        }else{
+            dataRef.value = null
+            throwError?.(r.code, r.data)
+        }
+    }, {deep: true, immediate: true})
+    
+    const update = useUpdateFunction(dataRef, updateLoadingRef, headers, baseUrl, url, throwError)
+
+    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update}
+}
+
+function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: string, throwError?: ErrorHandler): SWRUpdate {
+    return async (data, options) => {
+        const method = options?.method || 'PUT'
+        updateLoadingRef.value = true
+        const r = await request0((options?.baseUrl || baseUrl) + toRaw(url), method, {headers, [method == 'GET' ? 'query' : 'data']: data || undefined})
+        updateLoadingRef.value = false
+        if(r.status === 'OK') {
+            dataRef.value = r.data
+            return {ok: true, data: r.data}
+        }else{
+            if(options?.errorHandler != null) {
+                options.errorHandler(r.code, r.data, throwError)
+            }else if(throwError != null) {
+                throwError(r.code, r.data)
+            }
+            return {ok: false, data: undefined}
+        }
+    }
+}
+
+function useHeaders(auth?: AuthResult | (() => AuthResult)) {
+    if(auth == null) {
+        return undefined
+    }
+    const { token } = typeof auth === 'function' ? auth() : auth
+
     const headers: any = reactive({})
     watch(token, v => {
         if(v != null) {
@@ -46,17 +154,7 @@ function useAuth(auth?: AuthResult | (() => AuthResult)) {
         }else{
             delete headers['Authorization']
         }
-    })
-    const swrSwitch = computed(() => stats.isLogin != null)
-    return {headers, swrSwitch}
+    }, {immediate: true})
+
+    return headers
 }
-
-export interface ServerConfiguration {
-    serverUrl: string
-    auth?: AuthResult | (() => AuthResult)
-    errorHandler?: ErrorHandler
-}
-
-const configurationInjectionKey: InjectionKey<ServerConfiguration> = Symbol()
-
-export type ErrorHandler = (code: number, data: any, parentHandler?: ErrorHandler) => void

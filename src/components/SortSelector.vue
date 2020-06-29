@@ -20,7 +20,7 @@ export interface SortSelectorItem {
 
 export interface ChangedEvent {
     name: string
-    argument: string
+    direction: Direction
 }
 
 type Direction = -1|1
@@ -49,7 +49,7 @@ export default defineComponent({
 
                 const e: ChangedEvent = {
                     name,
-                    argument: generateArgument(item.argument, direction.value)
+                    direction: direction.value
                 }
                 emit('changed', e)
             }else{
@@ -58,7 +58,7 @@ export default defineComponent({
 
                 const e: ChangedEvent = {
                     name,
-                    argument: generateArgument(item.argument, direction.value)
+                    direction: direction.value
                 }
                 emit('changed', e)
             }
@@ -71,12 +71,4 @@ export default defineComponent({
         }
     }
 })
-
-function generateArgument(argument: string|string[], direction: Direction): string {
-    if(typeof argument == "string") {
-        return (direction == -1 ? "-" : "") + argument
-    }else{
-        return argument.map(a => (direction == -1 ? "-" : "") + a).join(",")
-    }
-}
 </script>

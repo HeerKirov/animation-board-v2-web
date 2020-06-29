@@ -24,6 +24,7 @@ interface AngleItem {
 export interface ChangedEvent {
     offset: number
     limit: number
+    page: number
 }
 
 export default defineComponent({
@@ -34,9 +35,9 @@ export default defineComponent({
     },
     emits: ['changed', 'update:offset'],
     setup(props, {emit}) {
-        const originData = useOriginData(props, emit)
+        const originData = useOriginData(props)
 
-        const {pageData, onJumpTo} = usePageData(originData)
+        const {pageData, onJumpTo} = usePageData(originData, emit)
 
         const ui = useUI(pageData)
 
@@ -44,7 +45,7 @@ export default defineComponent({
     }
 })
 
-function useOriginData(props: any, emit: (fn: any, ...args: any) => void) {
+function useOriginData(props: any) {
     const originData = reactive({
         total: validTotal(props.total),
         limit: validLimit(props.limit),
@@ -57,19 +58,10 @@ function useOriginData(props: any, emit: (fn: any, ...args: any) => void) {
         originData.offset = validOffset(props.offset, originData.limit)
     })
 
-    watch(() => originData.offset, value => {
-        const e: ChangedEvent = {
-            offset: value,
-            limit: originData.limit
-        }
-        emit('update:offset', value)
-        emit('changed', e)
-    })
-
     return originData
 }
 
-function usePageData(originData: {total: number, limit: number, offset: number}) {
+function usePageData(originData: {total: number, limit: number, offset: number}, emit: (fn: any, ...args: any) => void) {
     const pageData = reactive({
         max: Math.ceil(originData.total / originData.limit),
         current: Math.floor(originData.offset / originData.limit) + 1
@@ -80,7 +72,16 @@ function usePageData(originData: {total: number, limit: number, offset: number})
         pageData.current = Math.floor(originData.offset / originData.limit) + 1
     })
 
-    watch(() => pageData.current, () => originData.offset = (pageData.current - 1) * originData.limit)
+    watch(() => pageData.current, () => {
+        originData.offset = (pageData.current - 1) * originData.limit
+        const e: ChangedEvent = {
+            page: pageData.current, 
+            offset: originData.offset, 
+            limit: originData.limit
+        }
+        emit('update:offset', originData.offset)
+        emit('changed', e)
+    })
 
     const onJumpTo = (page: number) => {
         pageData.current = page

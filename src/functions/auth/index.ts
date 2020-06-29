@@ -1,4 +1,4 @@
-import { request } from '@/functions/swr'
+import { request } from '@/functions/request'
 import { reactive, Ref, ref, provide, inject, InjectionKey, computed, watch, App } from 'vue'
 
 export interface AuthStats {
