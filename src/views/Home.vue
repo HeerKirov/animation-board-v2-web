@@ -3,8 +3,8 @@ div
     button.ui.button(@click='onClick') click {{count}} times.
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent(function() {
     let count = ref(0)

@@ -48,6 +48,14 @@ export function withoutColor(definition: DefinitionItem[]): DefinitionItem[] {
     })
 }
 
+export function toNameSet(definition: DefinitionItem[]): Set<string> {
+    const set: Set<string> = new Set()
+    for(let item of definition) {
+        set.add(item.name)
+    }
+    return set
+}
+
 export const sexLimitIntroductions = {
     ALL: [
         "无任何性暗示、性倾向、色情内容",

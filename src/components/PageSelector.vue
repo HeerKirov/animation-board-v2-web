@@ -22,22 +22,17 @@ interface AngleItem {
     disabled: boolean
 }
 export interface ChangedEvent {
-    offset: number
-    limit: number
     page: number
 }
 
 export default defineComponent({
     props: {
-        total: Number,
-        limit: Number,
-        offset: Number
+        current: Number,
+        max: Number
     },
-    emits: ['changed', 'update:offset'],
+    emits: ['changed', 'update:current'],
     setup(props, {emit}) {
-        const originData = useOriginData(props)
-
-        const {pageData, onJumpTo} = usePageData(originData, emit)
+        const {pageData, onJumpTo} = usePageData(props, emit)
 
         const ui = useUI(pageData)
 
@@ -45,41 +40,17 @@ export default defineComponent({
     }
 })
 
-function useOriginData(props: any) {
-    const originData = reactive({
-        total: validTotal(props.total),
-        limit: validLimit(props.limit),
-        offset: validOffset(props.offset, validLimit(props.limit))
-    })
+function usePageData(props: any, emit: (fn: any, ...args: any) => void) {
+    const pageData = reactive({max: 0, current: 1})
 
     watch(props, () => {
-        originData.total = validTotal(props.total)
-        originData.limit = validLimit(props.limit)
-        originData.offset = validOffset(props.offset, originData.limit)
-    })
+        pageData.max = props.max
+        pageData.current = props.current
+    }, {immediate: true})
 
-    return originData
-}
-
-function usePageData(originData: {total: number, limit: number, offset: number}, emit: (fn: any, ...args: any) => void) {
-    const pageData = reactive({
-        max: Math.ceil(originData.total / originData.limit),
-        current: Math.floor(originData.offset / originData.limit) + 1
-    })
-
-    watch(originData, () => {
-        pageData.max = Math.ceil(originData.total / originData.limit)
-        pageData.current = Math.floor(originData.offset / originData.limit) + 1
-    })
-
-    watch(() => pageData.current, () => {
-        originData.offset = (pageData.current - 1) * originData.limit
-        const e: ChangedEvent = {
-            page: pageData.current, 
-            offset: originData.offset, 
-            limit: originData.limit
-        }
-        emit('update:offset', originData.offset)
+    watch(() => pageData.current, v => {
+        const e: ChangedEvent = {page: v}
+        emit('update:current', v)
         emit('changed', e)
     })
 
@@ -127,23 +98,5 @@ function useUI(pageData: {max: number, current: number}) {
     })
 
     return ui
-}
-
-function validTotal(total: number|undefined): number {
-    return total != undefined && total >= 0 ? total : 0
-}
-
-function validLimit(limit: number|undefined): number {
-    return limit != undefined && limit > 0 ? limit : DEFAULT_LIMIT
-}
-
-function validOffset(offset: number|undefined, limit: number): number {
-    if(offset == undefined || offset < 0) {
-        return 0
-    }else if(offset % limit != 0) {
-        return offset - offset % limit
-    }else{
-        return offset
-    }
 }
 </script>
