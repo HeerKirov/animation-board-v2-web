@@ -1,8 +1,9 @@
 <template lang="pug">
-div.ui.segment.panel(v-if="exists")
+div.ui.segment.panel(v-if="data")
     div.mb-3
-        i.bookmark.icon
-        label 评价
+        router-link(:to="{name: 'Comment.Detail', params: {id}}")
+            i.bookmark.icon
+            = '评价'
         Starlight.float-right(:value="data.score")
     div
         i.quote.left.icon.font-size-11
@@ -10,31 +11,48 @@ div.ui.segment.panel(v-if="exists")
         i(v-else) 没有编写评论
         i.quote.right.icon.font-size-11
 div.ui.placeholder.segment.panel(v-else)
-    template(v-if="guide === 'default'")
-        span.font-size-14.text-center.is-weight.mb-1 未订阅此动画
-        div.ui.primary.button
-            i.book.icon
-            = '加入日记'
+    span.font-size-14.text-center.is-weight.mb-1 未评价此动画
+    div.ui.primary.button
+        i.bookmark.icon
+        = '编写评价'
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, ref, reactive, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Starlight from '@/components/Starlight.vue'
+import { useSWR } from '@/functions/server'
 
 export default defineComponent({
     components: {Starlight},
     setup() {
-        const exists = ref(true)
-        const guide = ref("default")
+        const route = useRoute()
 
-        const data = reactive({
-            score: 9,
-            description: '' //有title时使用title，无title有正文时截取一段正文，也没有时为空
+        const id = computed(() => route.params['id'])
+
+        const { loading, data } = useSWR(computed(() => `/api/personal/comments/${route.params['id']}`), null, {
+            errorHandler(code, data, parent) {
+                if(code !== 404) parent?.(code, data)
+            }
         })
+        const dataComputed = computed(() => data.value ? mapData(data.value) : null)
 
-        return {exists, data, guide}
+        return {id, loading, data: dataComputed}
     }
 })
+
+function mapData(item: any) {
+    return {
+        score: item['score'],
+        description: item['article_title'] || (item['article'] ? splitArticle(item['article']) : null)
+    }
+}
+
+function splitArticle(article: string): string {
+    const max = 30
+    if(article.length > max) return article.substring(0, max) + "..."
+    else return article
+}
 </script>
 
 <style scoped>

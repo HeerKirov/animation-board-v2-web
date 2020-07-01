@@ -74,14 +74,15 @@ function useUI(pageData: {max: number, current: number}) {
 
     watchEffect(() => {
         const current = pageData.current
-        let first = current - Math.floor(ITEM_COUNT / 2)
-        let last = current + Math.floor(ITEM_COUNT / 2)
+        const itemCount = Math.min(ITEM_COUNT, pageData.max)
+        let first = current - Math.floor(itemCount / 2)
+        let last = current + Math.floor(itemCount / 2)
         if(first < 1) {
             first = 1
-            last = first + ITEM_COUNT - 1
+            last = first + itemCount - 1
         }else if(last > pageData.max) {
             last = pageData.max
-            first = last - ITEM_COUNT + 1
+            first = last - itemCount + 1
         }
         const items = []
         for(let i = first; i <= last; ++i) {

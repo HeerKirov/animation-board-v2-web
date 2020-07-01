@@ -1,14 +1,16 @@
+import { DefinitionItem } from './util'
+
 export const publishTypes: DefinitionItem[] = [
-    {name: 'TV_AND_WEB', title: 'TV&Web'}, 
-    {name: 'OVA_AND_OAD', title: 'OVA&OAD'}, 
-    {name: 'MOVIE', title: '剧场版动画'}
+    {name: 'TV_AND_WEB', title: 'TV&Web', color: 'teal'}, 
+    {name: 'OVA_AND_OAD', title: 'OVA&OAD', color: 'olive'}, 
+    {name: 'MOVIE', title: '剧场版动画', color: 'blue'}
 ]
 export const originalWorkTypes: DefinitionItem[] = [
-    {name: 'MANGA', title: '漫画'}, 
-    {name: 'NOVEL', title: '小说'}, 
-    {name: 'GAME', title: '游戏'}, 
-    {name: 'ORIGINAL', title: '原创'}, 
-    {name: 'OTHER', title: '其他'}
+    {name: 'MANGA', title: '漫画', color: 'red'}, 
+    {name: 'NOVEL', title: '小说', color: 'novel'}, 
+    {name: 'GAME', title: '游戏', color: 'blue'}, 
+    {name: 'ORIGINAL', title: '原创', color: 'green'}, 
+    {name: 'OTHER', title: '其他', color: 'pink'}
 ]
 export const sexLimitLevels: DefinitionItem[] = [
     {name: 'ALL', title: '全年龄', color: 'green'}, 
@@ -20,41 +22,19 @@ export const sexLimitLevels: DefinitionItem[] = [
 export const violenceLimitLevels: DefinitionItem[] = [
     {name: 'NO', title: '无暴力', color: 'green'}, 
     {name: 'A', color: 'blue'}, 
-    {name: 'B', color: 'pink'}, 
+    {name: 'B', color: 'yellow'}, 
     {name: 'C', color: 'purple'}, 
     {name: 'D', color: 'violet'}
 ]
-
-export interface DefinitionItem {
-    name: string
-    title?: string
-    color?: string
-}
-
-export function toMapDefinition(definition: DefinitionItem[]) {
-    const obj: {[name: string]: DefinitionItem} = {}
-    for(let item of definition) {
-        obj[item.name] = item
-    }
-    return obj
-}
-
-export function withoutColor(definition: DefinitionItem[]): DefinitionItem[] {
-    return definition.map(item => {
-        return {
-            name: item.name,
-            title: item.title || item.name
-        }
-    })
-}
-
-export function toNameSet(definition: DefinitionItem[]): Set<string> {
-    const set: Set<string> = new Set()
-    for(let item of definition) {
-        set.add(item.name)
-    }
-    return set
-}
+export const relations: DefinitionItem[] = [
+    {name: 'PREV', title: '前作'},
+    {name: 'NEXT', title: '续作'},
+    {name: 'FANWAI', title: '番外'},
+    {name: 'MAIN_ARTICLE', title: '正剧'},
+    {name: 'RUMOR', title: '外传'},
+    {name: 'TRUE_PASS', title: '正传'},
+    {name: 'SERIES', title: '同系列'},
+]
 
 export const sexLimitIntroductions = {
     ALL: [

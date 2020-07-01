@@ -1,5 +1,5 @@
 import { Method } from 'axios'
-import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref } from 'vue'
+import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref, isRef, unref } from 'vue'
 import { request as request0, RequestParam } from '@/functions/request'
 import { AuthResult } from '@/functions/auth'
 
@@ -50,6 +50,8 @@ export async function request(url: string, method: Method, data?: any, options?:
             options.errorHandler(r.code, r.data, configuration.errorHandler)
         }else if(configuration.errorHandler != null) {
             configuration.errorHandler(r.code, r.data)
+        }else{
+            throwErrorToConsole(r.code, r.data)
         }
         return {ok: false, data: undefined}
     }
@@ -67,6 +69,10 @@ function getStaticHeaders(auth?: AuthResult | (() => AuthResult)) {
     return headers
 }
 
+function throwErrorToConsole(code: number, data: any) {
+    console.error(`Request Error[${code}]`, data)
+}
+
 //== SWR ==
 
 type SWRUpdate = (data?: any, options?: SWROptions) => Promise<Response>
@@ -82,7 +88,7 @@ export interface SWR {
     update: SWRUpdate
 }
 
-export function useSWR(url: string, data?: any, options?: SWROptions): SWR {
+export function useSWR(url: Ref<string> | string, data?: any, options?: SWROptions): SWR {
     const configuration = inject(configurationInjectionKey)!
     const headers = useHeaders(configuration.auth)
 
@@ -93,19 +99,20 @@ export function useSWR(url: string, data?: any, options?: SWROptions): SWR {
 
     const throwError
         = options?.errorHandler != null ? ((code: number, data: any) => options.errorHandler?.(code, data, configuration.errorHandler))
-        : configuration.errorHandler != null ? configuration.errorHandler 
-        : undefined
+        : configuration.errorHandler ?? throwErrorToConsole
 
     const loadingRef = ref(true)
     const dataRef = ref(null)
     const updateLoadingRef = ref(false)
 
     watch(() => [url, fetcher], async (_v, _o, onInvalidate) => {
+        const unrefUrl = unref(url)
+        if(!unrefUrl) return
         let validate = true
         onInvalidate(() => {validate = false})
 
         loadingRef.value = true
-        const r = await request0(baseUrl + toRaw(url), method, toRaw(fetcher))
+        const r = await request0(baseUrl + unrefUrl, method, toRaw(fetcher))
         if(!validate) return
         loadingRef.value = false
         if(r.status === 'OK') {
@@ -121,11 +128,11 @@ export function useSWR(url: string, data?: any, options?: SWROptions): SWR {
     return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update}
 }
 
-function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: string, throwError?: ErrorHandler): SWRUpdate {
+function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string> | string, throwError?: ErrorHandler): SWRUpdate {
     return async (data, options) => {
         const method = options?.method || 'PUT'
         updateLoadingRef.value = true
-        const r = await request0((options?.baseUrl || baseUrl) + toRaw(url), method, {headers, [method == 'GET' ? 'query' : 'data']: data || undefined})
+        const r = await request0((options?.baseUrl || baseUrl) + unref(url), method, {headers, [method == 'GET' ? 'query' : 'data']: data || undefined})
         updateLoadingRef.value = false
         if(r.status === 'OK') {
             dataRef.value = r.data

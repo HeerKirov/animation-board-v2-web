@@ -1,3 +1,5 @@
+import { DefinitionItem } from './util'
+
 export const isOrganizations: DefinitionItem[] = [
     {"name": "true", "title": "组织"},
     {"name": "false", "title": "个人"}
@@ -10,8 +12,3 @@ export const occupations: DefinitionItem[] = [
     {"name": "ANIMATION_STAFF", "title": "动画制作人员"},
     {"name": "OTHER", "title": "其他"}
 ]
-
-export interface DefinitionItem {
-    name: string
-    title?: string
-}

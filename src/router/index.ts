@@ -108,6 +108,12 @@ export default createRouter({
             meta: {nav: ['record', 'find']}
         },
         {
+            name: 'Record.Detail',
+            path: '/personal/records/detail/:id',
+            component: () => import('@/views/NotFound.vue'),
+            meta: {nav: ['record', '@detail']}
+        },
+        {
             name: 'Comment',
             path: '/personal/comments',
             redirect: {name: 'Comment.Activity'}
@@ -129,6 +135,12 @@ export default createRouter({
             path: '/personal/comments/find',
             component: () => import('@/views/NotFound.vue'),
             meta: {nav: ['comment', 'find']}
+        },
+        {
+            name: 'Comment.Detail',
+            path: '/personal/comments/detail/:id',
+            component: () => import('@/views/NotFound.vue'),
+            meta: {nav: ['comment', '@detail']}
         },
         {
             name: 'Statistics',

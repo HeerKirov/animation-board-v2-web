@@ -12,10 +12,10 @@ div.ui.container
             div.ui.stackable.four.columns.grid
                 div.column(v-for="item in items")
                     div.ui.card
-                        router-link.image(:to="{name: 'Animation.Detail', params: {id: 1}}")
+                        router-link.image(:to="{name: 'Animation.Detail', params: {id: item.id}}")
                             img(:src='item.cover')
                         div.content
-                            router-link.header.font-size-14(:to="{name: 'Animation.Detail', params: {id: 1}}") {{item.title}}
+                            router-link.header.font-size-14(:to="{name: 'Animation.Detail', params: {id: item.id}}") {{item.title}}
                             div.meta
                                 span.date.font-size-11 {{item.episode}}
                             label.font-size-11(v-if="item.publishTime") {{item.publishTime}}
@@ -44,9 +44,10 @@ div.ui.container
                         ItemSelector(:items="violenceLimitLevels", :selected="violence", @changed="onViolenceChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 放送时间
                     div.twelve.wide.column.pt-1.pb-2
-                        DatePicker
+                        DatePicker(:value="publishTime", @changed="onPublishTimeChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 标签
                     div.twelve.wide.column.py-2
+                        //- TODO 完成tagfilter和stafffilter
                         TagFilter
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 STAFF
                     div.twelve.wide.column.py-2
@@ -64,9 +65,10 @@ import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'
-import DatePicker from '@/components/DatePicker.vue'
+import DatePicker, { ChangedEvent as DateChangedEvent } from '@/components/DatePicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
-import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, withoutColor, toNameSet } from '@/definitions/animation-definition'
+import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
+import { toNameSet } from '@/definitions/util'
 import { useSWR } from '@/functions/server'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSort, usePagination, useSelector } from '@/functions/parameters'
@@ -90,11 +92,11 @@ export default defineComponent({
     components: {TagFilter, StaffFilter, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
     computed: {
         barItems: () => secondaryBarItems.database,
-        orders: () => orders,
-        publishTypes: () => withoutColor(publishTypes),
-        originalWorkTypes: () => withoutColor(originalWorkTypes),
-        sexLimitLevels: () => withoutColor(sexLimitLevels),
-        violenceLimitLevels: () => withoutColor(violenceLimitLevels)
+        orders() { return orders },
+        publishTypes() { return publishTypes },
+        originalWorkTypes() { return originalWorkTypes },
+        sexLimitLevels() { return sexLimitLevels },
+        violenceLimitLevels() { return violenceLimitLevels }
     },
     setup() {
         const { router, route, updateQuery, watchQuery } = useRouterQueryUtil()
@@ -109,6 +111,7 @@ export default defineComponent({
         const { selected: publishType, toQuery: publishTypeToQuery, fromQuery: publishTypeFromQuery } = useSelector(toNameSet(publishTypes))
         const { selected: sex, toQuery: sexToQuery, fromQuery: sexFromQuery } = useSelector(toNameSet(sexLimitLevels))
         const { selected: violence, toQuery: violenceToQuery, fromQuery: violenceFromQuery } = useSelector(toNameSet(violenceLimitLevels))
+        const publishTime: Ref<string | null> = ref(null)
 
         const onSearch = (e: SearchEvent) => updateQuery('search', e.text)
         const onPageChanged = (e: PageChangedEvent) => updateQuery('page', pageToQuery(e.page))
@@ -117,6 +120,7 @@ export default defineComponent({
         const onPublishTypeChanged = (e: ItemChangedEvent) => updateQuery('publish_type', publishTypeToQuery(e.name))
         const onSexChanged = (e: ItemChangedEvent) => updateQuery('sex_limit_level', sexToQuery(e.name))
         const onViolenceChanged = (e: ItemChangedEvent) => updateQuery('violence_limit_level', violenceToQuery(e.name))
+        const onPublishTimeChanged = (e: DateChangedEvent) => updateQuery('publish_time', e.value || undefined)
         
         watchQuery({
             'search'(value) { search.value = value || undefined },
@@ -126,6 +130,8 @@ export default defineComponent({
             'publish_type': publishTypeFromQuery,
             'sex_limit_level': sexFromQuery,
             'violence_limit_level': violenceFromQuery,
+            //TODO publish time需要在外层就做一次合法性验证，错误的数据格式会导致API抛出错误
+            'publish_time'(value) { publishTime.value = value }
         })
 
         const fetcher = reactive({
@@ -136,7 +142,8 @@ export default defineComponent({
             'original_work_type': original,
             'publish_type': publishType,
             'sex_limit_level': sex,
-            'violence_limit_level': violence
+            'violence_limit_level': violence,
+            'publish_time': publishTime
         })
 
         const { data } = useSWR(`/api/database/animations`, fetcher)
@@ -159,6 +166,7 @@ export default defineComponent({
             publishType, onPublishTypeChanged,
             sex, onSexChanged,
             violence, onViolenceChanged,
+            publishTime, onPublishTimeChanged,
             items, totalNum
         }
     }
@@ -166,6 +174,7 @@ export default defineComponent({
 
 function mapItem(item: any) {
     return {
+        id: item['id'],
         title: item['title'],
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : img,
         episode: item['published_episodes'] >= item['total_episodes'] ? `全${item['total_episodes']}话` : `${item['published_episodes']}/${item['total_episodes']}话`,

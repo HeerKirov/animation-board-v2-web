@@ -1,12 +1,13 @@
 <template lang="pug">
-div.ui.segment.panel(v-if="exists")
+div.ui.segment.panel(v-if="data")
     div.mb-3
-        template(v-if="data.inDiary")
-            i.thumbtack.icon
-            = '已订阅'
-        template(v-else)
-            i.book.icon
-            = '日记'
+        router-link(:to="{name: 'Record.Detail', params: {id}}")
+            template(v-if="data.inDiary")
+                i.thumbtack.icon
+                = '已订阅'
+            template(v-else)
+                i.book.icon
+                = '日记'
         template(v-if="data.seenOriginal")
             i.marker.icon.ml-1.ui.text.grey
             label.ui.text.grey 看过原作
@@ -22,9 +23,12 @@ div.ui.segment.panel(v-if="exists")
                 div.value ···
                 div.label 无进度
             div.ui.tiny.horizontal.statistic(v-else)
-                div.value {{data.watchedEpisodes}}
-                div.label(v-if="data.status === 'COMPLETED'") 已看完
-                div.label(v-else) 已观看
+                template(v-if="data.status === 'COMPLETED'")
+                    div.value {{data.totalEpisodes}}
+                    div.label 已看完
+                template(v-else)
+                    div.value {{data.watchedEpisodes}}/{{data.totalEpisodes}}
+                    div.label 已看
 div.ui.placeholder.segment.panel(v-else)
     template(v-if="guide === 'default'")
         span.font-size-14.text-center.is-weight.mb-1 未订阅此动画
@@ -50,24 +54,39 @@ div.ui.placeholder.segment.panel(v-else)
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive, ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useSWR } from '@/functions/server'
 
 export default defineComponent({
     setup() {
-        const exists = ref(true)
-        const data = reactive({
-            status: 'COMPLETED',
-            inDiary: false,
-            seenOriginal: false,
-            progressCount: 1,
-            watchedEpisodes: 24,
-            totalEpisodes: 24
+        const route = useRoute()
+
+        const id = computed(() => route.params['id'])
+        
+        const { loading, data } = useSWR(computed(() => `/api/personal/records/${route.params['id']}`), null, {
+            errorHandler(code, data, parent) {
+                if(code !== 404) parent?.(code, data)
+            }
         })
+        const dataComputed = computed(() => data.value ? mapData(data.value) : null)
+        
         const guide = ref("default")
 
-        return {exists, data, guide}
+        return {id, loading, data: dataComputed, guide}
     }
 })
+
+function mapData(item: any) {
+    return {
+        status: item['status'],
+        inDiary: item['in_diary'],
+        seenOriginal: item['seen_original'],
+        progressCount: item['progress_count'],
+        watchedEpisodes: item['watched_episodes'],
+        totalEpisodes: item['total_episodes']
+    }
+}
 </script>
 
 <style scoped>

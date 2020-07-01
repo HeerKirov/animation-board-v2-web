@@ -1,11 +1,11 @@
-import { ref, computed, Ref, toRaw } from 'vue'
+import { ref, computed, Ref, unref } from 'vue'
 
 export type Direction = -1|1
 
 export function usePagination(total: Ref<number | null>, limit: number) {
-    const pageMax = computed(() => Math.ceil((total.value || 0) / toRaw(limit)))
+    const pageMax = computed(() => Math.ceil((total.value || 0) / unref(limit)))
     const page = ref(1)
-    const offset = computed(() => (page.value - 1) * toRaw(limit))
+    const offset = computed(() => (page.value - 1) * unref(limit))
 
     const pageToQuery = (page: number) => page > 1 ? page : undefined
     const pageFromQuery = (value: string | null) => {
