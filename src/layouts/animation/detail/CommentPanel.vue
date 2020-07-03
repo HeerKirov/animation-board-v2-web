@@ -1,5 +1,8 @@
 <template lang="pug">
-div.ui.segment.panel(v-if="data")
+div.ui.segment.panel(v-if="loading")
+    div.ui.active.inverted.dimmer
+        div.ui.loader
+div.ui.segment.panel(v-else-if="data")
     div.mb-3
         router-link(:to="{name: 'Comment.Detail', params: {id}}")
             i.bookmark.icon
@@ -12,7 +15,7 @@ div.ui.segment.panel(v-if="data")
         i.quote.right.icon.font-size-11
 div.ui.placeholder.segment.panel(v-else)
     span.font-size-14.text-center.is-weight.mb-1 未评价此动画
-    div.ui.primary.button
+    router-link.ui.primary.button(:to="{name: 'Comment.New', params: {id}}")
         i.bookmark.icon
         = '编写评价'
 </template>
@@ -32,7 +35,7 @@ export default defineComponent({
 
         const { loading, data } = useSWR(computed(() => `/api/personal/comments/${route.params['id']}`), null, {
             errorHandler(code, data, parent) {
-                if(code !== 404) parent?.(code, data)
+                if(code !== 404 && code !== 403 && code !== 401) parent?.(code, data)
             }
         })
         const dataComputed = computed(() => data.value ? mapData(data.value) : null)

@@ -8,11 +8,12 @@ Footer
 import { defineComponent } from 'vue'
 import TopBar from "@/layouts/TopBar.vue"
 import Footer from "@/layouts/Footer.vue"
+import { watchRouterTitle } from '@/functions/document'
 
 export default defineComponent({
     components: {TopBar, Footer},
     setup() {
-        
+        watchRouterTitle()
 
         return {}
     }

@@ -131,7 +131,7 @@ function mapItem(item: any) {
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : img,
         publishTime: item['publish_time'] && toPublishTime(item['publish_time']),
         episode: item['published_episodes'] >= item['total_episodes'] ? `已完结，共${item['total_episodes']}话` : `已发布${item['published_episodes']}话，共${item['total_episodes']}话`,
-        episodeDuration: item['episode_duration'] ? (`${item['total_episodes'] > 1 ? `平均` : ''}${item['episode_duration']}分钟`) : null,
+        episodeDuration: item['episode_duration'] ? (`${item['total_episodes'] > 1 ? `每集` : ''}${item['episode_duration']}分钟`) : null,
         publishType: publishTypeMap[item['publish_type']],
         originalWorkType: originalWorkTypeMap[item['original_work_type']],
         sexLimitLevel: sexLimitLevelMap[item['sex_limit_level']],

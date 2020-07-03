@@ -1,6 +1,7 @@
 import { createAuth, useAuth } from '@/functions/auth'
 import { createServer } from '@/functions/server'
 import config from '@/config'
+import {createDocumentManager} from "@/functions/document";
 
 export const auth = createAuth({
     basicServiceUrl: config.BASIC_SERVICE_URL,
@@ -14,3 +15,5 @@ export const server = createServer({
     auth: useAuth,
     //TODO 完成全局通知模块之后在这里注入
 })
+
+export const document = createDocumentManager()

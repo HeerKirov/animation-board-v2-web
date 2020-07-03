@@ -9,8 +9,9 @@ div.ui.container
             = '新建'
     div.ui.grid
         div.twelve.wide.column
-            div.ui.stackable.four.columns.grid
-                div.column(v-for="item in items")
+            div.ui.inline.active.centered.loader(v-if="loading")
+            div.ui.stackable.four.columns.grid(v-else)
+                div.column(v-for="item in items", :key="item.id")
                     div.ui.card
                         router-link.image(:to="{name: 'Animation.Detail', params: {id: item.id}}")
                             img(:src='item.cover')
@@ -46,11 +47,12 @@ div.ui.container
                     div.twelve.wide.column.pt-1.pb-2
                         DatePicker(:value="publishTime", @changed="onPublishTimeChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 标签
-                    div.twelve.wide.column.py-2
-                        //- TODO 完成tagfilter和stafffilter
-                        TagFilter
+                    div.twelve.wide.column.pt-1.pb-2
+                        LabelButton(value="啊", secondary-value="STAFF")
+                    div.sixteen.wide.column.py-0
+                        LabelBoard(url="/api/database/tags")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 STAFF
-                    div.twelve.wide.column.py-2
+                    div.twelve.wide.column.pt-1.pb-2
                         StaffFilter
             PageSelector(:max="pageMax", :current="page", @changed="onPageChanged")
             div(v-if="totalNum != null") 共{{totalNum}}条记录
@@ -59,7 +61,8 @@ div.ui.container
 <script lang="ts">
 import { defineComponent, ref, watch, reactive, toRef, computed, watchEffect, Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import TagFilter from '@/layouts/animation/list/TagFilter.vue'
+import LabelButton from '@/layouts/animation/list/LabelButton.vue'
+import LabelBoard from '@/layouts/animation/list/LabelBoard.vue'
 import StaffFilter from '@/layouts/animation/list/StaffFilter.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
@@ -89,7 +92,7 @@ const defaultOrderDirection = -1
 const limit = 16
 
 export default defineComponent({
-    components: {TagFilter, StaffFilter, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
+    components: {LabelButton, LabelBoard, StaffFilter, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
     computed: {
         barItems: () => secondaryBarItems.database,
         orders() { return orders },
@@ -99,12 +102,12 @@ export default defineComponent({
         violenceLimitLevels() { return violenceLimitLevels }
     },
     setup() {
-        const { router, route, updateQuery, watchQuery } = useRouterQueryUtil()
+        const { router, route, updateQuery, watchQuery } = useRouterQueryUtil({resetField: {field: 'page', value: 1, excludes: ['order']}})
 
         const items = ref([])
         const totalNum: Ref<number | null> = ref(null)
 
-        const search: Ref<string | undefined> = ref(undefined)
+        const search: Ref<string | undefined> = ref()
         const { page, pageMax, offset, pageToQuery, pageFromQuery } = usePagination(totalNum, limit)
         const { sortValue, sortDirection, order, sortToQuery, sortFromQuery } = useSort(orders, defaultOrderValue, defaultOrderDirection)
         const { selected: original, toQuery: originalToQuery, fromQuery: originalFromQuery } = useSelector(toNameSet(originalWorkTypes))
@@ -121,6 +124,8 @@ export default defineComponent({
         const onSexChanged = (e: ItemChangedEvent) => updateQuery('sex_limit_level', sexToQuery(e.name))
         const onViolenceChanged = (e: ItemChangedEvent) => updateQuery('violence_limit_level', violenceToQuery(e.name))
         const onPublishTimeChanged = (e: DateChangedEvent) => updateQuery('publish_time', e.value || undefined)
+
+        const tag = ref()
         
         watchQuery({
             'search'(value) { search.value = value || undefined },
@@ -130,8 +135,7 @@ export default defineComponent({
             'publish_type': publishTypeFromQuery,
             'sex_limit_level': sexFromQuery,
             'violence_limit_level': violenceFromQuery,
-            //TODO publish time需要在外层就做一次合法性验证，错误的数据格式会导致API抛出错误
-            'publish_time'(value) { publishTime.value = value }
+            'publish_time'(value) { publishTime.value = checkPublishTime(value) }
         })
 
         const fetcher = reactive({
@@ -146,7 +150,7 @@ export default defineComponent({
             'publish_time': publishTime
         })
 
-        const { data } = useSWR(`/api/database/animations`, fetcher)
+        const { loading, data } = useSWR(`/api/database/animations`, fetcher)
 
         watchEffect(() => {
             if(data.value) {
@@ -167,7 +171,7 @@ export default defineComponent({
             sex, onSexChanged,
             violence, onViolenceChanged,
             publishTime, onPublishTimeChanged,
-            items, totalNum
+            loading, items, totalNum
         }
     }
 })
@@ -185,5 +189,23 @@ function mapItem(item: any) {
 function toPublishTime(publishTime: string): string {
     const [year, month] = publishTime.split('-')
     return `${year}年${month}月`
+}
+
+function checkPublishTime(date: string | null): string | null {
+    if(!date) return null
+    else if(date.indexOf('-') >= 0) {
+        try {
+            const [year, month] = date.split('-', 2)
+            return `${parseInt(year)}-${parseInt(month)}`
+        }catch(e) {
+            return null
+        }
+    }else{
+        try {
+            return parseInt(date).toString()
+        }catch(e) {
+            return null
+        }
+    }
 }
 </script>

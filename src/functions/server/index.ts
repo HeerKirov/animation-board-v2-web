@@ -35,37 +35,48 @@ export interface Response {
     data: any
 }
 
-export async function request(url: string, method: Method, data?: any, options?: RequestOptions): Promise<Response> {
+export function useServer() {
     const configuration = inject(configurationInjectionKey)!
-    const headers = getStaticHeaders(configuration.auth)
+    const headers = useHeaders(configuration.auth)
 
-    const param: RequestParam = {headers, [method === 'GET' ? 'query' : 'data']: data || undefined}
-
-    const r = await request0((options?.baseUrl || configuration.serverUrl) + url, method, param)
-
-    if(r.status === 'OK') {
-        return {ok: true, data: r.data}
-    }else{
-        if(options?.errorHandler != null) {
-            options.errorHandler(r.code, r.data, configuration.errorHandler)
-        }else if(configuration.errorHandler != null) {
-            configuration.errorHandler(r.code, r.data)
+    async function request(url: string, method: Method, data?: any, options?: RequestOptions): Promise<Response> {
+    
+        const param: RequestParam = {headers, [method === 'GET' ? 'query' : 'data']: data || undefined}
+    
+        const r = await request0((options?.baseUrl || configuration.serverUrl) + url, method, param)
+    
+        if(r.status === 'OK') {
+            return {ok: true, data: r.data}
         }else{
-            throwErrorToConsole(r.code, r.data)
+            if(options?.errorHandler != null) {
+                options.errorHandler(r.code, r.data, configuration.errorHandler)
+            }else if(configuration.errorHandler != null) {
+                configuration.errorHandler(r.code, r.data)
+            }else{
+                throwErrorToConsole(r.code, r.data)
+            }
+            return {ok: false, data: undefined}
         }
-        return {ok: false, data: undefined}
     }
+
+    return {request}
 }
 
-function getStaticHeaders(auth?: AuthResult | (() => AuthResult)) {
+function useHeaders(auth?: AuthResult | (() => AuthResult)) {
     if(auth == null) {
         return undefined
     }
     const { token } = typeof auth === 'function' ? auth() : auth
-    const headers: any = {}
-    if(token.value != null) {
-        headers['Authorization'] = `Bearer ${token.value}`
-    }
+
+    const headers: any = reactive({})
+    watch(token, v => {
+        if(v != null) {
+            headers['Authorization'] = `Bearer ${v}`
+        }else{
+            delete headers['Authorization']
+        }
+    }, {immediate: true})
+
     return headers
 }
 
@@ -148,20 +159,3 @@ function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, he
     }
 }
 
-function useHeaders(auth?: AuthResult | (() => AuthResult)) {
-    if(auth == null) {
-        return undefined
-    }
-    const { token } = typeof auth === 'function' ? auth() : auth
-
-    const headers: any = reactive({})
-    watch(token, v => {
-        if(v != null) {
-            headers['Authorization'] = `Bearer ${v}`
-        }else{
-            delete headers['Authorization']
-        }
-    }, {immediate: true})
-
-    return headers
-}

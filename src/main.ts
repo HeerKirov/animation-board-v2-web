@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { auth, server } from '@/plugins'
+import { auth, server, document } from '@/plugins'
 import App from '@/App.vue'
 import router from '@/router'
 import '@/styles/layout.css'
@@ -10,4 +10,5 @@ createApp(App)
     .use(router)
     .use(auth)
     .use(server)
+    .use(document)
     .mount('#app')

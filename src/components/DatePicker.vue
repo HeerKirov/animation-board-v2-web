@@ -1,13 +1,12 @@
 <template lang="pug">
 div
-    button.ui.tertiary.mini.button(@click="onClickYear", :class="{primary: edit === 'year'}") {{year || '...'}} 年
-    button.ui.tertiary.mini.button(@click="onClickMonth", :class="{primary: edit === 'month'}") {{year != null && month || '...'}} 月
+    button.ui.tertiary.mini.button(@click="onClickYear", :class="{primary: year}") {{year || '...'}} 年
+    button.ui.tertiary.mini.button(@click="onClickMonth", :class="{primary: year && month}") {{year != null && month || '...'}} 月
     a.icon-button(@click="onClickDelete"): i.delete.icon
 div(v-if="edit === 'year'")
-    ItemSelector(:items="years", none-title="未选择", v-model:selected="year")
+    ItemSelector(:items="years", :show-none="false", v-model:selected="year")
 div(v-else-if="edit === 'month'")
-    //- TODO 优化成 all / 1 2 3 / 4 5 6 / 7 8 9 / 10 11 12 的分行
-    ItemSelector(:items="months", nont-title="任意月", v-model:selected="month")
+    ItemSelector(:items="months", none-title="任意月份", :column="3", v-model:selected="month")
 </template>
 
 <script lang="ts">
@@ -51,7 +50,6 @@ export default defineComponent({
         })
 
         watch(() => [year.value, month.value], () => {
-            console.log(`${year.value}-${month.value}`)
             const newValue = concatDate(year.value, month.value)
             emit('update:value', newValue)
             emit('changed', {

@@ -1,17 +1,39 @@
 import { useRouter, useRoute } from 'vue-router'
 import { watch } from 'vue'
 
-export function useRouterQueryUtil() {
+interface RouterQueryConfiguration {
+    resetField?: {
+        field: string, 
+        value: any,
+        excludes?: string[]
+    }
+}
+
+export function useRouterQueryUtil(config?: RouterQueryConfiguration) {
+    const resetField = config?.resetField && generateResetField(config?.resetField)
+
     const router = useRouter()
     const route = useRoute()
+
     const updateQuery = (key: string, value: any) => {
-        router.push({
-            name: route.name!,
-            query: {
-                ...route.query,
-                [key]: value
-            }
-        })
+        if(resetField && !resetField.excludes.has(key)) {
+            router.push({
+                name: route.name!,
+                query: {
+                    ...route.query,
+                    [resetField.field]: resetField.value,
+                    [key]: value
+                }
+            })
+        }else{
+            router.push({
+                name: route.name!,
+                query: {
+                    ...route.query,
+                    [key]: value
+                }
+            })
+        }
     }
 
     const watchQuery = (parameters: {[param: string]: (value: string | null) => void}) => {
@@ -33,4 +55,15 @@ export function useRouterQueryUtil() {
     }
 
     return {router, route, updateQuery, watchQuery}
+}
+
+function generateResetField(resetField: {field: string, value: any, excludes?: string[]}) {
+    const excludes = new Set(resetField.excludes)
+    excludes.add(resetField.field)
+
+    return {
+        field: resetField.field,
+        value: resetField.value,
+        excludes
+    }
 }

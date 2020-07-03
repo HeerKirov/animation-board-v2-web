@@ -5,10 +5,11 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watchEffect, provide } from 'vue'
+import { defineComponent, computed, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
+import { watchPageTitle } from "@/functions/document"
 import { useSWR } from '@/functions/server'
 import { swrInjectionKey } from '@/definitions/injections'
 
@@ -18,6 +19,8 @@ export default defineComponent({
         const route = useRoute()
 
         const swr = useSWR(computed(() => `/api/database/animations/${route.params['id']}`))
+
+        watchPageTitle(() => swr.data.value?.["title"])
 
         provide(swrInjectionKey, swr)
     }
