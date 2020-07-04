@@ -149,7 +149,7 @@ export default defineComponent({
             'staff': staff
         })
 
-        const { loading, data } = useSWR(`/api/database/animations`, fetcher)
+        const { loading, data } = useSWR('/api/database/animations', fetcher)
 
         watchEffect(() => {
             if(data.value) {

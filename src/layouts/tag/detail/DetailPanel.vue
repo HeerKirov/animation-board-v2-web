@@ -7,29 +7,35 @@ div.ui.secondary.pointing.menu
         i.edit.icon
         = '编辑'
 div.ui.grid
-    div.ui.centered.row
+    div.ui.active.centered.inline.loader.mt-4(v-if="loading")
+    div.ui.centered.row(v-else)
         h2.ui.icon.header
             i.tag.icon
-            div.content 轻百合
-                div.sub.header 轻百合～
+            div.content {{obj.name}}
+                div.sub.header {{obj.introduction}}
     div.ui.row
         div.ui.twelve.wide.centered.column
-            span.is-weight 相关动画
-            div.ui.three.columns.grid
-                each item in [{title: '魔法禁书目录'}, {title: '魔法禁书目录II'}, {title: '魔法禁书目录III'}, {title: '某科学的超电磁炮'}, {title: '某科学的超电磁炮S'}, {title: '某科学的一方通行'}]
-                    div.column.pb-0
+            div.is-weight.mb-1 相关动画
+            div(v-if="animations.length == 0") 没有相关的动画～
+            template(v-else)
+                div.ui.three.columns.grid
+                    div.column.pb-0(v-for="item in animations")
                         a
-                            img.relations.item-image(:src='img')
+                            img.relations.item-image(:src='item.cover')
                         div.relations.item-content
-                            router-link.is-weight(to='')= item.title
-            div.mt-4
-                a.ui.tertiary.button.right.floated 查看更多
-                    i.right.double.angle.icon
+                            router-link.is-weight(:to="{name: 'Animation.Detail', params: {id: item.id}}") {{item.title}}
+                div.mt-4(v-if="obj.name")
+                    router-link.ui.tertiary.button.right.floated(:to="{name: 'Animation.List', query: {tag: obj.name}}") 查看更多
+                        i.right.double.angle.icon
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, inject, computed, reactive } from 'vue'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
+import { swrInjectionKey } from '@/definitions/injections'
+import { useSWR } from '@/functions/server'
+import { useRoute } from 'vue-router'
+import config from '@/config'
 
 const img = require('@/assets/empty_avatar.jpg')
 
@@ -39,9 +45,32 @@ export default defineComponent({
         barItems: () => [secondaryBarItems.database.tag, detailItem]
     },
     setup() {
+        const route = useRoute()
 
+        const { loading, data } = inject(swrInjectionKey)!
+        const obj = computed(() => data.value ? mapItem(data.value) : {name: '', introduction: ''})
+
+        const { data: animationData } = useSWR('/api/database/animations', reactive({tag: computed(() => route.params['id']), limit: 9}))
+        const animations = computed(() => animationData.value?.['result'].map(mapAnimation) ?? [])
+
+        return {loading, obj, animations}
     }
 })
+
+function mapItem(item: any) {
+    return {
+        name: item['name'],
+        introduction: item['introduction']
+    }
+}
+
+function mapAnimation(item: any) {
+    return {
+        id: item['id'],
+        title: item['title'],
+        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : img,
+    }
+}
 </script>
 
 <style scoped>

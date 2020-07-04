@@ -1,5 +1,5 @@
 <template lang="pug">
-div.ui.grid
+div.ui.centered.grid
     div.text-center.px-0.py-1(v-for='item in items', :class='item.name == selected ? "eight wide column" : "two wide column"')
         button.ui.tertiary.button(:class='{primary: item.name == selected}', @click='onClick(item)', style='padding-right: 2px!important; padding-left: 2px!important')
             i.mx-0(v-if='item.icon && (item.forceIcon || item.name != selected)', :class='item.icon')
