@@ -17,7 +17,7 @@ div.ui.segment.panel(v-else-if="data")
     div.ui.two.columns.grid
         div.column
             div.ui.tiny.horizontal.statistic(v-if="data.progressCount <= 1")
-                div.value {{parseInt(data.watchedEpisodes * 100 / data.totalEpisodes)}}%
+                div.value {{Math.floor(data.watchedEpisodes * 100 / data.totalEpisodes)}}%
             div.ui.tiny.horizontal.statistic(v-else)
                 div.value {{data.progressCount}}
                 div.label 周目
@@ -57,7 +57,7 @@ div.ui.placeholder.segment.panel(v-else)
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, computed, Ref } from 'vue'
+import { defineComponent, ref, computed, Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSWR } from '@/functions/server'
 

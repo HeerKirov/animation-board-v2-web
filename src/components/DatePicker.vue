@@ -1,11 +1,13 @@
 <template lang="pug">
 div
-    button.ui.tertiary.mini.button(@click="onClickYear", :class="{primary: year}") {{year || '...'}} 年
-    button.ui.tertiary.mini.button(@click="onClickMonth", :class="{primary: year && month}") {{year != null && month || '...'}} 月
-    a.icon-button(@click="onClickDelete"): i.delete.icon
+    button.ui.tertiary.mini.button(@click="onClickYear", :class="{primary: year}") {{year ? `${year} 年` : '未选择'}}
+    button.ui.tertiary.mini.button(v-if="year != null", @click="onClickMonth", :class="{primary: year && month}") {{month ? `${month} 月` : '任意月份'}}
+    a.icon-button(v-if="year != null", @click="onClickDelete"): i.delete.icon
 div(v-if="edit === 'year'")
+    div.ui.divider.my-1
     ItemSelector(:items="years", :show-none="false", v-model:selected="year")
 div(v-else-if="edit === 'month'")
+    div.ui.divider.my-1
     ItemSelector(:items="months", none-title="任意月份", :column="3", v-model:selected="month")
 </template>
 

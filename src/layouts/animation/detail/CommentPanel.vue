@@ -21,7 +21,7 @@ div.ui.placeholder.segment.panel(v-else)
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Starlight from '@/components/Starlight.vue'
 import { useSWR } from '@/functions/server'
@@ -61,13 +61,5 @@ function splitArticle(article: string): string {
 <style scoped>
     .panel {
         min-height: 107px !important;
-    }
-    .font-size-42 {
-        font-size: 42px;
-    }
-    .sub-title {
-        margin-top: 10px;
-        margin-bottom: 5px;
-        font-size: 12px;
     }
 </style>

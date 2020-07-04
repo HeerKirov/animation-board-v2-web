@@ -48,9 +48,9 @@ export function watchRouterTitle() {
     const route = useRoute()
     const { titleFromRoute, titleFromPage } = inject(titleInjectionKey)!
 
-    watch(route, (value) => {
+    watch(() => route.meta, (value) => {
         titleFromPage.value = null
-        titleFromRoute.value = value.meta['title']
+        titleFromRoute.value = value['title']
     })
 }
 

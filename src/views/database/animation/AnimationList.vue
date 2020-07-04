@@ -47,28 +47,21 @@ div.ui.container
                     div.twelve.wide.column.pt-1.pb-2
                         DatePicker(:value="publishTime", @changed="onPublishTimeChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 标签
-                    div.twelve.wide.column.pt-1.pb-2
-                        LabelButton(value="啊", secondary-value="STAFF")
-                    div.sixteen.wide.column.py-0
-                        LabelBoard(url="/api/database/tags")
+                    LabelPicker(url="/api/database/tags", placeholder="搜索标签", :value="tag", @update:value="onTagChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 STAFF
-                    div.twelve.wide.column.pt-1.pb-2
-                        StaffFilter
+                    LabelPicker(url="/api/database/staffs", placeholder="搜索STAFF", :value="staff", @update:value="onStaffChanged")
             PageSelector(:max="pageMax", :current="page", @changed="onPageChanged")
             div(v-if="totalNum != null") 共{{totalNum}}条记录
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, reactive, toRef, computed, watchEffect, Ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import LabelButton from '@/layouts/animation/list/LabelButton.vue'
-import LabelBoard from '@/layouts/animation/list/LabelBoard.vue'
-import StaffFilter from '@/layouts/animation/list/StaffFilter.vue'
+import { defineComponent, ref, reactive, watchEffect, Ref } from 'vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'
 import DatePicker, { ChangedEvent as DateChangedEvent } from '@/components/DatePicker.vue'
+import LabelPicker from '@/layouts/animation/list/LabelPicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
 import { toNameSet } from '@/definitions/util'
@@ -92,7 +85,7 @@ const defaultOrderDirection = -1
 const limit = 16
 
 export default defineComponent({
-    components: {LabelButton, LabelBoard, StaffFilter, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
+    components: {LabelPicker, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
     computed: {
         barItems: () => secondaryBarItems.database,
         orders() { return orders },
@@ -102,7 +95,7 @@ export default defineComponent({
         violenceLimitLevels() { return violenceLimitLevels }
     },
     setup() {
-        const { router, route, updateQuery, watchQuery } = useRouterQueryUtil({resetField: {field: 'page', value: 1, excludes: ['order']}})
+        const { updateQuery, watchQuery } = useRouterQueryUtil({resetField: {field: 'page', value: undefined, excludes: ['order']}})
 
         const items = ref([])
         const totalNum: Ref<number | null> = ref(null)
@@ -114,7 +107,9 @@ export default defineComponent({
         const { selected: publishType, toQuery: publishTypeToQuery, fromQuery: publishTypeFromQuery } = useSelector(toNameSet(publishTypes))
         const { selected: sex, toQuery: sexToQuery, fromQuery: sexFromQuery } = useSelector(toNameSet(sexLimitLevels))
         const { selected: violence, toQuery: violenceToQuery, fromQuery: violenceFromQuery } = useSelector(toNameSet(violenceLimitLevels))
-        const publishTime: Ref<string | null> = ref(null)
+        const publishTime: Ref<string | undefined> = ref()
+        const tag: Ref<string | undefined> = ref()
+        const staff: Ref<string | undefined> = ref()
 
         const onSearch = (e: SearchEvent) => updateQuery('search', e.text)
         const onPageChanged = (e: PageChangedEvent) => updateQuery('page', pageToQuery(e.page))
@@ -124,8 +119,8 @@ export default defineComponent({
         const onSexChanged = (e: ItemChangedEvent) => updateQuery('sex_limit_level', sexToQuery(e.name))
         const onViolenceChanged = (e: ItemChangedEvent) => updateQuery('violence_limit_level', violenceToQuery(e.name))
         const onPublishTimeChanged = (e: DateChangedEvent) => updateQuery('publish_time', e.value || undefined)
-
-        const tag = ref()
+        const onTagChanged = (value: string | undefined) => updateQuery('tag', value)
+        const onStaffChanged = (value: string | undefined) => updateQuery('staff', value)
         
         watchQuery({
             'search'(value) { search.value = value || undefined },
@@ -135,7 +130,9 @@ export default defineComponent({
             'publish_type': publishTypeFromQuery,
             'sex_limit_level': sexFromQuery,
             'violence_limit_level': violenceFromQuery,
-            'publish_time'(value) { publishTime.value = checkPublishTime(value) }
+            'publish_time'(value) { publishTime.value = checkPublishTime(value) || undefined },
+            'tag'(value) { tag.value = value || undefined },
+            'staff'(value) { staff.value = value || undefined }
         })
 
         const fetcher = reactive({
@@ -147,7 +144,9 @@ export default defineComponent({
             'publish_type': publishType,
             'sex_limit_level': sex,
             'violence_limit_level': violence,
-            'publish_time': publishTime
+            'publish_time': publishTime,
+            'tag': tag,
+            'staff': staff
         })
 
         const { loading, data } = useSWR(`/api/database/animations`, fetcher)
@@ -171,6 +170,8 @@ export default defineComponent({
             sex, onSexChanged,
             violence, onViolenceChanged,
             publishTime, onPublishTimeChanged,
+            tag, onTagChanged,
+            staff, onStaffChanged,
             loading, items, totalNum
         }
     }

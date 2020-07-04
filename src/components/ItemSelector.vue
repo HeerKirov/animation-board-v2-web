@@ -8,7 +8,7 @@ template(v-else)
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+import { defineComponent, PropType, ref, watch } from 'vue'
 
 export interface Item {
     name: string
@@ -34,6 +34,8 @@ export default defineComponent({
     emits: ['changed', 'update:selected'],
     setup(props, {emit}) {
         const selected = ref(props.selected || props.noneName)
+
+        watch(() => props.selected, v => { selected.value = v || props.noneName })
 
         const onClick = (itemName: string) => {
             selected.value = itemName
