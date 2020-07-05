@@ -31,10 +31,10 @@ div.ui.grid
 
 <script lang="ts">
 import { defineComponent, inject, computed, reactive } from 'vue'
+import { useRoute } from 'vue-router'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { swrInjectionKey } from '@/definitions/injections'
 import { useSWR } from '@/functions/server'
-import { useRoute } from 'vue-router'
 import config from '@/config'
 
 const img = require('@/assets/empty_avatar.jpg')

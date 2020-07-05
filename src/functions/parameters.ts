@@ -23,13 +23,14 @@ export function usePagination(total: Ref<number | null>, limit: number) {
     return {offset, page, pageMax, pageToQuery, pageFromQuery}
 }
 
-export function useSelector(selects: Set<string>, defaultSelect: string | null = null) {
+export function useSelector(selects: Set<string>, defaultSelect: string | null = null, caseType: "lower" | "upper" | null = "upper") {
     const selected = ref(defaultSelect)
+    const vCase = caseType === 'lower' ? 1 : caseType === 'upper' ? 2 : 0
 
     const toQuery = (value: string | null) => value?.toLowerCase() ?? undefined
     const fromQuery = (value: string | null) => {
         if(value) {
-            const v = value.toUpperCase()
+            const v = vCase === 1 ? value.toLowerCase() : vCase === 2 ? value.toUpperCase() : value
             if(selects.has(v)) {
                 selected.value = v
             }else{
