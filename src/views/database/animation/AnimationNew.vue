@@ -23,7 +23,7 @@ import { defineComponent, ref } from 'vue'
 import Editor from '@/layouts/animation/edit/Editor.vue'
 import { secondaryBarItems, newItem } from '@/definitions/secondary-bar'
 
-const img = require('@/assets/empty_avatar.jpg')
+const img = require('@/assets/empty_cover.jpg')
 
 export default defineComponent({
     components: {Editor},

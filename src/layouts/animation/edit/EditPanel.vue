@@ -23,12 +23,9 @@ import { defineComponent, ref } from 'vue'
 import Editor from './Editor.vue'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 
-const img = require('@/assets/empty_avatar.jpg')
-
 export default defineComponent({
     components: {Editor},
     computed: {
-        img: () => img,
         barItems: () => [secondaryBarItems.database.animation, editItem]
     },
     setup() {

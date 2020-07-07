@@ -1,5 +1,5 @@
+import { reactive, Ref, ref, inject, InjectionKey, watch, App } from 'vue'
 import { request } from '@/functions/request'
-import { reactive, Ref, ref, provide, inject, InjectionKey, computed, watch, App } from 'vue'
 
 export interface AuthStats {
     isLogin: boolean | null
@@ -18,7 +18,8 @@ export interface Configuration {
     serverUrl: string, 
     basicServiceUrl: string, 
     storagePrefix: string, 
-    tokenEffective: number
+    tokenEffective: number,
+    tokenUpdateInterval?: number
 }
 
 interface TokenStats {
@@ -41,7 +42,6 @@ export function createAuth(configuration: Configuration) {
     const logout = () => doLogout(configuration, token, tokenStats)
 
     initializeByLocalStorage(configuration, token, tokenStats).catch(e => console.error(e))
-    //TODO 添加一个update token的机制
 
     return {
         install(app: App) {
@@ -55,9 +55,11 @@ function useStats(configuration: Configuration, tokenRef: Ref<string | null>) {
 
     watch(tokenRef, async () => {
         if(tokenRef.value == null) {
-            stats.isLogin = false
-            stats.isStaff = false
-            stats.username = ''
+            if(stats.isLogin != null) {
+                stats.isLogin = false
+                stats.isStaff = false
+                stats.username = ''
+            }
         }else{
             const r = await request(`${configuration.serverUrl}/api/user/status`, 'GET', {headers: toHeaders(tokenRef)})
             if(r.status === 'OK') {
@@ -80,9 +82,25 @@ async function initializeByLocalStorage(configuration: Configuration, tokenRef: 
             tokenRef.value = token
             tokenStats.updateTime = r.data['update_time'] && new Date(r.data['update_time'])
             tokenStats.expireTime = r.data['expire_time'] && new Date(r.data['expire_time'])
+            updateToken(configuration, token, tokenStats).finally(() => {})
         }else{
-            console.log(`Validation of storaged token failed. Give up this token. Error message is [${r.data}].`)
+            console.log(`Validation of storage token failed. Give up this token. Error message is [${r.data}].`)
             localStorage.removeItem(`${configuration.storagePrefix}/token`)
+        }
+    }
+}
+async function updateToken(configuration: Configuration, token: Ref<string | null>, tokenStats: TokenStats) {
+    if(configuration.tokenUpdateInterval &&
+        tokenStats.expireTime && tokenStats.updateTime &&
+        Date.now() - tokenStats.updateTime.getTime() >= configuration.tokenUpdateInterval) {
+
+        const data = {effective: configuration.tokenEffective}
+        const r = await request(`${configuration.basicServiceUrl}/api/token/${token}/`, 'PUT', {data})
+        if(r.status === 'OK') {
+            tokenStats.updateTime = r.data['update_time'] && new Date(r.data['update_time'])
+            tokenStats.expireTime = r.data['expire_time'] && new Date(r.data['expire_time'])
+        }else{
+            console.log(`Update token effective failed. Error message is [${r.data}].`)
         }
     }
 }
@@ -103,7 +121,6 @@ function doLogout(configuration: Configuration, tokenRef: Ref<string | null>, to
     tokenRef.value = null
     tokenStats.updateTime = null
     tokenStats.expireTime = null
-    //TODO 添加delete token的机制
 }
 
 export type LoginException = 'Password wrong' | 'User not exist' | 'User not enabled'

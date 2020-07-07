@@ -11,7 +11,7 @@ div.ui.secondary.pointing.menu
         = '放弃更改'
 div.ui.grid
     div.ui.eight.wide.centered.column
-        Editor(v-model:value="editValue")
+        Editor(:value="editValue", @update:value="onUpdateValue")
 </template>
 
 <script lang="ts">
@@ -28,13 +28,23 @@ export default defineComponent({
     setup() {
         const { data, update } = inject(swrInjectionKey)!
         const editValue: Ref<Instance | null> = ref(null)
-        watch(data, v => { editValue.value = v ? mapItem(v) : null}, {immediate: true})
-        const onSave = async () => { await update(editValue.value) }
+        watch(data, v => { 
+            editValue.value = v ? mapItem(v) : null
+            console.log('computed: ', editValue.value)
+        }, {immediate: true})
+
+        const onUpdateValue = (value: Instance) => {
+            console.log("watch", value)
+        }
+        const onSave = async () => { 
+            const r = await update(remapData(editValue.value!))
+            if(r.ok) { editMode.value = false }
+        }
 
         const editMode = inject(editInjectionKey)!
         const onGiveUp = () => { editMode.value = false }
 
-        return {editValue, onSave, onGiveUp}
+        return {editValue, onUpdateValue, onSave, onGiveUp}
     }
 })
 
@@ -46,6 +56,16 @@ function mapItem(item: any) {
         isOrganization: item['is_organization'],
         occupation: item['occupation'],
         cover: item['cover']
+    }
+}
+
+function remapData(item: Instance) {
+    return {
+        name: item.name,
+        origin_name: item.originName,
+        remark: item.remark,
+        is_organization: item.isOrganization,
+        occupation: item.occupation
     }
 }
 </script>

@@ -9,7 +9,7 @@ import { defineComponent, computed, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
-import { watchPageTitle } from "@/functions/document"
+import { watchPageTitle } from '@/functions/document'
 import { useSWR } from '@/functions/server'
 import { swrInjectionKey } from '@/definitions/injections'
 

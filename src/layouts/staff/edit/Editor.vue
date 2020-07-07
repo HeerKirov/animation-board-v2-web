@@ -15,7 +15,7 @@ div.ui.form
         div.ui.four.wide.field
             div.ui.card
                 a.image
-                    img(:src="img")
+                    img(:src="emptyCover")
     div.ui.fields
         div.ui.four.wide.field
             label 组织性质
@@ -26,11 +26,12 @@ div.ui.form
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watch } from 'vue'
+import { defineComponent, inject, ref, watch, isRef, isReactive } from 'vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
+import { editorInjectionKey } from '@/definitions/injections'
 
-const img = require('@/assets/empty_avatar.jpg')
+const emptyCover = require('@/assets/empty_cover.jpg')
 
 export interface Instance {
     name: string
@@ -53,19 +54,13 @@ const defaultInstance = {
 //TODO 完成参数合法性检查，优化数据输出手段
 export default defineComponent({
     components: {ItemSelector},
-    props: {
-        value: (null as any) as PropType<Instance>
-    },
-    emits: ["update:value"],
     computed: {
-        img: () => img,
+        emptyCover: () => emptyCover,
         isOrganizations() { return isOrganizations },
         occupations() { return occupations }
     },
-    setup(props, {emit}) {
-        const data = ref(props.value || defaultInstance)
-        watch(() => props.value, () => { data.value = props.value || defaultInstance})
-        watch(data, v => emit('update:value', data))
+    setup() {
+        const {} = inject(editorInjectionKey)!
 
         const onOrgChanged = (e: ItemChangedEvent) => { data.value.isOrganization = e.name == "true" }
 

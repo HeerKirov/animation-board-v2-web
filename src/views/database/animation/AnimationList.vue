@@ -4,7 +4,7 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'animation'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        router-link.right.item(:to="{name: 'Animation.New'}")
+        router-link.right.item(v-if="isStaff", :to="{name: 'Animation.New'}")
             i.plus.icon
             = '新建'
     div.ui.grid
@@ -55,7 +55,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, watchEffect, Ref } from 'vue'
+import {defineComponent, ref, reactive, watchEffect, Ref, toRef} from 'vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
@@ -65,12 +65,13 @@ import LabelPicker from '@/layouts/animation/list/LabelPicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
 import { toNameSet } from '@/definitions/util'
+import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSort, usePagination, useSelector } from '@/functions/parameters'
 import config from '@/config'
 
-const img = require('@/assets/empty_avatar.jpg')
+const img = require('@/assets/empty_cover.jpg')
 
 const orders = [
     {name: 'PUBLISH_TIME', title: '放送时间', icon: 'video icon', argument: ['publish_time', 'create_time']},
@@ -161,6 +162,8 @@ export default defineComponent({
             }
         })
 
+        const { stats } = useAuth()
+
         return {
             search, onSearch,
             sortValue, sortDirection, onSortChanged, 
@@ -172,7 +175,8 @@ export default defineComponent({
             publishTime, onPublishTimeChanged,
             tag, onTagChanged,
             staff, onStaffChanged,
-            loading, items, totalNum
+            loading, items, totalNum,
+            isStaff: toRef(stats, 'isStaff')
         }
     }
 })

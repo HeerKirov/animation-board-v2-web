@@ -4,7 +4,7 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'tag'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        router-link.right.item(:to="{name: 'Tag.New'}")
+        router-link.right.item(v-if="isStaff", :to="{name: 'Tag.New'}")
             i.plus.icon
             = '新建'
     div.ui.grid
@@ -19,17 +19,17 @@ div.ui.container
                 SearchBox(:value="search", @search="onSearch")
                 div.ui.divider
                 SortSelector.px-2(:items="orders", :selected="sortValue", :direction="sortDirection", @changed="onSortChanged")
-            div.mt-2 共45条记录
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed, Ref } from 'vue'
+import {defineComponent, ref, reactive, computed, Ref, toRef} from 'vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSWR } from '@/functions/server'
 import { useSort } from '@/functions/parameters'
+import { useAuth } from '@/functions/auth'
 
 const orders = [
     {name: 'NAME', title: '名称', icon: 'tags icon', argument: 'name'},
@@ -71,10 +71,13 @@ export default defineComponent({
             }
         })
 
+        const { stats } = useAuth()
+
         return {
             search, onSearch,
             sortValue, sortDirection, onSortChanged,
-            loading, items
+            loading, items,
+            isStaff: toRef(stats, 'isStaff')
         }
     }
 })

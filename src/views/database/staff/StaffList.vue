@@ -4,7 +4,7 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'staff'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        router-link.right.item(:to="{name: 'Staff.New'}")
+        router-link.right.item(v-if="isStaff", :to="{name: 'Staff.New'}")
             i.plus.icon
             = '新建'
     div.ui.grid
@@ -40,7 +40,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, reactive, watchEffect } from 'vue'
+import {defineComponent, ref, Ref, reactive, watchEffect, toRef} from 'vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'
@@ -50,6 +50,7 @@ import { isOrganizations, occupations } from '@/definitions/staff-definition'
 import { toMap, toNameSet } from '@/definitions/util'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { usePagination, useSort, useSelector } from '@/functions/parameters'
+import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import config from '@/config'
 
@@ -123,14 +124,16 @@ export default defineComponent({
             }
         })
 
-        const list = ['今石洋之', 'J.C.STAFF']
+        const { stats } = useAuth()
+
         return {
             search, onSearch,
             sortValue, sortDirection, onSortChanged,
             page, pageMax, onPageChanged,
             occupation, onOccupationChanged,
             org, onOrgChanged,
-            loading, items, totalNum
+            loading, items, totalNum,
+            isStaff: toRef(stats, 'isStaff')
         }
     }
 })

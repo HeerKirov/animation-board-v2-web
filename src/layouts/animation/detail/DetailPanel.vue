@@ -3,12 +3,12 @@ div.ui.secondary.pointing.menu
     router-link.item(v-for="item in barItems", :class="{active: item.name === 'detail'}", :to="item.link")
         i(:class="item.icon")
         = '{{item.title}}'
-    a.right.item 
+    a.right.item(v-if="isStaff")
         i.edit.icon
         = '编辑'
 div.ui.centered.grid
     div.ui.active.centered.inline.loader.mt-4(v-if="loading")
-    div.ui.fourteen.wide.column(v-else)
+    div.ui.fourteen.wide.column(v-else-if="obj")
         div.ui.grid
             div.four.wide.column
                 img.cover-image(:src="obj.cover")
@@ -80,17 +80,17 @@ div.ui.centered.grid
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed } from 'vue'
+import {defineComponent, inject, computed, toRef} from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
+import { useAuth } from '@/functions/auth'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, relations } from '@/definitions/animation-definition'
 import { toMap } from '@/definitions/util'
 import { swrInjectionKey } from '@/definitions/injections'
 import config from '@/config'
-import { useRoute } from 'vue-router'
 
-const img = require('@/assets/empty_avatar.jpg')
+const emptyCover = require('@/assets/empty_cover.jpg')
 
 const publishTypeMap = toMap(publishTypes)
 const originalWorkTypeMap = toMap(originalWorkTypes)
@@ -101,14 +101,15 @@ const relationMap = toMap(relations)
 export default defineComponent({
     components: {DiaryPanel, CommentPanel},
     computed: {
-        img() { return img },
         barItems: () => [secondaryBarItems.database.animation, detailItem]
     },
     setup() {
-        const { loading, data } = inject(swrInjectionKey)!
-        const obj = computed(() => data.value ? mapItem(data.value) : {})
+        const { stats } = useAuth()
 
-        return {obj, loading}
+        const { loading, data } = inject(swrInjectionKey)!
+        const obj = computed(() => data.value ? mapItem(data.value) : null)
+
+        return {obj, loading, isStaff: toRef(stats, 'isStaff')}
     }
 })
 
@@ -128,7 +129,7 @@ function mapItem(item: any) {
         keywords: item['keyword'] ? (item['keyword'] as string).split(' ').map(v => v.trim()).filter(v => !!v) : null,
         introduction: toHtmlStr(item['introduction']),
         tags: item['tags'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : img,
+        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover,
         publishTime: item['publish_time'] && toPublishTime(item['publish_time']),
         episode: item['published_episodes'] >= item['total_episodes'] ? `已完结，共${item['total_episodes']}话` : `已发布${item['published_episodes']}话，共${item['total_episodes']}话`,
         episodeDuration: item['episode_duration'] ? (`${item['total_episodes'] > 1 ? `每集` : ''}${item['episode_duration']}分钟`) : null,
@@ -145,7 +146,7 @@ function mapRelation(r: any) {
     return {
         id: r['id'],
         title: r['title'],
-        cover: r['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${r['cover']}` : img,
+        cover: r['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${r['cover']}` : emptyCover,
         relationType: relationMap[r['relation_type']]?.title
     }
 }
@@ -172,11 +173,11 @@ function toHtmlStr(s: string | null): string | null {
         display: inline-block;
         vertical-align: top;
         margin-left: 10px;
-        font-weight: 525;
+        font-weight: 500;
         font-size: 12px;
     }
     .sub-title {
-        font-weight: 525;
+        font-weight: 500;
         font-size: 12px;
     }
     .cover-image {
@@ -192,13 +193,13 @@ function toHtmlStr(s: string | null): string | null {
         display: inline-block;
     }
     .staff.list {
-        padding-top: 0px !important;
+        padding-top: 0 !important;
     }
     .staff.item-header {
-        padding: 2px 0px 8px 10px !important;
+        padding: 2px 0 8px 10px !important;
         text-align: right;
     }
     .staff.item-content {
-        padding: 0px 1px 10px 2px !important;
+        padding: 0 1px 10px 2px !important;
     }
 </style>

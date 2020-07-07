@@ -5,16 +5,14 @@ footer.div-footer(v-if="visible")
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import config from "@/config"
+import config from '@/config'
 
 export default defineComponent(function () {
-    const visible = ref(true)
-
     const route = useRoute()
 
-    watchEffect(() => visible.value = !route.meta.hideFooter)
+    const visible = computed(() => !route.meta.hideFooter)
 
     return {
         visible,

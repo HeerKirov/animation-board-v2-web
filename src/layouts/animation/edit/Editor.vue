@@ -19,7 +19,7 @@ div.ui.form
             div.four.wide.field
                 div.ui.card
                     a.image
-                        img(:src="img")
+                        img(:src="emptyCover")
         div.ui.field
             label 标签
             TagEditor(v-model:value="data.tags")
@@ -98,7 +98,7 @@ import StaffEditor from './StaffEditor.vue'
 import RelationEditor from './RelationEditor.vue'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, sexLimitIntroductions, violenceLimitIntroductions } from '@/definitions/animation-definition'
 
-const img = require('@/assets/empty_avatar.jpg')
+const emptyCover = require('@/assets/empty_cover.jpg')
 
 export default defineComponent({
     components: {ItemSelector, TagEditor, PublishPlanPicker, PublishPlanList, StaffPicker, StaffEditor, RelationEditor},
@@ -106,7 +106,7 @@ export default defineComponent({
         panelIndex: Number
     },
     computed: {
-        img: () => img,
+        emptyCover: () => emptyCover,
         publishTypes: () => publishTypes,
         originalWorkTypes: () => originalWorkTypes,
         sexLimitLevels: () => sexLimitLevels,
