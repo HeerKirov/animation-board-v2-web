@@ -41,7 +41,7 @@ export default defineComponent({
     setup() {
         const { stats } = useAuth()
 
-        const { data } = useSWR('/api/user/', null, {baseUrl: config.BASIC_SERVICE_URL})
+        const { data } = useSWR('/api/user/', null, {baseUrl: config.BASIC_SERVICE_URL, byAuthorization: "LOGIN"})
 
         const userInfo = computed(() => data.value ? mapUserInfo(data.value) : {})
 

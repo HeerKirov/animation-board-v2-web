@@ -39,6 +39,7 @@ import { defineComponent, inject, computed, reactive, toRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
+import { toSubTitle } from '@/functions/display'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { occupations } from '@/definitions/staff-definition'
 import { toMap } from '@/definitions/util'
@@ -77,7 +78,7 @@ function mapItem(item: any) {
         name: item['name'],
         otherName: toSubTitle(item['origin_name'], item['remark']),
         isOrganization: item['is_organization'],
-        occupation: occupationMap[item['occupation']],
+        occupation: occupationMap[item['occupation']]?.title,
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : emptyAvatar
     }
 }
@@ -88,13 +89,6 @@ function mapAnimation(item: any) {
         title: item['title'],
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover
     }
-}
-
-function toSubTitle(t1: any, t2: any): string {
-    if(t1 && t2) return `${t1} / ${t2}`
-    else if(t1) return t1
-    else if(t2) return t2
-    else return ''
 }
 </script>
 

@@ -9,7 +9,7 @@ export interface AuthStats {
 
 export interface AuthResult {
     stats: AuthStats, 
-    token: Ref<string | null>, 
+    token: Ref<string | null | undefined>,
     login: (username: string, password: string) => void, 
     logout: () => void
 }
@@ -34,7 +34,7 @@ export function useAuth(): AuthResult {
 }
 
 export function createAuth(configuration: Configuration) {
-    const token: Ref<string | null> = ref(null)
+    const token: Ref<string | null | undefined> = ref()
     const tokenStats: TokenStats = {updateTime: null, expireTime: null}
     const stats: AuthStats = useStats(configuration, token)
 
@@ -50,16 +50,18 @@ export function createAuth(configuration: Configuration) {
     }
 }
 
-function useStats(configuration: Configuration, tokenRef: Ref<string | null>) {
+function useStats(configuration: Configuration, tokenRef: Ref<string | null | undefined>) {
     const stats: AuthStats = reactive({isLogin: null, isStaff: false, username: ''})
 
     watch(tokenRef, async () => {
-        if(tokenRef.value == null) {
-            if(stats.isLogin != null) {
-                stats.isLogin = false
-                stats.isStaff = false
-                stats.username = ''
-            }
+        if(tokenRef.value === undefined) {
+            stats.isLogin = null
+            stats.isStaff = false
+            stats.username = ''
+        }else if(tokenRef.value === null) {
+            stats.isLogin = false
+            stats.isStaff = false
+            stats.username = ''
         }else{
             const r = await request(`${configuration.serverUrl}/api/user/status`, 'GET', {headers: toHeaders(tokenRef)})
             if(r.status === 'OK') {
@@ -74,7 +76,8 @@ function useStats(configuration: Configuration, tokenRef: Ref<string | null>) {
 
     return stats
 }
-async function initializeByLocalStorage(configuration: Configuration, tokenRef: Ref<string | null>, tokenStats: TokenStats) {
+
+async function initializeByLocalStorage(configuration: Configuration, tokenRef: Ref<string | null | undefined>, tokenStats: TokenStats) {
     const token = localStorage[`${configuration.storagePrefix}/token`]
     if(token != null) {
         const r = await request(`${configuration.basicServiceUrl}/api/token/${token}/`, 'GET')
@@ -84,12 +87,16 @@ async function initializeByLocalStorage(configuration: Configuration, tokenRef: 
             tokenStats.expireTime = r.data['expire_time'] && new Date(r.data['expire_time'])
             updateToken(configuration, token, tokenStats).finally(() => {})
         }else{
+            tokenRef.value = null
             console.log(`Validation of storage token failed. Give up this token. Error message is [${r.data}].`)
             localStorage.removeItem(`${configuration.storagePrefix}/token`)
         }
+    }else{
+        tokenRef.value = null
     }
 }
-async function updateToken(configuration: Configuration, token: Ref<string | null>, tokenStats: TokenStats) {
+
+async function updateToken(configuration: Configuration, token: Ref<string | null | undefined>, tokenStats: TokenStats) {
     if(configuration.tokenUpdateInterval &&
         tokenStats.expireTime && tokenStats.updateTime &&
         Date.now() - tokenStats.updateTime.getTime() >= configuration.tokenUpdateInterval) {
@@ -104,7 +111,8 @@ async function updateToken(configuration: Configuration, token: Ref<string | nul
         }
     }
 }
-async function doLogin(configuration: Configuration, tokenRef: Ref<string | null>, tokenStats: TokenStats, username: string, password: string) {
+
+async function doLogin(configuration: Configuration, tokenRef: Ref<string | null | undefined>, tokenStats: TokenStats, username: string, password: string) {
     const data = {username, password, effective: configuration.tokenEffective}
     const r = await request(`${configuration.basicServiceUrl}/api/token/`, 'POST', {data})
     if(r.status === 'OK') {
@@ -116,7 +124,8 @@ async function doLogin(configuration: Configuration, tokenRef: Ref<string | null
         throw new LoginError(r.data)
     }
 }
-function doLogout(configuration: Configuration, tokenRef: Ref<string | null>, tokenStats: TokenStats) {
+
+function doLogout(configuration: Configuration, tokenRef: Ref<string | null | undefined>, tokenStats: TokenStats) {
     localStorage.removeItem(`${configuration.storagePrefix}/token`)
     tokenRef.value = null
     tokenStats.updateTime = null
@@ -131,7 +140,7 @@ export class LoginError extends Error {
     }
 }
 
-function toHeaders(token: Ref<string | null>): any {
+function toHeaders(token: Ref<string | null | undefined>): any {
     return token.value == null ? {} : {
         'Authorization': `Bearer ${token.value}`
     }

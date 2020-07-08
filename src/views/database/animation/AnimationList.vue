@@ -65,6 +65,7 @@ import LabelPicker from '@/layouts/animation/list/LabelPicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
 import { toNameSet } from '@/definitions/util'
+import { toPublishTime } from '@/functions/display'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import { useRouterQueryUtil } from '@/functions/routers'
@@ -189,11 +190,6 @@ function mapItem(item: any) {
         episode: item['published_episodes'] >= item['total_episodes'] ? `全${item['total_episodes']}话` : `${item['published_episodes']}/${item['total_episodes']}话`,
         publishTime: item['publish_time'] && toPublishTime(item['publish_time'])
     }
-}
-
-function toPublishTime(publishTime: string): string {
-    const [year, month] = publishTime.split('-')
-    return `${year}年${month}月`
 }
 
 function checkPublishTime(date: string | null): string | null {

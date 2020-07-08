@@ -25,12 +25,12 @@ export function createNotification() {
         },
         errorHandler(code: number, data: any): void {
             if(code > 0) {
-                const d = typeof data === 'object' ? data : data != null ? JSON.parse(data) : null
-                const errorCode = d?.['code']
+                const d = translateErrorData(data)
+                const errorCode = d?.code
                 const header = errorCode && errorCodeText[errorCode] || generalStatusText[code] || code.toString()
-                const content = d?.['message']
+                const content = d?.message
 
-                service.notify(header, 'error', content)
+                service.notify(header, 'error', content || [])
             }else{
                 service.notify('网络连接发生错误', 'error', data?.toString())
             }
@@ -42,6 +42,20 @@ export function createNotification() {
         install(app: App) {
             app.provide(notificationInjectionKey, service)
         }
+    }
+}
+
+function translateErrorData(data: any): {code: number | null, message: string} | null {
+    if(typeof data === 'object') {
+        return data
+    }else if(data != null) {
+        try {
+            return JSON.parse(data)
+        }catch(e) {
+            return {code: null, message: data}
+        }
+    }else{
+        return null
     }
 }
 

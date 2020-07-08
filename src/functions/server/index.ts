@@ -40,11 +40,11 @@ export function useServer() {
     const { headers } = useAuthorizations(configuration.auth, undefined)
 
     async function request(url: string, method: Method, data?: any, options?: RequestOptions): Promise<Response> {
-    
+
         const param: RequestParam = {headers, [method === 'GET' ? 'query' : 'data']: data || undefined}
-    
+
         const r = await request0((options?.baseUrl || configuration.serverUrl) + url, method, param)
-    
+
         if(r.status === 'OK') {
             return {ok: true, data: r.data}
         }else{
@@ -82,14 +82,14 @@ function useAuthorizations(auth: AuthResult | (() => AuthResult) | undefined, by
         const stop = watch(() => stats.isLogin, () => {
             if(stats.isLogin) {
                 passAuthorization.value = true
-                stop()
+                stop?.()
             }
         }, {immediate: true})
     }else if(byAuthorization === "COMPLETED") {
         const stop = watch(() => stats.isLogin, () => {
             if(stats.isLogin != undefined) {
                 passAuthorization.value = true
-                stop()
+                stop?.()
             }
         }, {immediate: true})
     }else{
@@ -109,6 +109,7 @@ type SWRUpdate = (data?: any, options?: SWROptions) => Promise<Response>
 
 export interface SWROptions extends RequestOptions {
     method?: Method
+    byAuthorization?: "LOGIN" | "COMPLETED"
 }
 
 export interface SWR {
@@ -120,7 +121,7 @@ export interface SWR {
 
 export function useSWR(url: Ref<string> | string, data?: any, options?: SWROptions): SWR {
     const configuration = inject(configurationInjectionKey)!
-    const { headers, passAuthorization } = useAuthorizations(configuration.auth, "COMPLETED")
+    const { headers, passAuthorization } = useAuthorizations(configuration.auth, options?.byAuthorization || "COMPLETED")
 
     const baseUrl = options?.baseUrl || configuration.serverUrl
     const method = options?.method || 'GET'

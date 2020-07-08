@@ -6,16 +6,16 @@ div.ui.secondary.pointing.menu
     a.right.item(@click="onSave")
         i.check.icon
         = '保存'
-    a.item(@click="onGiveUp")
+    a.item(@click="onCancel")
         i.close.icon
         = '放弃更改'
 div.ui.grid
     div.ui.eight.wide.centered.column
-        Editor(:value="editValue", @update:value="onUpdateValue")
+        Editor(v-model="value")
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed, watch, ref, Ref } from 'vue'
+import { defineComponent, inject, watchEffect, ref, Ref } from 'vue'
 import Editor, { Instance } from './Editor.vue'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
@@ -27,24 +27,23 @@ export default defineComponent({
     },
     setup() {
         const { data, update } = inject(swrInjectionKey)!
-        const editValue: Ref<Instance | null> = ref(null)
-        watch(data, v => { 
-            editValue.value = v ? mapItem(v) : null
-            console.log('computed: ', editValue.value)
-        }, {immediate: true})
 
-        const onUpdateValue = (value: Instance) => {
-            console.log("watch", value)
-        }
-        const onSave = async () => { 
-            const r = await update(remapData(editValue.value!))
-            if(r.ok) { editMode.value = false }
-        }
+        const value: Ref<Instance | null> = ref(null)
+
+        watchEffect(() => { value.value = data.value ? mapItem(data.value) : null })
 
         const editMode = inject(editInjectionKey)!
-        const onGiveUp = () => { editMode.value = false }
+        const onCancel = () => { editMode.value = false }
+        const onSave = async () => {
+            if(value.value) {
+                const r = await update(remapData(value.value))
+                if(r.ok) { editMode.value = false }
+            }else{
+                console.warn("Some error exist, cannot save.")
+            }
+        }
 
-        return {editValue, onUpdateValue, onSave, onGiveUp}
+        return {value, onSave, onCancel}
     }
 })
 

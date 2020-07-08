@@ -48,6 +48,7 @@ import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/Ite
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
 import { toMap, toNameSet } from '@/definitions/util'
+import { toSubTitle } from '@/functions/display'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { usePagination, useSort, useSelector } from '@/functions/parameters'
 import { useAuth } from '@/functions/auth'
@@ -147,13 +148,6 @@ function mapItem(item: any) {
         occupation: item['occupation'] ? occupationMap[item['occupation']].title : null,
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : img
     }
-}
-
-function toSubTitle(t1: any, t2: any): string {
-    if(t1 && t2) return `${t1} / ${t2}`
-    else if(t1) return t1
-    else if(t2) return t2
-    else return ''
 }
 </script>
 

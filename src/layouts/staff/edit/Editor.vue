@@ -4,67 +4,93 @@ div.ui.form
         div.ui.twelve.wide.field
             div.ui.field
                 label 名称
-                input.ui.input(v-model="data.name")
+                InputBox(v-model="data.name", :max-length="64", :not-blank="true")
             div.ui.fields
                 div.ui.eight.wide.field
                     label 原语言名称
-                    input.ui.input(v-model="data.originName")
+                    InputBox(v-model="data.originName", :max-length="64")
                 div.ui.eight.wide.field
                     label 非正式备注名称
-                    input.ui.input(v-model="data.remark")
+                    InputBox(v-model="data.remark", :max-length="64")
         div.ui.four.wide.field
             div.ui.card
                 a.image
-                    img(:src="emptyCover")
+                    img(:src="emptyAvatar")
     div.ui.fields
         div.ui.four.wide.field
             label 组织性质
-            ItemSelector(:items="isOrganizations", :show-none="false", :selected="data.isOrganization.toString()", @changed="onOrgChanged")
+            ItemSelector(:items="isOrganizations", :show-none="false", :selected="data.isOrganization.toString()", @update:selected="v => { data.isOrganization = v === 'true' }")
         div.ui.twelve.wide.field
             label 职业分类
             ItemSelector(:items="occupations", :show-none="false", v-model:selected="data.occupation")
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, ref, watch, isRef, isReactive } from 'vue'
+import { defineComponent, inject, ref, watch, isRef, isReactive, PropType } from 'vue'
+import InputBox from '@/components/InputBox.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
-import { editorInjectionKey } from '@/definitions/injections'
 
-const emptyCover = require('@/assets/empty_cover.jpg')
+const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export interface Instance {
     name: string
     originName: string | null
     remark: string | null
     isOrganization: boolean
-    occupation: string
-    cover: string | null
+    occupation: string | null
+    cover: string | Blob | null
 }
 
-const defaultInstance = {
-    name: '',
-    originName: null,
-    remark: null,
-    isOrganization: false,
-    occupation: null,
-    cover: null
+function defaultInstance(): Instance {
+    return {
+        name: '',
+        originName: null,
+        remark: null,
+        isOrganization: false,
+        occupation: null,
+        cover: null
+    }
 }
 
-//TODO 完成参数合法性检查，优化数据输出手段
+//TODO create页面不做任何更改直接submit的情况怎么处理？也就是仍然需要一个提交前的临时检查
 export default defineComponent({
-    components: {ItemSelector},
+    components: {InputBox, ItemSelector},
+    props:{
+        modelValue: (null as any) as PropType<Instance | null>
+    },
+    emits:['update:modelValue'],
     computed: {
-        emptyCover: () => emptyCover,
+        emptyAvatar: () => emptyAvatar,
         isOrganizations() { return isOrganizations },
         occupations() { return occupations }
     },
-    setup() {
-        const {} = inject(editorInjectionKey)!
+    setup(props, {emit}) {
+        const data = ref(props.modelValue || defaultInstance())
 
-        const onOrgChanged = (e: ItemChangedEvent) => { data.value.isOrganization = e.name == "true" }
+        let anyError = false
 
-        return {data, onOrgChanged}
+        watch(() => props.modelValue, () => {
+            if(props.modelValue != undefined) {
+                data.value = props.modelValue || defaultInstance()
+            }
+        })
+
+        watch(data, () => {
+            if(data.value.name === undefined ||
+                data.value.originName === undefined ||
+                data.value.remark === undefined) {
+                if(!anyError) {
+                    emit('update:modelValue', undefined)
+                    anyError = true
+                }
+            }else if(anyError) {
+                emit('update:modelValue', data)
+                anyError = false
+            }
+        }, {deep: true})
+
+        return {data}
     }
 })
 </script>

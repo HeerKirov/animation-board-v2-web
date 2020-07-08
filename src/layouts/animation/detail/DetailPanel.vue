@@ -84,6 +84,7 @@ import {defineComponent, inject, computed, toRef} from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
 import { useAuth } from '@/functions/auth'
+import { toSubTitle, toPublishTime, toHtmlStr } from '@/functions/display'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, relations } from '@/definitions/animation-definition'
 import { toMap } from '@/definitions/util'
@@ -149,22 +150,6 @@ function mapRelation(r: any) {
         cover: r['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${r['cover']}` : emptyCover,
         relationType: relationMap[r['relation_type']]?.title
     }
-}
-
-function toSubTitle(t1: any, t2: any): string {
-    if(t1 && t2) return `${t1} / ${t2}`
-    else if(t1) return t1
-    else if(t2) return t2
-    else return ''
-}
-
-function toPublishTime(publishTime: string): string {
-    const [year, month] = publishTime.split('-')
-    return `${year}年${month}月`
-}
-
-function toHtmlStr(s: string | null): string | null {
-    return s?.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>') ?? null
 }
 </script>
 
