@@ -38,5 +38,6 @@ export default defineComponent({
         right: 6px;
         top: 50px;
         min-width: 200px;
+        max-width: 500px;
     }
 </style>

@@ -1,5 +1,5 @@
 import { Ref, ref, watch, computed } from 'vue'
-import { SWR } from '@/functions/server'
+import { SWR, Response } from '@/functions/server'
 
 export function watchEditorValidate<T>(data: Ref<T>, emit: (value: T | undefined) => void, ifAnyError: (value: T) => boolean) {
     let anyError = false
@@ -23,7 +23,12 @@ export function watchEditorValidate<T>(data: Ref<T>, emit: (value: T | undefined
     }, {deep: true})
 }
 
-export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: any) => any, remap: (item: any) => any) {
+interface EditorFormOption<T> {
+    beforeSubmit?: (editorValue: T, data: Ref<any>) => Promise<boolean>
+    afterSubmit?: (editorValue: T, data: Ref<any>, submitResult: Response) => Promise<boolean>
+}
+
+export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: any) => any, remap: (item: any) => any, options?: EditorFormOption<T>) {
     const { data, update } = swr
     const editorValue = computed(() => data.value ? map(data.value) : null)
     const outValue: Ref<T | undefined> = ref()
@@ -35,8 +40,17 @@ export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: a
 
     const onSubmit = async () => {
         if(outValue.value) {
+            if(options?.beforeSubmit) {
+                const r0 = await options?.beforeSubmit(outValue.value, data)
+                if(!r0) return
+            }
+
             const r = await update(remap(outValue.value))
-            if(r.ok) { editMode.value = false }
+            
+            if(options?.afterSubmit) {
+                const r2 = await options?.afterSubmit(outValue.value, data, r)
+                if(r2) { editMode.value = false }
+            }else if(r.ok) { editMode.value = false }
         }else{
             console.warn("Some error exist, cannot save.")
         }

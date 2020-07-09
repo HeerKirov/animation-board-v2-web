@@ -55,7 +55,7 @@ import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import config from '@/config'
 
-const img = require('@/assets/empty_avatar.jpg')
+const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 const occupationMap = toMap(occupations)
 
@@ -72,7 +72,6 @@ const limit = 24
 export default defineComponent({
     components: {SearchBox, SortSelector, ItemSelector, PageSelector},
     computed: {
-        img: () => img,
         barItems: () => secondaryBarItems.database,
         orders: () => orders,
         isOrganizations: () => isOrganizations,
@@ -146,7 +145,7 @@ function mapItem(item: any) {
         otherName: toSubTitle(item['origin_name'], item['remark']),
         isOrganization: item['is_organization'],
         occupation: item['occupation'] ? occupationMap[item['occupation']].title : null,
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : img
+        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : emptyAvatar
     }
 }
 </script>

@@ -14,8 +14,8 @@ div.ui.form
                     InputBox(v-model="data.remark", :max-length="64")
         div.ui.four.wide.field
             div.ui.card
-                a.image
-                    img(:src="emptyAvatar")
+                a.image(@click="onClickUpload")
+                    img(:src="data.cover || emptyAvatar")
     div.ui.fields
         div.ui.four.wide.field
             label 组织性质
@@ -23,10 +23,11 @@ div.ui.form
         div.ui.twelve.wide.field
             label 职业分类
             ItemSelector(:items="occupations", :show-none="false", v-model:selected="data.occupation")
+    input.hidden-input(type="file", ref="uploader", @change="onUpload")
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, PropType } from 'vue'
+import { defineComponent, ref, watch, PropType, Ref } from 'vue'
 import InputBox from '@/components/InputBox.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
@@ -35,22 +36,26 @@ import { watchEditorValidate } from '@/functions/editor'
 const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export interface Instance {
+    id: number | null
     name: string | undefined
     originName: string | null | undefined
     remark: string | null | undefined
     isOrganization: boolean
     occupation: string | null
-    cover: string | Blob | null
+    cover: string | null
+    coverFile: File | null
 }
 
 function defaultInstance(): Instance {
     return {
+        id: null,
         name: undefined,
         originName: null,
         remark: null,
         isOrganization: false,
         occupation: null,
-        cover: null
+        cover: null,
+        coverFile: null
     }
 }
 
@@ -80,11 +85,38 @@ export default defineComponent({
                 || v.remark === undefined
         })
 
-        return {data}
+        const imageUploader = useImageUploader(data)
+
+        return {data, ...imageUploader}
     }
 })
+
+function useImageUploader(data: Ref<Instance>) {
+    const uploader: Ref<any> = ref(null)
+
+    const onClickUpload = () => { uploader.value.click() }
+
+    const onUpload = () => {
+        let file = uploader.value.files[0]
+        if(file != undefined) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onloadend = e => {
+                data.value.cover = e.target?.result?.toString() ?? null
+            }
+            data.value.coverFile = file
+        }
+    }
+
+    return {uploader, onClickUpload, onUpload}
+}
 </script>
 
 <style scoped>
-
+    .hidden-input {
+        visibility: hidden; 
+        height: 0; 
+        padding: 0 !important; 
+        border: 0 !important;
+    }
 </style>
