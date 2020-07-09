@@ -26,17 +26,18 @@ div.ui.form
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, ref, watch, isRef, isReactive, PropType } from 'vue'
+import { defineComponent, ref, watch, PropType } from 'vue'
 import InputBox from '@/components/InputBox.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
+import { watchEditorValidate } from '@/functions/editor'
 
 const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export interface Instance {
-    name: string
-    originName: string | null
-    remark: string | null
+    name: string | undefined
+    originName: string | null | undefined
+    remark: string | null | undefined
     isOrganization: boolean
     occupation: string | null
     cover: string | Blob | null
@@ -44,7 +45,7 @@ export interface Instance {
 
 function defaultInstance(): Instance {
     return {
-        name: '',
+        name: undefined,
         originName: null,
         remark: null,
         isOrganization: false,
@@ -53,42 +54,31 @@ function defaultInstance(): Instance {
     }
 }
 
-//TODO create页面不做任何更改直接submit的情况怎么处理？也就是仍然需要一个提交前的临时检查
 export default defineComponent({
     components: {InputBox, ItemSelector},
     props:{
-        modelValue: (null as any) as PropType<Instance | null>
+        value: (null as any) as PropType<Instance | null>
     },
-    emits:['update:modelValue'],
+    emits:['update:value'],
     computed: {
         emptyAvatar: () => emptyAvatar,
         isOrganizations() { return isOrganizations },
         occupations() { return occupations }
     },
     setup(props, {emit}) {
-        const data = ref(props.modelValue || defaultInstance())
+        const data = ref(props.value || defaultInstance())
 
-        let anyError = false
-
-        watch(() => props.modelValue, () => {
-            if(props.modelValue != undefined) {
-                data.value = props.modelValue || defaultInstance()
+        watch(() => props.value, () => {
+            if(props.value != undefined) {
+                data.value = props.value || defaultInstance()
             }
         })
 
-        watch(data, () => {
-            if(data.value.name === undefined ||
-                data.value.originName === undefined ||
-                data.value.remark === undefined) {
-                if(!anyError) {
-                    emit('update:modelValue', undefined)
-                    anyError = true
-                }
-            }else if(anyError) {
-                emit('update:modelValue', data)
-                anyError = false
-            }
-        }, {deep: true})
+        watchEditorValidate(data, v => emit('update:value', v), v => {
+            return v.name === undefined
+                || v.originName === undefined
+                || v.remark === undefined
+        })
 
         return {data}
     }

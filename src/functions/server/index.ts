@@ -119,7 +119,7 @@ export interface SWR {
     update: SWRUpdate
 }
 
-export function useSWR(url: Ref<string> | string, data?: any, options?: SWROptions): SWR {
+export function useSWR(url: Ref<string | null> | string, data?: any, options?: SWROptions): SWR {
     const configuration = inject(configurationInjectionKey)!
     const { headers, passAuthorization } = useAuthorizations(configuration.auth, options?.byAuthorization || "COMPLETED")
 
@@ -168,7 +168,7 @@ export function useSWR(url: Ref<string> | string, data?: any, options?: SWROptio
     return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update}
 }
 
-function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string> | string, throwError?: ErrorHandler): SWRUpdate {
+function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRUpdate {
     return async (data, options) => {
         const method = options?.method || 'PUT'
         updateLoadingRef.value = true

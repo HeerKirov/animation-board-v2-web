@@ -3,7 +3,7 @@ div.ui.secondary.pointing.menu
     router-link.item(v-for="item in barItems", :class="{active: item.name === 'edit'}", :to="item.link")
         i(:class="item.icon")
         = '{{item.title}}'
-    a.right.item(@click="onSave")
+    a.right.item(@click="onSubmit", :class="{disabled: !valueExists}")
         i.check.icon
         = '保存'
     a.item(@click="onCancel")
@@ -11,14 +11,19 @@ div.ui.secondary.pointing.menu
         = '放弃更改'
 div.ui.grid
     div.ui.eight.wide.centered.column
-        Editor(v-model="value")
+        Editor(:value="editorValue", @update:value="onEditorChanged")
+        button.ui.tertiary.button.float-right(@click="onDelete")
+            i.trash.icon
+            = '删除此条目'
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, watchEffect, ref, Ref } from 'vue'
+import { defineComponent, inject, ref, Ref, computed } from 'vue'
 import Editor, { Instance } from './Editor.vue'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
+import { useEditorForm } from '@/functions/editor'
+
 
 export default defineComponent({
     components: {Editor},
@@ -26,24 +31,15 @@ export default defineComponent({
         barItems: () => [secondaryBarItems.database.staff, editItem]
     },
     setup() {
-        const { data, update } = inject(swrInjectionKey)!
-
-        const value: Ref<Instance | null> = ref(null)
-
-        watchEffect(() => { value.value = data.value ? mapItem(data.value) : null })
-
+        const swr = inject(swrInjectionKey)!
         const editMode = inject(editInjectionKey)!
-        const onCancel = () => { editMode.value = false }
-        const onSave = async () => {
-            if(value.value) {
-                const r = await update(remapData(value.value))
-                if(r.ok) { editMode.value = false }
-            }else{
-                console.warn("Some error exist, cannot save.")
-            }
+        const { editorValue, valueExists, onEditorChanged, onCancel, onSubmit } = useEditorForm(swr, editMode, mapItem, remapData)
+
+        const onDelete = async () => {
+            //TODO delete method & 删除前检查
         }
 
-        return {value, onSave, onCancel}
+        return {editorValue, valueExists, onEditorChanged, onSubmit, onCancel, onDelete}
     }
 })
 

@@ -18,7 +18,7 @@ export default defineComponent({
     setup() {
         const route = useRoute()
 
-        const swr = useSWR(computed(() => `/api/database/tags/${route.params['id']}`))
+        const swr = useSWR(computed(() => route.params['id'] ? `/api/database/tags/${route.params['id']}` : null))
 
         watchPageTitle(() => swr.data.value?.['name'])
 

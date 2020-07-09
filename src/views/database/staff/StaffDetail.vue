@@ -18,7 +18,7 @@ export default defineComponent({
     setup() {
         const route = useRoute()
 
-        const swr = useSWR(computed(() => `/api/database/staffs/${route.params['id']}`))
+        const swr = useSWR(computed(() => route.params['id'] ? `/api/database/staffs/${route.params['id']}` : null))
 
         const editMode = ref(false)
 
