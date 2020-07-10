@@ -107,6 +107,8 @@ function throwErrorToConsole(code: number, data: any) {
 
 type SWRUpdate = (data?: any, options?: SWROptions) => Promise<Response>
 
+type SWRDelete = (options?: SWROptions) => Promise<Response>
+
 export interface SWROptions extends RequestOptions {
     method?: Method
     byAuthorization?: "LOGIN" | "COMPLETED"
@@ -117,6 +119,7 @@ export interface SWR {
     data: Ref<any>
     updateLoading: Ref<boolean>
     update: SWRUpdate
+    deleteInstance: SWRDelete
 }
 
 export function useSWR(url: Ref<string | null> | string, data?: any, options?: SWROptions): SWR {
@@ -134,6 +137,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
     const dataRef = ref(null)
     const updateLoadingRef = ref(false)
     const update = useUpdateFunction(dataRef, updateLoadingRef, headers, baseUrl, url, throwError)
+    const deleteInstance = useDeleteFunction(updateLoadingRef, headers, baseUrl, url, throwError)
 
     const fetcher: RequestParam = reactive({[method == 'GET' ? 'query' : 'data']: data || undefined, headers})
 
@@ -165,7 +169,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         }
     }, {deep: true, immediate: true})
 
-    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update}
+    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance}
 }
 
 function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRUpdate {
@@ -188,3 +192,21 @@ function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, he
     }
 }
 
+function useDeleteFunction(updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRDelete {
+    return async (options) => {
+        const method = options?.method || 'DELETE'
+        updateLoadingRef.value = true
+        const r = await request0((options?.baseUrl || baseUrl) + unref(url), method, {headers})
+        updateLoadingRef.value = false
+        if(r.status === 'OK') {
+            return {ok: true, data: undefined}
+        }else{
+            if(options?.errorHandler != null) {
+                options.errorHandler(r.code, r.data, throwError)
+            }else if(throwError != null) {
+                throwError(r.code, r.data)
+            }
+            return {ok: false, data: undefined}
+        }
+    }
+}

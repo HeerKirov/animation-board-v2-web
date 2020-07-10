@@ -4,7 +4,10 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'new'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        a.right.item 
+        a.right.item.disabled(v-if="updateLoading")
+            i.notched.circle.loading.icon
+            = '提交'
+        a.right.item(@click="onSubmit", :class="{disabled: !valueExists}", v-else)
             i.check.icon
             = '提交'
     div.ui.grid
@@ -13,10 +16,10 @@ div.ui.container
                 div.fields
                     div.five.wide.field.required
                         label 名称
-                        input.ui.input(placeholder="标签的唯一识别名")
+                        InputBox(placeholder="标签的唯一识别名")
                     div.eleven.wide.field
                         label 描述
-                        input.ui.input(placeholder="标签的定义描述")
+                        InputBox(placeholder="标签的定义描述")
                     div.one.wide.field
                         label.hidden delete
                         button.ui.red.icon.button
@@ -28,15 +31,30 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import InputBox from '@/components/InputBox.vue'
 import { secondaryBarItems, newItem } from '@/definitions/secondary-bar'
+import { useServer } from '@/functions/server'
 
 export default defineComponent({
+    components: {InputBox},
     computed: {
         barItems: () => [secondaryBarItems.database.tag, newItem]
     },
     setup() {
+        const router = useRouter()
 
+        const { request } = useServer()
+
+        const valueExists = computed(() => true)
+        const updateLoading = ref(false)
+
+        const onSubmit = () => {
+
+        }
+
+        return {updateLoading, valueExists, onSubmit}
     }
 })
 </script>

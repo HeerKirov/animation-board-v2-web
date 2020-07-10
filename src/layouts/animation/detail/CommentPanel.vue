@@ -33,7 +33,7 @@ export default defineComponent({
 
         const id = computed(() => route.params['id'])
 
-        const { loading, data } = useSWR(computed(() => route.params['id'] ? `/api/personal/comments/${route.params['id']}` : null), null, {
+        const { loading, data } = useSWR(computed(() => route.name === 'Animation.Detail' && route.params['id'] ? `/api/personal/comments/${route.params['id']}` : null), null, {
             errorHandler(code, data, parent) {
                 if(code !== 404 && code !== 403 && code !== 401) parent?.(code, data)
             }

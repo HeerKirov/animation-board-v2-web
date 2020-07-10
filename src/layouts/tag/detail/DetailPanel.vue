@@ -3,7 +3,7 @@ div.ui.secondary.pointing.menu
     router-link.item(v-for="item in barItems", :class="{active: item.name === 'detail'}", :to="item.link")
         i(:class="item.icon")
         = '{{item.title}}'
-    a.right.item(v-if="isStaff")
+    a.right.item(v-if="isStaff", @click="onEdit")
         i.edit.icon
         = '编辑'
 div.ui.grid
@@ -31,12 +31,12 @@ div.ui.grid
 </template>
 
 <script lang="ts">
-import {defineComponent, inject, computed, reactive, toRef} from 'vue'
+import { defineComponent, inject, computed, reactive, toRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
-import { swrInjectionKey } from '@/definitions/injections'
+import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import config from '@/config'
 
 const emptyCover = require('@/assets/empty_cover.jpg')
@@ -56,7 +56,10 @@ export default defineComponent({
         const { data: animationData } = useSWR('/api/database/animations', reactive({tag: computed(() => route.params['id']), limit: 9}))
         const animations = computed(() => animationData.value?.['result'].map(mapAnimation) ?? [])
 
-        return {loading, obj, animations, isStaff: toRef(stats, 'isStaff')}
+        const editMode = inject(editInjectionKey)!
+        const onEdit = () => { editMode.value = true }
+
+        return {loading, obj, animations, onEdit, isStaff: toRef(stats, 'isStaff')}
     }
 })
 

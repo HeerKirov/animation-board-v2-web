@@ -18,7 +18,7 @@ export default defineComponent({
     setup() {
         const route = useRoute()
 
-        const swr = useSWR(computed(() => route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
+        const swr = useSWR(computed(() => route.name === 'Animation.Detail' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
 
         watchPageTitle(() => swr.data.value?.["title"])
 

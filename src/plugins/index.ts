@@ -2,11 +2,14 @@ import { createAuth, useAuth } from '@/functions/auth'
 import { createServer } from '@/functions/server'
 import { createDocumentManager } from '@/functions/document'
 import { createNotification } from '@/functions/notification'
+import { createMessageBox } from '@/functions/message-box'
 import config from '@/config'
 
 export const document = createDocumentManager()
 
 export const notification = createNotification()
+
+export const messageBox = createMessageBox()
 
 export const auth = createAuth({
     basicServiceUrl: config.BASIC_SERVICE_URL,

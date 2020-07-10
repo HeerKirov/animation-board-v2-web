@@ -4,7 +4,10 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'new'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        a.right.item(@click="onSubmit", :class="{disabled: !valueExists}")
+        a.right.item.disabled(v-if="updateLoading")
+            i.notched.circle.loading.icon
+            = '提交'
+        a.right.item(@click="onSubmit", :class="{disabled: !valueExists}", v-else)
             i.check.icon
             = '提交'
     div.ui.grid
@@ -13,11 +16,11 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, computed } from 'vue'
+import { defineComponent } from 'vue'
 import Editor, { Instance } from '@/layouts/staff/edit/Editor.vue'
 import { secondaryBarItems, newItem } from '@/definitions/secondary-bar'
-import { useServer } from '@/functions/server'
 import { useRouter } from 'vue-router'
+import {useCreatorForm, useEditorUploadImage} from '@/functions/editor'
 
 export default defineComponent({
     components: {Editor},
@@ -25,25 +28,15 @@ export default defineComponent({
         barItems: () => [secondaryBarItems.database.staff, newItem]
     },
     setup() {
-        const { request } = useServer()
         const router = useRouter()
 
-        const outValue: Ref<Instance | undefined> = ref() 
+        const { afterSubmit } = useEditorUploadImage<Instance>(v => v.coverFile, (v, d) => `/api/database/staffs/${d['id']}/cover`)
+        const form = useCreatorForm('/api/database/staffs', remapData, {
+            afterSubmit,
+            success(r) { router.push({name: 'Staff.Detail', params: {id: r.data['id']}}) }
+        })
 
-        const valueExists = computed(() => !!outValue.value)
-
-        const onEditorChanged = (v: Instance) => { outValue.value = v }
-
-        const onSubmit = async () => {
-            if(outValue.value) {
-                const r = await request('/api/database/staffs', 'POST', remapData(outValue.value))
-                if(r.ok) { router.push({name: 'Staff.Detail', params: {id: r.data['id']}}) }
-            }else{
-                console.warn("Some error exist, cannot save.")
-            }
-        }
-
-        return {valueExists, onEditorChanged, onSubmit}
+        return {...form}
     }
 })
 

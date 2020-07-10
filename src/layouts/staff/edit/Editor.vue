@@ -14,6 +14,7 @@ div.ui.form
                     InputBox(v-model="data.remark", :max-length="64")
         div.ui.four.wide.field
             div.ui.card
+                //- TODO 锁定图片的长宽比例并裁剪
                 a.image(@click="onClickUpload")
                     img(:src="data.cover || emptyAvatar")
     div.ui.fields
