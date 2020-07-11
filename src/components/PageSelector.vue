@@ -1,10 +1,10 @@
 <template lang="pug">
 div.ui.mini.borderless.nine.item.menu
-    a.item(:class="{disabled: ui.first.disabled}", @click="onJumpTo(ui.first.index)"): i.angle.double.left.icon
-    a.item(:class="{disabled: ui.prev.disabled}", @click="onJumpTo(ui.prev.index)"): i.angle.left.icon
+    a.item(:class="{disabled: ui.first.disabled}", @click="onJumpTo(ui.first.index)"): i.angle.double.left.icon.mr-0
+    a.item(:class="{disabled: ui.prev.disabled}", @click="onJumpTo(ui.prev.index)"): i.angle.left.icon.mr-0
     a.item(v-for="item in ui.items", :class="{active: item.active}", @click="onJumpTo(item.index)") {{item.index}}
-    a.item(:class="{disabled: ui.next.disabled}", @click="onJumpTo(ui.next.index)"): i.angle.right.icon
-    a.item(:class="{disabled: ui.last.disabled}", @click="onJumpTo(ui.last.index)"): i.angle.double.right.icon
+    a.item(:class="{disabled: ui.next.disabled}", @click="onJumpTo(ui.next.index)"): i.angle.right.icon.mr-0
+    a.item(:class="{disabled: ui.last.disabled}", @click="onJumpTo(ui.last.index)"): i.angle.double.right.icon.mr-0
 </template>
 
 <script lang="ts">

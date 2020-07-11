@@ -89,10 +89,10 @@ function useNewPanel(id: Ref<any>) {
         guide.value = "choose"
     }
 
-    const onSupplement = () => {
-        router.push({name: 'Record.Supplement', params: {id: id.value}})
-    }
     //TODO 完成新建record的实现代码
+    const onSupplement = () => {
+        
+    }
     const onSubscribe = () => {
 
     }

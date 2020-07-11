@@ -1,17 +1,17 @@
 <template lang="pug">
 div.ui.container
-    DetailPanel(v-if="true")
-    EditPanel(v-else)
+    EditPanel(v-if="editMode")
+    DetailPanel(v-else)
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, provide } from 'vue'
+import { defineComponent, computed, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
-import { watchPageTitle } from '@/functions/document'
 import { useSWR } from '@/functions/server'
-import { swrInjectionKey } from '@/definitions/injections'
+import { watchPageTitle } from '@/functions/document'
+import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
 
 export default defineComponent({
     components: {DetailPanel, EditPanel},
@@ -20,9 +20,14 @@ export default defineComponent({
 
         const swr = useSWR(computed(() => route.name === 'Animation.Detail' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
 
+        const editMode = ref(false)
+
         watchPageTitle(() => swr.data.value?.["title"])
 
         provide(swrInjectionKey, swr)
+        provide(editInjectionKey, editMode)
+
+        return {editMode}
     }
 })
 </script>

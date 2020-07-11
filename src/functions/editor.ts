@@ -1,7 +1,8 @@
 import { Ref, ref, watch, computed } from 'vue'
-import { SWR, Response, useServer } from '@/functions/server'
+import { SWR, Response, useServer, ErrorHandler } from '@/functions/server'
 import { useMessageBox } from '@/functions/message-box'
 import { useNotification } from '@/functions/notification'
+import { Method } from 'axios'
 
 export function watchEditorValidate<T>(data: Ref<T>, emit: (value: T | undefined) => void, ifAnyError: (value: T) => boolean) {
     let anyError = false
@@ -23,6 +24,26 @@ export function watchEditorValidate<T>(data: Ref<T>, emit: (value: T | undefined
             firstCommit = false
         }
     }, {deep: true})
+}
+
+export function useImageUploader<T extends {cover: string | null, coverFile: File | null}>(data: Ref<T>) {
+    const uploader: Ref<any> = ref(null)
+
+    const onClickUpload = () => { uploader.value.click() }
+
+    const onUpload = () => {
+        let file = uploader.value.files[0]
+        if(file != undefined) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onloadend = e => {
+                data.value.cover = e.target?.result?.toString() ?? null
+            }
+            data.value.coverFile = file
+        }
+    }
+
+    return {uploader, onClickUpload, onUpload}
 }
 
 interface CreatorFormOption<T> {
@@ -71,12 +92,14 @@ export function useCreatorForm<T>(url: string, remap: (item: T) => any, options?
 }
 
 interface EditorFormOption<T> {
+    method?: Method
     beforeSubmit?: (editorValue: T) => Promise<boolean>
     afterSubmit?: (editorValue: T, submitResult: Response) => Promise<boolean>
+    handleSubmit?: ErrorHandler
     afterDelete?: () => void
 }
 
-export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: any) => T, remap: (item: T) => any, options?: EditorFormOption<T>) {
+export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: any) => T, remap: (item: T, origin: T) => any, options?: EditorFormOption<T>) {
     const { message } = useMessageBox()
 
     const { data, update, deleteInstance } = swr
@@ -100,7 +123,7 @@ export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: a
                 }
             }
 
-            const r = await update(remap(outValue.value))
+            const r = await update(remap(outValue.value, editorValue.value!), {errorHandler: options?.handleSubmit, method: options?.method})
             
             if(options?.afterSubmit) {
                 const r2 = await options?.afterSubmit(outValue.value, r)

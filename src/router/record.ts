@@ -29,12 +29,6 @@ export default [
         meta: {nav: ['record', 'find'], title: ['日记', '发现']}
     },
     {
-        name: 'Record.Supplement',
-        path: '/personal/records/supplement/:id',
-        component: () => import('@/views/NotFound.vue'),
-        meta: {nav: ['record', '@new'], title: ['日记', '新建']}
-    },
-    {
         name: 'Record.Detail',
         path: '/personal/records/detail/:id',
         component: () => import('@/views/NotFound.vue'),

@@ -45,7 +45,7 @@ div.ui.container
                         ItemSelector(:items="violenceLimitLevels", :selected="violence", @changed="onViolenceChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 放送时间
                     div.twelve.wide.column.pt-1.pb-2
-                        DatePicker(:value="publishTime", @changed="onPublishTimeChanged")
+                        DateSelector(:value="publishTime", @changed="onPublishTimeChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 标签
                     LabelPicker(url="/api/database/tags", placeholder="搜索标签", :value="tag", @update:value="onTagChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 STAFF
@@ -60,7 +60,7 @@ import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'
-import DatePicker, { ChangedEvent as DateChangedEvent } from '@/components/DatePicker.vue'
+import DateSelector, { ChangedEvent as DateChangedEvent } from '@/components/DateSelector.vue'
 import LabelPicker from '@/layouts/animation/list/LabelPicker.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
@@ -87,7 +87,7 @@ const defaultOrderDirection = -1
 const limit = 16
 
 export default defineComponent({
-    components: {LabelPicker, SearchBox, SortSelector, ItemSelector, PageSelector, DatePicker},
+    components: {LabelPicker, SearchBox, SortSelector, ItemSelector, PageSelector, DateSelector},
     computed: {
         barItems: () => secondaryBarItems.database,
         orders() { return orders },

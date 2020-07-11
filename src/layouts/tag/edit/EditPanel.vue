@@ -30,6 +30,11 @@ div.ui.grid
                 div.ui.field
                     label 描述
                     InputBox(v-model="data.introduction", placeholder="标签的定义描述")
+    div.ui.row
+        div.ui.eight.wide.centered.column
+            button.ui.tertiary.button.float-right(@click="onDelete")
+                i.trash.icon
+                = '删除此条目'
 </template>
 
 <script lang="ts">

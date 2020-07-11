@@ -14,7 +14,6 @@ div.ui.form
                     InputBox(v-model="data.remark", :max-length="64")
         div.ui.four.wide.field
             div.ui.card
-                //- TODO 锁定图片的长宽比例并裁剪
                 a.image(@click="onClickUpload")
                     img(:src="data.cover || emptyAvatar")
     div.ui.fields
@@ -32,7 +31,7 @@ import { defineComponent, ref, watch, PropType, Ref } from 'vue'
 import InputBox from '@/components/InputBox.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
-import { watchEditorValidate } from '@/functions/editor'
+import { watchEditorValidate, useImageUploader } from '@/functions/editor'
 
 const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
@@ -91,26 +90,6 @@ export default defineComponent({
         return {data, ...imageUploader}
     }
 })
-
-function useImageUploader(data: Ref<Instance>) {
-    const uploader: Ref<any> = ref(null)
-
-    const onClickUpload = () => { uploader.value.click() }
-
-    const onUpload = () => {
-        let file = uploader.value.files[0]
-        if(file != undefined) {
-            const reader = new FileReader()
-            reader.readAsDataURL(file)
-            reader.onloadend = e => {
-                data.value.cover = e.target?.result?.toString() ?? null
-            }
-            data.value.coverFile = file
-        }
-    }
-
-    return {uploader, onClickUpload, onUpload}
-}
 </script>
 
 <style scoped>

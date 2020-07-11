@@ -10,6 +10,13 @@ div.ui.fields
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+export interface RelationItem {
+    id: number
+    title: string
+    cover: string | null
+    relation: string
+}
+
 export default defineComponent({
     setup() {
 

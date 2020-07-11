@@ -2,8 +2,7 @@
 div.ui.segment
     div.ui.field
         label 起始时间点
-        //- 需要替换为datetime picker
-        input.ui.input
+        CalendarBox(placeholder="动画发布的时间")
     div.ui.fields
         div.ui.field
             label 间隔时间(天)
@@ -16,8 +15,10 @@ div.ui.segment
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import CalendarBox from '@/components/CalendarBox.vue'
 
 export default defineComponent({
+    components: {CalendarBox},
     setup() {
 
     }

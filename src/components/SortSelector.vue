@@ -4,7 +4,7 @@ div.ui.centered.grid
         button.ui.tertiary.button(:class='{primary: item.name == selected}', @click='onClick(item)', style='padding-right: 2px!important; padding-left: 2px!important')
             i.mx-0(v-if='item.icon && (item.forceIcon || item.name != selected)', :class='item.icon')
             span(v-if='item.name == selected') {{item.title}}
-            i.ml-1(v-if='item.name == selected', :class="direction === 1 ? 'toggle up icon' : 'toggle down icon'")
+            i.ml-1.mr-0(v-if='item.name == selected', :class="direction === 1 ? 'toggle up icon' : 'toggle down icon'")
 </template>
 
 <script lang="ts">

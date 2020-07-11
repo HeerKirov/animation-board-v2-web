@@ -19,6 +19,7 @@ div.ui.container
                 SearchBox(:value="search", @search="onSearch")
                 div.ui.divider
                 SortSelector.px-2(:items="orders", :selected="sortValue", :direction="sortDirection", @changed="onSortChanged")
+            div.mt-2(v-if="items.length > 0") 共{{items.length}}条记录
 </template>
 
 <script lang="ts">

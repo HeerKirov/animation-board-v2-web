@@ -3,7 +3,7 @@ div.ui.secondary.pointing.menu
     router-link.item(v-for="item in barItems", :class="{active: item.name === 'detail'}", :to="item.link")
         i(:class="item.icon")
         = '{{item.title}}'
-    a.right.item(v-if="isStaff")
+    a.right.item(v-if="isStaff", @click="onEdit")
         i.edit.icon
         = '编辑'
 div.ui.centered.grid
@@ -87,8 +87,8 @@ import { useAuth } from '@/functions/auth'
 import { toSubTitle, toPublishTime, toHtmlStr } from '@/functions/display'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, relations } from '@/definitions/animation-definition'
+import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
 import { toMap } from '@/definitions/util'
-import { swrInjectionKey } from '@/definitions/injections'
 import config from '@/config'
 
 const emptyCover = require('@/assets/empty_cover.jpg')
@@ -110,7 +110,10 @@ export default defineComponent({
         const { loading, data } = inject(swrInjectionKey)!
         const obj = computed(() => data.value ? mapItem(data.value) : null)
 
-        return {obj, loading, isStaff: toRef(stats, 'isStaff')}
+        const editMode = inject(editInjectionKey)!
+        const onEdit = () => { editMode.value = true }
+
+        return {obj, loading, onEdit, isStaff: toRef(stats, 'isStaff')}
     }
 })
 
