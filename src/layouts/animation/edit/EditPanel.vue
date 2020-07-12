@@ -32,6 +32,7 @@ import { useRouter } from 'vue-router'
 import Editor, { Instance } from './Editor.vue'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import { useEditorForm, useEditorUploadImage } from '@/functions/editor'
+import { dateToCalendar, Calendar } from '@/functions/format'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 import config from '@/config'
 
@@ -71,7 +72,7 @@ function mapItem(item: any): Instance {
         violenceLimitLevel: item['violence_limit_level'],
         introduction: item['introduction'],
         publishType: item['publish_type'],
-        publishTime: item['publish_time'],
+        publishTime: item['publish_time'] ? mapPublishTimeToCalendar(item['publish_time']) : null,
         episodeDuration: item['episode_duration'],
         totalEpisodes: item['total_episodes'],
         publishedEpisodes: item['published_episodes'],
@@ -88,5 +89,10 @@ function remapData(item: Instance, originItem: Instance) {
     return {
         //TODO
     }
+}
+
+function mapPublishTimeToCalendar(publishTime: string): Calendar {
+    const [year, month] = publishTime.split('-')
+    return {year: parseInt(year), month: parseInt(month)}
 }
 </script>

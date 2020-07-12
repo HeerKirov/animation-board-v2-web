@@ -50,8 +50,7 @@ div.ui.form
             div.six.wide.field
                 label 放送时间
                 //- TODO 需要替换为year & month picker
-                input(type="number", min="1995")
-                input(type="number", min="1", max="12")
+                CalendarBox(placeholder="动画发布的时间", v-model="data.publishTime", first="month", until="month")
             div.six.wide.field
                 label 单集时长
                 IntBox(:min="0", placeholder="单集平均时长(分钟)", v-model="data.episodeDuration")
@@ -65,10 +64,10 @@ div.ui.form
         div.ui.fields
             div.six.wide.field
                 label 放送计划
-                PublishPlanPicker
+                PublishPlanPicker(:max-count="publishPlanMaxCount", @pick="onPickPublishPlan")
             div.six.wide.field
                 label.hidden PLAN
-                PublishPlanList
+                PublishPlanList(:value="data.publishPlan")
     template(v-if="panelIndex === 2")
         div.ui.fields
             div.eight.wide.field
@@ -91,10 +90,11 @@ div.ui.form
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, watch, ref, Ref } from 'vue'
+import { defineComponent, reactive, PropType, watch, ref, Ref, computed } from 'vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import InputBox from '@/components/InputBox.vue'
 import IntBox from '@/components/IntBox.vue'
+import CalendarBox from '@/components/CalendarBox.vue'
 import PublishPlanPicker from './PublishPlanPicker.vue'
 import PublishPlanList from './PublishPlanList.vue'
 import StaffPicker from './StaffPicker.vue'
@@ -103,6 +103,7 @@ import StaffEditor, { StaffItem } from './StaffEditor.vue'
 import RelationEditor, { RelationItem } from './RelationEditor.vue'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, sexLimitIntroductions, violenceLimitIntroductions } from '@/definitions/animation-definition'
 import { watchEditorValidate, useImageUploader } from '@/functions/editor'
+import { Calendar } from '@/functions/format'
 
 const emptyCover = require('@/assets/empty_cover.jpg')
 
@@ -119,7 +120,7 @@ export interface Instance {
     introduction: string | null
 
     publishType: string | null
-    publishTime: string | null
+    publishTime: Calendar | null
     episodeDuration: number | null
     totalEpisodes: number
     publishedEpisodes: number
@@ -146,7 +147,7 @@ function defaultInstance(): Instance {
 }
 
 export default defineComponent({
-    components: {ItemSelector, InputBox, IntBox, TagEditor, PublishPlanPicker, PublishPlanList, StaffPicker, StaffEditor, RelationEditor},
+    components: {ItemSelector, InputBox, IntBox, CalendarBox, TagEditor, PublishPlanPicker, PublishPlanList, StaffPicker, StaffEditor, RelationEditor},
     props: {
         panelIndex: Number,
         value: (null as any) as PropType<Instance | null>
@@ -176,9 +177,25 @@ export default defineComponent({
 
         const imageUploader = useImageUploader(data)
 
-        return {data, ...imageUploader}
+        //TODO 用use封装相关内容
+        const publishPlan = usePublishPlan(data)
+
+        return {data, ...imageUploader, ...publishPlan}
     }
 })
+
+function usePublishPlan(data: Ref<Instance>) {
+    const publishPlanMaxCount = computed(() => {
+        const v = data.value.totalEpisodes - data.value.publishedEpisodes - data.value.publishPlan.length
+        return v > 0 ? v : 0
+    })
+
+    const onPickPublishPlan = (items: Date[]) => {
+        data.value.publishPlan.splice(data.value.publishPlan.length, 0, ...items)
+    }
+
+    return {publishPlanMaxCount, onPickPublishPlan}
+}
 </script>
 
 <style scoped>

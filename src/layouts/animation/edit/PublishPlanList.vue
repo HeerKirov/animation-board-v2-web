@@ -1,19 +1,24 @@
 <template lang="pug">
 ul.ui.bulleted.list
-    li.item 2020-06-28 00:00
-        a.right.floated.icon
-            i.close.icon
-    li.item 2020-07-05 00:00
+    li.item(v-for="(item, index) in items") {{item}}
         a.right.floated.icon
             i.close.icon
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType, computed } from 'vue'
+import { dateToCalendar, calendarToString } from '@/functions/format'
 
 export default defineComponent({
-    setup() {
+    props: {
+        value: {type: (null as any) as PropType<Date[]>, required: true}
+    },
+    emit: ['delete'],
+    setup(props) {
+        const items = computed(() => props.value.map(d => calendarToString(dateToCalendar(d))))
+        //TODO 处理delete
 
+        return {items}
     }
 })
 </script>
