@@ -9,11 +9,9 @@ div.ui.container
             = '提交'
     div.ui.centered.grid
         div.ui.three.wide.column
-            div.ui.vertical.steps
+            div.ui.vertical.fluid.tabular.menu
                 each item, index in ['介绍', '放送信息', '制作信息', '关联的动画']
-                    a.step(:class=`{active: panelIndex === ${index}}`, @click="panelIndex = " + index)
-                        div.content
-                            div.title= item
+                    a.item(:class=`{active: panelIndex === ${index}}`, @click="panelIndex = " + index)= item
         div.ui.eleven.wide.column
             Editor(:panel-index="panelIndex")
 </template>

@@ -49,7 +49,6 @@ div.ui.form
         div.ui.fields
             div.six.wide.field
                 label 放送时间
-                //- TODO 需要替换为year & month picker
                 CalendarBox(placeholder="动画发布的时间", v-model="data.publishTime", first="month", until="month")
             div.six.wide.field
                 label 单集时长
@@ -67,7 +66,7 @@ div.ui.form
                 PublishPlanPicker(:max-count="publishPlanMaxCount", @pick="onPickPublishPlan")
             div.six.wide.field
                 label.hidden PLAN
-                PublishPlanList(:value="data.publishPlan")
+                PublishPlanList(:value="data.publishPlan", @delete="onDeletePublishPlan")
     template(v-if="panelIndex === 2")
         div.ui.fields
             div.eight.wide.field
@@ -177,7 +176,6 @@ export default defineComponent({
 
         const imageUploader = useImageUploader(data)
 
-        //TODO 用use封装相关内容
         const publishPlan = usePublishPlan(data)
 
         return {data, ...imageUploader, ...publishPlan}
@@ -194,7 +192,11 @@ function usePublishPlan(data: Ref<Instance>) {
         data.value.publishPlan.splice(data.value.publishPlan.length, 0, ...items)
     }
 
-    return {publishPlanMaxCount, onPickPublishPlan}
+    const onDeletePublishPlan = (index: number) => {
+        data.value.publishPlan.splice(index, 1)
+    }
+
+    return {publishPlanMaxCount, onPickPublishPlan, onDeletePublishPlan}
 }
 </script>
 

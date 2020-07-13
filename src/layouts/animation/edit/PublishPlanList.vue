@@ -1,7 +1,7 @@
 <template lang="pug">
 ul.ui.bulleted.list
     li.item(v-for="(item, index) in items") {{item}}
-        a.right.floated.icon
+        a.right.floated.icon(@click="onDelete(index)")
             i.close.icon
 </template>
 
@@ -14,11 +14,12 @@ export default defineComponent({
         value: {type: (null as any) as PropType<Date[]>, required: true}
     },
     emit: ['delete'],
-    setup(props) {
+    setup(props, {emit}) {
         const items = computed(() => props.value.map(d => calendarToString(dateToCalendar(d))))
-        //TODO 处理delete
 
-        return {items}
+        const onDelete = (index: number) => { emit('delete', index) }
+
+        return {items, onDelete}
     }
 })
 </script>

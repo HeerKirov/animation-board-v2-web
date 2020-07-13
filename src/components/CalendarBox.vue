@@ -98,7 +98,7 @@ export default defineComponent({
             time: props.until === 'time'
         })
 
-        const displayValue = computed(() => props.modelValue !== undefined ? calendarToString(props.modelValue) : '')
+        const displayValue = computed(() => props.modelValue != undefined ? calendarToString(props.modelValue) : '')
 
         return {displayValue, ...visibleControl, ...panel, showTab}
     }
@@ -136,6 +136,7 @@ function usePanel(props: {first: PanelType, until: PanelType, modelValue: Calend
         if(newValue.day != editorValue.day) editorValue.day = newValue.day
         if(newValue.month != editorValue.month) editorValue.month = newValue.month
         if(newValue.year != editorValue.year) editorValue.year = newValue.year
+        currentPanel.value = props.first
     })
 
     const yearPanel = useYearPanel(editorValue, currentPanel, props.until)
@@ -223,6 +224,7 @@ function modelValueToEditor(modelValue: Calendar | undefined, to: PanelType): Ed
         transform: translateY(5px);
         position: absolute; 
         z-index: 1;
-        max-width: 260px;
+        min-width: 230px;
+        max-width: 300px;
     }
 </style>

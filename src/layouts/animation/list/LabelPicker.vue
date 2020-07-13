@@ -93,7 +93,8 @@ function useBoard(value: Ref<string | undefined>, props: any) {
             const r = await request(props.url, 'GET', {
                 search,
                 limit: props.limit,
-                offset: items.value.length
+                offset: items.value.length,
+                order: props.order
             })
             if(r.ok) {
                 total.value = r.data['total']
@@ -118,7 +119,8 @@ function mapItem(item: any) {
 </script>
 
 <style scoped>
-    .pointer {
-        cursor: pointer;
+    .list-content {
+        overflow: auto;
+        max-height: 450px
     }
 </style>

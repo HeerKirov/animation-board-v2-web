@@ -36,7 +36,7 @@ export const relations: DefinitionItem[] = [
     {name: 'SERIES', title: '同系列'},
 ]
 
-export const sexLimitIntroductions = {
+export const sexLimitIntroductions: {[value: string]: string[]} = {
     ALL: [
         "无任何性暗示、性倾向、色情内容",
         "没有任何性暗示倾向的恋爱、接触、轻微裸露行为不会视作限制内容",
@@ -64,7 +64,7 @@ export const sexLimitIntroductions = {
     ]
 }
 
-export const violenceLimitIntroductions = {
+export const violenceLimitIntroductions: {[value: string]: string[]} = {
     NO: [
         "无任何暴力、冲突和不当行为",
         "不涉及冲突和暴力行为的日常类内容，但日常冲突不包括在内",

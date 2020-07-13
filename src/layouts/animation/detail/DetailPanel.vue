@@ -25,15 +25,10 @@ div.ui.centered.grid
                                     router-link.ui.label.mb-1(v-for="tag in obj.tags", :to="{name: 'Tag.Detail', params: {id: tag.id}}") {{tag.name}}
                         div.three.wide.column
                             div.ui.two.columns.grid
-                                //- TODO 添加有关分级信息的浮动性详细说明
                                 div.column.pr-1.pl-2
-                                    div.ui.fluid.right.label.text-center.px-0(v-if="obj.sexLimitLevel", :class="obj.sexLimitLevel.color")
-                                        i.mr-0.mb-1.venus.mars.icon
-                                        div {{obj.sexLimitLevel.title}}
+                                    LimitLevelLabel(v-if="obj.sexLimitLevel", type="sex", :value="obj.sexLimitLevel")
                                 div.column.pl-1.pr-2
-                                    div.ui.fluid.right.label.text-center.px-0(v-if="obj.violenceLimitLevel", :class="obj.violenceLimitLevel.color")
-                                        i.mr-0.mb-1.hand.rock.outline.icon
-                                        div {{obj.violenceLimitLevel.title}}
+                                    LimitLevelLabel(v-if="obj.violenceLimitLevel", type="violence", :value="obj.violenceLimitLevel")
                     div.row
                         div.column
                             div(v-html="obj.introduction")
@@ -83,10 +78,11 @@ div.ui.centered.grid
 import {defineComponent, inject, computed, toRef} from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
+import LimitLevelLabel from './LimitLevelLabel.vue'
 import { useAuth } from '@/functions/auth'
 import { toSubTitle, toPublishTime, toHtmlStr } from '@/functions/display'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
-import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, relations } from '@/definitions/animation-definition'
+import { publishTypes, originalWorkTypes, relations } from '@/definitions/animation-definition'
 import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
 import { toMap } from '@/definitions/util'
 import config from '@/config'
@@ -95,12 +91,10 @@ const emptyCover = require('@/assets/empty_cover.jpg')
 
 const publishTypeMap = toMap(publishTypes)
 const originalWorkTypeMap = toMap(originalWorkTypes)
-const sexLimitLevelMap = toMap(sexLimitLevels)
-const violenceLimitLevelMap = toMap(violenceLimitLevels)
 const relationMap = toMap(relations)
 
 export default defineComponent({
-    components: {DiaryPanel, CommentPanel},
+    components: {DiaryPanel, CommentPanel, LimitLevelLabel},
     computed: {
         barItems: () => [secondaryBarItems.database.animation, detailItem]
     },
@@ -139,8 +133,8 @@ function mapItem(item: any) {
         episodeDuration: item['episode_duration'] ? (`${item['total_episodes'] > 1 ? `每集` : ''}${item['episode_duration']}分钟`) : null,
         publishType: publishTypeMap[item['publish_type']],
         originalWorkType: originalWorkTypeMap[item['original_work_type']],
-        sexLimitLevel: sexLimitLevelMap[item['sex_limit_level']],
-        violenceLimitLevel: violenceLimitLevelMap[item['violence_limit_level']],
+        sexLimitLevel: item['sex_limit_level'],
+        violenceLimitLevel: item['violence_limit_level'],
         relations: item['relations_topology'].map(mapRelation),
         staffs,
     }
