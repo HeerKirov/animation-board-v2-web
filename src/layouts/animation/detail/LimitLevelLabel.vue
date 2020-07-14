@@ -5,7 +5,7 @@ div.ui.fluid.right.label.text-center.px-0(:class="display.color", @mouseenter="m
 div.float-panel.ui.message(v-if="showIntroduction")
     div.content
         ul.ui.list
-            li(v-for="line in display.introduction") {{line}}
+            li.font-size-12(v-for="line in display.introduction") {{line}}
 </template>
 
 <script lang="ts">

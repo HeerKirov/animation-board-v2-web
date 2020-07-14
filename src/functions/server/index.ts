@@ -1,5 +1,5 @@
 import { Method } from 'axios'
-import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref, unref } from 'vue'
+import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref, unref, computed } from 'vue'
 import { request as request0, RequestParam } from '@/functions/request'
 import { AuthResult } from '@/functions/auth'
 
@@ -133,7 +133,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         = options?.errorHandler != null ? ((code: number, data: any) => options.errorHandler?.(code, data, configuration.errorHandler))
         : configuration.errorHandler ?? throwErrorToConsole
 
-    const loadingRef = ref(true)
+    const loadingRef = ref(false)
     const dataRef = ref(null)
     const updateLoadingRef = ref(false)
     const update = useUpdateFunction(dataRef, updateLoadingRef, headers, baseUrl, url, throwError)
@@ -209,4 +209,64 @@ function useDeleteFunction(updateLoadingRef: Ref<boolean>, headers: any, baseUrl
             return {ok: false, data: undefined}
         }
     }
+}
+
+//== Continuous ==
+
+export interface ContinuousOptions<QD, T> extends RequestOptions {
+    queryData?: Ref<QD>
+    query(count: number, total: number | null, queryData?: QD): any | undefined
+    findTotal(result: any): number
+    findData(result: any): T[]
+}
+
+export interface Continuous {
+    requestForFirst(): void
+    requestForNext(): void
+    total: Ref<number | null>
+    result: Ref<any[]>
+    hasNext: Ref<boolean>
+    hasRequested: Ref<boolean>
+    clear(): void
+}
+
+export function useContinuous<QD, T>(url: string, options: ContinuousOptions<QD, T>): Continuous {
+    const { request } = useServer()
+
+    const total: Ref<number | null> = ref(null)
+    const result: Ref<T[]> = ref([])
+    const hasNext = computed(() => total.value != null && result.value.length < total.value)
+
+    const hasRequested = ref(false)
+
+    let queryData: QD | undefined = undefined
+    const requestForFirst = async () => {
+        queryData = options.queryData?.value
+        const r = await request(url, 'GET', options.query(0, total.value, queryData), {errorHandler: options.errorHandler})
+        if(r.ok) {
+            result.value = options.findData(r.data)
+            total.value = options.findTotal(r.data)
+        }else{
+            result.value = []
+            total.value = null
+        }
+        hasRequested.value = true
+    }
+
+    const requestForNext = async () => {
+        if(hasNext.value) {
+            const r = await request(url, 'GET', options.query(result.value.length, total.value, queryData), {errorHandler: options.errorHandler})
+            if(r.ok) {
+                total.value = options.findTotal(r.data)
+                result.value.splice(result.value.length, 0, ...options.findData(r.data))
+            }
+        }
+    }
+
+    const clear = () => {
+        total.value = null
+        result.value = []
+    }
+
+    return {requestForFirst, requestForNext, total, result, hasNext, hasRequested, clear}
 }

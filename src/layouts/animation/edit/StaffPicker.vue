@@ -1,22 +1,23 @@
 <template lang="pug">
 div.ui.icon.input.fluid.transparent
-    input(placeholder="搜索STAFF", v-model="searchBoxText", @keydown.enter="requestForData")
+    input(placeholder="搜索STAFF", v-model="searchBoxText", @keydown.enter="requestForFirst")
     i.search.icon
 div.ui.divider.mt-1
 div.list-content
-    div.ui.small.label.mb-1.pointer(v-for="item in items", :key="item.id", draggable="true", @dragstart="onDragStart($event, item)") {{item.name}}
+    div.ui.small.label.mb-1.pointer(v-for="item in result", :key="item.id", draggable="true", @dragstart="onDragStart($event, item)") {{item.name}}
     button.ui.tertiary.mini.button(v-if="hasNext", @click="requestForNext") 获取更多结果
-    p.mb-0: button.ui.tertiary.mini.button {{searched ? '找不到想要的？新建STAFF条目' : '新建STAFF条目'}}
+    p.mb-0: button.ui.tertiary.mini.button {{hasRequested ? '找不到想要的？新建STAFF条目' : '新建STAFF条目'}}
 </template>
 
 <script lang="ts">
 import { defineComponent, Ref, ref, computed } from 'vue'
 import { Method } from 'axios'
-import { useServer, Response, RequestOptions } from '@/functions/server'
+import { useServer, Response, RequestOptions, useContinuous } from '@/functions/server'
 
 const limit = 40
 const order = '-update_time'
 
+//TODO 完成新建staff条目的功能
 export default defineComponent({
     setup() {
         const { request } = useServer()
@@ -30,38 +31,16 @@ export default defineComponent({
 })
 
 function useBoard(request: (url: string, method: Method, data?: any, options?: RequestOptions) => Promise<Response>) {
-    const total: Ref<number | null> = ref(null)
-    const items: Ref<any[]> = ref([])
-    const hasNext = computed(() => total.value != null && items.value.length < total.value)
-
-    const searched = ref(false)
     const searchBoxText: Ref<string> = ref("")
-    let search: string | undefined = undefined
 
-    const requestForData = async () => {
-        search = searchBoxText.value || undefined
-        const r = await request('/api/database/staffs', 'GET', {search, limit, offset: 0, order})
-        if(r.ok) {
-            items.value = r.data['result'].map(mapItem)
-            total.value = r.data['total']
-        }else{
-            items.value = []
-            total.value = null
-        }
-        searched.value = true
-    }
+    const { result, requestForFirst, requestForNext, hasNext, hasRequested } = useContinuous('/api/database/staffs', {
+        findTotal(data) { return data['total'] },
+        findData(data) { return (data['result'] as any[]).map(mapItem) },
+        query(count, total, queryData) { return {offset: count, search: queryData, limit, order} },
+        queryData: searchBoxText
+    })
 
-    const requestForNext = async () => {
-        if(hasNext.value) {
-            const r = await request('/api/database/staffs', 'GET', {search, limit, offset: items.value.length, order})
-            if(r.ok) {
-                total.value = r.data['total']
-                items.value = items.value.concat(r.data['result'].map(mapItem))
-            }
-        }
-    }
-
-    return {items, hasNext, requestForNext, requestForData, searchBoxText, searched}
+    return {result, hasNext, requestForNext, requestForFirst, hasRequested, searchBoxText}
 }
 
 function useDrag() {

@@ -75,17 +75,17 @@ div.ui.form
                     ItemSelector(:items="originalWorkTypes", :show-none="false", v-model:selected="data.originalWorkType")
                 div.ui.field.mt-2
                     label 原作者/原案
-                    StaffEditor(v-model:value="data.staffs.AUTHOR")
+                    StaffEditor.mt-2(:value="data.staffs.AUTHOR")
                 div.ui.field.mt-2
                     label 制作公司
-                    StaffEditor(v-model:value="data.staffs.COMPANY")
+                    StaffEditor.mt-2(:value="data.staffs.COMPANY")
                 div.ui.field.mt-2
                     label STAFF
-                    StaffEditor(v-model:value="data.staffs.STAFF")
+                    StaffEditor.mt-2(:value="data.staffs.STAFF")
             div.eight.wide.field
                 StaffPicker
     template(v-if="panelIndex === 3")
-        RelationEditor
+        RelationEditor(:value="data.relations", :title="data.title", :id="data.id")
 </template>
 
 <script lang="ts">
@@ -128,7 +128,7 @@ export interface Instance {
     originalWorkType: string | null
     staffs: {[type: string]: StaffItem[]}
 
-    relations: RelationItem[]
+    relations: {[type: string]: RelationItem[]}
 
     cover: string | null
     coverFile: File | null
@@ -140,7 +140,7 @@ function defaultInstance(): Instance {
         title: undefined, originTitle: null, otherTitle: null, keyword: null, tags: [], sexLimitLevel: null, violenceLimitLevel: null, introduction: null,
         publishType: null, publishTime: null, episodeDuration: null, totalEpisodes: 12, publishedEpisodes: 0, publishPlan: [],
         originalWorkType: null, staffs: {AUTHOR: [], COMPANY: [], STAFF: []},
-        relations: [],
+        relations: {},
         cover: null, coverFile: null
     }
 }

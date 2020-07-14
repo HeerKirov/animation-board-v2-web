@@ -31,12 +31,14 @@ import { defineComponent, ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Editor, { Instance } from './Editor.vue'
 import { StaffItem } from './StaffEditor.vue'
+import { RelationItem } from './RelationEditor.vue'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import { useEditorForm, useEditorUploadImage } from '@/functions/editor'
 import { dateToCalendar, Calendar } from '@/functions/format'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 import config from '@/config'
-import { RelationItem } from './RelationEditor.vue'
+
+const emptyCover = require('@/assets/empty_cover.jpg')
 
 export default defineComponent({
     components: {Editor},
@@ -71,6 +73,24 @@ function mapItem(item: any): Instance {
         }
     }
 
+    const relations: {[t: string]: RelationItem[]} = {}
+    const originalRelations = item['relations'] as {[t: string]: number[]}
+    const originalTopology = item['relations_topology'] as any[]
+    for(const type in originalRelations) {
+        relations[type] = originalRelations[type].map(id => {
+            for (let item of originalTopology) {
+                if(item['id'] === id) {
+                    return {
+                        id: item['id'],
+                        title: item['title'],
+                        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover
+                    }
+                }
+            }
+            throw new Error(`Cannot find relation ${id} in relations_topology.`)
+        })
+    }
+
     return {
         id: item['id'],
         title: item['title'],
@@ -88,8 +108,7 @@ function mapItem(item: any): Instance {
         publishedEpisodes: item['published_episodes'],
         publishPlan: (item['publish_plan'] as string[]).map(s => new Date(s)),
         originalWorkType: item['original_work_type'],
-        staffs,
-        relations: (item['relations_topology'] as any[]).map(mapRelation),
+        staffs, relations,
         cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : null,
         coverFile: null
     }
@@ -98,15 +117,6 @@ function mapItem(item: any): Instance {
 function remapData(item: Instance, originItem: Instance) {
     return {
         //TODO
-    }
-}
-
-function mapRelation(item: any): RelationItem {
-    return {
-        id: item['id'],
-        title: item['title'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : null,
-        relation: item['relation_type']
     }
 }
 

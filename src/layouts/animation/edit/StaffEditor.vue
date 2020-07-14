@@ -1,5 +1,5 @@
 <template lang="pug">
-div.ui.segment(@dragover.prevent='onDragOver', @drop.prevent='onDrop')
+div.ui.segment(@dragover.prevent='', @drop.prevent='onDrop')
     div.ui.label.small.mb-1(v-for="(item, index) in items") {{item.name}}
         i.close.icon(@click="onDelete(index)")
 </template>
@@ -16,19 +16,17 @@ export default defineComponent({
     props: {
         value: (null as any) as PropType<StaffItem[]>
     },
-    emits: ['update:value'],
-    setup(props, {emit}) {
+    setup(props) {
         const items: Ref<StaffItem[]> = ref(props.value || [])
         watch(() => props.value, () => { items.value = props.value || [] })
 
         const onDelete = (index: number) => {
             items.value.splice(index, 1)
-            emit('update:value', items.value)
         }
 
-        const { onDrop, onDragOver } = useDrag(items)
+        const { onDrop } = useDrag(items)
 
-        return {items, onDelete, onDrop, onDragOver}
+        return {items, onDelete, onDrop}
     }
 })
 
@@ -46,8 +44,6 @@ function useDrag(items: Ref<StaffItem[]>) {
         }
     }
 
-    const onDragOver = () => { }
-
-    return {onDrop, onDragOver}
+    return {onDrop}
 }
 </script>
