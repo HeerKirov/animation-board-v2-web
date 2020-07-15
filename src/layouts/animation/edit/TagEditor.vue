@@ -15,7 +15,7 @@ div.ui.segment
             i.filter.icon
         div.ui.divider
         h5.ui.header.mt-1 备选标签
-        div: a.ui.label.small.mb-1(v-for="item in alternativeList") {{item.name}}
+        div: a.ui.label.small.mb-1(v-for="item in alternativeList", @click="onChoose(item)") {{item.name}}
 </template>
 
 <script lang="ts">
@@ -120,6 +120,15 @@ function useBoard(items: Ref<TagItem[]>, editMode: Ref<boolean>) {
         }
     }
 
-    return {searchBoxText, searchValue, alternativeList, onSearchEntered}
+    const onChoose = (append: TagItem) => {
+        for(const item of items.value) {
+            if(item.name === append.name) {
+                return
+            }
+        }
+        items.value.push(append)
+    }
+
+    return {searchBoxText, searchValue, alternativeList, onSearchEntered, onChoose}
 }
 </script>

@@ -85,9 +85,7 @@ import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, relations } from '@/definitions/animation-definition'
 import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
 import { toMap } from '@/definitions/util'
-import config from '@/config'
-
-const emptyCover = require('@/assets/empty_cover.jpg')
+import cover from '@/plugins/cover'
 
 const publishTypeMap = toMap(publishTypes)
 const originalWorkTypeMap = toMap(originalWorkTypes)
@@ -127,7 +125,7 @@ function mapItem(item: any) {
         keywords: item['keyword'] ? (item['keyword'] as string).split(' ').map(v => v.trim()).filter(v => !!v) : null,
         introduction: toHtmlStr(item['introduction']),
         tags: item['tags'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover,
+        cover: cover.animationOrEmpty(item['cover']),
         publishTime: item['publish_time'] && toPublishTime(item['publish_time']),
         episode: item['published_episodes'] >= item['total_episodes'] ? `已完结，共${item['total_episodes']}话` : `已发布${item['published_episodes']}话，共${item['total_episodes']}话`,
         episodeDuration: item['episode_duration'] ? (`${item['total_episodes'] > 1 ? `每集` : ''}${item['episode_duration']}分钟`) : null,
@@ -144,7 +142,7 @@ function mapRelation(r: any) {
     return {
         id: r['id'],
         title: r['title'],
-        cover: r['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${r['cover']}` : emptyCover,
+        cover: cover.animationOrEmpty(r['cover']),
         relationType: relationMap[r['relation_type']]?.title
     }
 }

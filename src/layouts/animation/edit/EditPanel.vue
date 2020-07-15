@@ -30,15 +30,17 @@ div.ui.centered.grid
 import { defineComponent, ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Editor, { Instance } from './Editor.vue'
+import { TagItem } from './TagEditor.vue'
 import { StaffItem } from './StaffEditor.vue'
 import { RelationItem } from './RelationEditor.vue'
-import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import { useEditorForm, useEditorUploadImage } from '@/functions/editor'
-import { dateToCalendar, Calendar } from '@/functions/format'
+import { dateToCalendar, Calendar, dateToUTCString, calendarToString, calendarEquals } from '@/functions/format'
+import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
-import config from '@/config'
-
-const emptyCover = require('@/assets/empty_cover.jpg')
+import { staffTypes } from '@/definitions/staff-definition'
+import { relations } from '@/definitions/animation-definition'
+import { sets, objects } from '@/functions/util'
+import cover from '@/plugins/cover'
 
 export default defineComponent({
     components: {Editor},
@@ -66,8 +68,8 @@ export default defineComponent({
 
 function mapItem(item: any): Instance {
     const staffs: {[type: string]: StaffItem[]} = {'AUTHOR': [], 'COMPANY': [], 'STAFF': []}
-    for(let staff of item['staffs']) {
-        let arr = staffs[staff['staff_type']]
+    for(const staff of item['staffs']) {
+        const arr = staffs[staff['staff_type']]
         if(arr != null) {
             arr.push({id: staff['id'], name: staff['name']})
         }
@@ -83,7 +85,7 @@ function mapItem(item: any): Instance {
                     return {
                         id: item['id'],
                         title: item['title'],
-                        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover
+                        cover: cover.animationOrEmpty(item['cover'])
                     }
                 }
             }
@@ -97,7 +99,7 @@ function mapItem(item: any): Instance {
         originTitle: item['origin_title'],
         otherTitle: item['other_title'],
         keyword: item['keyword'],
-        tags: item['tags'],
+        tags: (item['tags'] as any[]).map(i => { return {id: i['id'], name: i['name']} }),
         sexLimitLevel: item['sex_limit_level'],
         violenceLimitLevel: item['violence_limit_level'],
         introduction: item['introduction'],
@@ -109,19 +111,74 @@ function mapItem(item: any): Instance {
         publishPlan: (item['publish_plan'] as string[]).map(s => new Date(s)),
         originalWorkType: item['original_work_type'],
         staffs, relations,
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : null,
+        cover: cover.animationOrNull(item['cover']),
         coverFile: null
-    }
-}
-
-function remapData(item: Instance, originItem: Instance) {
-    return {
-        //TODO
     }
 }
 
 function mapPublishTimeToCalendar(publishTime: string): Calendar {
     const [year, month] = publishTime.split('-')
     return {year: parseInt(year), month: parseInt(month)}
+}
+
+function remapData(item: Instance, originItem: Instance) {
+    const data: {[key: string]: any} = {}
+    if(item.title !== originItem.title) data['title'] = item.title
+    if(item.originTitle !== originItem.originTitle) data['origin_title'] = item.originTitle || ''
+    if(item.otherTitle !== originItem.otherTitle) data['other_title'] = item.otherTitle || ''
+    if(item.introduction !== originItem.introduction) data['introduction'] = item.introduction || ''
+    if(item.keyword !== originItem.keyword) data['keyword'] = item.keyword || ''
+    if(item.sexLimitLevel !== originItem.sexLimitLevel) data['sex_limit_level'] = item.sexLimitLevel
+    if(item.violenceLimitLevel !== originItem.violenceLimitLevel) data['violence_limit_level'] = item.violenceLimitLevel
+    if(item.originalWorkType !== originItem.originalWorkType) data['original_work_type'] = item.originalWorkType
+    if(item.publishType !== originItem.publishType) data['publish_type'] = item.publishType
+    if(item.episodeDuration !== originItem.episodeDuration) data['episode_duration'] = item.episodeDuration
+    if(!calendarEquals(item.publishTime, originItem.publishTime)) data['publish_time'] = item.publishTime ? calendarToString(item.publishTime) : null
+    if(item.totalEpisodes !== originItem.totalEpisodes) data['total_episodes'] = item.totalEpisodes
+    if(item.publishedEpisodes !== originItem.publishedEpisodes) data['published_episodes'] = item.publishedEpisodes
+    if(!equalPublishPlan(item.publishPlan, originItem.publishPlan)) data['publish_plan'] = item.publishPlan.map(dateToUTCString)
+    if(!equalTags(item.tags, originItem.tags)) data['tags'] = item.tags.map(t => t.id ?? t.name)
+    if(!equalStaffs(item.staffs, originItem.staffs)) data['staffs'] = objects.mapEntry(item.staffs, v => v.map(i => i.id))
+    if(!equalRelations(item.relations, originItem.relations)) data['relations'] = objects.mapEntry(item.relations, v => v.map(i => i.id))
+
+    return data
+}
+
+function equalPublishPlan(a: Date[], b: Date[]): boolean {
+    if(a.length !== b.length) return false
+    for(let i = 0; i < a.length; ++i) {
+        if(a[i].getTime() !== b[i].getTime()) {
+            return false
+        }
+    }
+    return true
+}
+function equalTags(a: TagItem[], b: TagItem[]): boolean {
+    console.log(a, b)
+    if(a.length !== b.length) return false
+    const setA = new Set(a.map(t => t.name)), setB = new Set(b.map(t => t.name))
+    return sets.equals(setA, setB)
+}
+function equalStaffs(a: {[type: string]: StaffItem[]}, b: {[type: string]: StaffItem[]}): boolean {
+    for(const { name } of staffTypes) {
+        const itemA = a[name], itemB = b[name]
+        if(itemA.length !== itemB.length) return false
+        const setA = new Set(itemA.map(i => i.id)), setB = new Set(itemB.map(i => i.id))
+        if(!sets.equals(setA, setB)) return false
+    }
+    return true
+}
+function equalRelations(a: {[type: string]: RelationItem[]}, b: {[type: string]: RelationItem[]}): boolean {
+    for(const { name } of relations) {
+        const itemA = a[name], itemB = b[name]
+        if(itemA == null && itemB == null) continue
+        if((itemA != null && itemB == null) || (itemA == null && itemB != null) || itemA.length !== itemB.length) return false
+        for(let i = 0; i < itemA.length; ++i) {
+            if(itemA[i].id !== itemB[i].id) {
+                return false
+            }
+        }
+    }
+    return true
 }
 </script>

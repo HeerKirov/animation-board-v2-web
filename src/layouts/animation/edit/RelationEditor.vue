@@ -3,12 +3,12 @@ div.ui.fields
     div.ui.three.wide.field
         div.ui.secondary.vertical.menu.w-100
             a.item(v-for="r in relations", :class="{active: r.name === currentPanel}", 
-                   @click="currentPanel = r.name", @dragover.prevent="", @drop.prevent="dropOnTypeButton($event, r.name)") {{r.title}}
+                   @click="currentPanel = r.name", @dragover.prevent="", @drop.prevent="dropToType($event, r.name)") {{r.title}}
                 div.ui.left.pointing.label(:class="{'teal': value[r.name]?.length}") {{value[r.name]?.length || 0}}
     div.ui.four.wide.field
         template(v-if="value[currentPanel]")
             div.ui.segment.p-2(v-for="(item, index) in value[currentPanel]", 
-                               draggable="true", @dragstart="onDragFromData($event, item)", @dragend="onDragEnd"
+                               draggable="true", @dragstart="onDrag($event, 'data', item)", @dragend="onDragEnd"
                                @dragover.prevent="", @drop.prevent="dropOnContent($event, index)")
                 img.relations.item-image(:src="item.cover")
                 div.relations.item-content
@@ -28,7 +28,7 @@ div.ui.fields
             template(v-else)
                 template(v-for="item in result")
                     div.ui.column.p-1(v-if="!id || item.id !== id")
-                        div.ui.segment.p-2(draggable="true", @dragstart="onDragFromBoard($event, item)", @dragend="onDragEnd")
+                        div.ui.segment.p-2(draggable="true", @dragstart="onDrag($event, 'board', item)", @dragend="onDragEnd")
                             img.relations.item-image(:src="item.cover")
                             div.relations.item-content
                                 label.is-weight.font-size-12 {{item.title}}
@@ -39,9 +39,7 @@ div.ui.fields
 import { defineComponent, PropType, ref, Ref, computed } from 'vue'
 import { relations } from '@/definitions/animation-definition'
 import { useContinuous } from '@/functions/server'
-import config from '@/config'
-
-const emptyCover = require('@/assets/empty_cover.jpg')
+import cover from '@/plugins/cover'
 
 const limit = 8
 const order = '-update_time'
@@ -79,25 +77,38 @@ function useEditor(data: Ref<{[t: string]: RelationItem[]}>) {
 
     const dragFrom: Ref<"board" | "data" | null> = ref(null)
 
-    const onDragFromBoard = (e: DragEvent, item: RelationItem) => {
-        dragFrom.value = "board"
-    }
-    const onDragFromData = (e: DragEvent, item: RelationItem) => {
-        dragFrom.value = "data"
+    const onDrag = (e: DragEvent, from: "board" | "data", item: RelationItem) => {
+        dragFrom.value = from
+        e.dataTransfer?.setData('item', JSON.stringify(item))
     }
     const onDragEnd = () => { dragFrom.value = null }
 
-    const dropOnContent = (e: DragEvent, index?: number) => {
-        
-    }
-    const dropOnTypeButton = (e: DragEvent, relation: string) => {
-        
+    const dropOnContent = (e: DragEvent, index?: number) => dropToType(e, currentPanel.value, index)
+    const dropToType = (e: DragEvent, relation: string, index?: number) => {
+        const goal = JSON.parse(e.dataTransfer!.getData('item')) as RelationItem
+        for (let r in data.value) {
+            dropById(r, goal.id)
+        }
+        const items = data.value[relation] || (data.value[relation] = [])
+        items.splice(index ?? items.length, 0, goal)
     }
     const dropOnTrash = (e: DragEvent) => {
-        
+        const goal = JSON.parse(e.dataTransfer!.getData('item')) as RelationItem
+        dropById(currentPanel.value, goal.id)
+    }
+    const dropById = (relation: string, id: number) => {
+        const items = data.value[relation]
+        if(items) {
+            for(let i = 0; i < items.length; ++i) {
+                if(items[i].id === id) {
+                    items.splice(i, 1)
+                    return
+                }
+            }
+        }
     }
 
-    return {currentPanel, onDragFromBoard, onDragFromData, onDragEnd, dropOnContent, dropOnTypeButton, dropOnTrash, dragFrom}
+    return {currentPanel, onDrag, onDragEnd, dropOnContent, dropToType, dropOnTrash, dragFrom}
 }
 
 function useBoard(placeholder: Ref<string | undefined>) {
@@ -119,7 +130,7 @@ function mapItem(item: any): RelationItem {
     return {
         id: item['id'],
         title: item['title'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover
+        cover: cover.animationOrEmpty(item['cover'])
     }
 }
 </script>

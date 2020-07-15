@@ -32,7 +32,7 @@ import Editor, { Instance } from './Editor.vue'
 import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
 import { useEditorForm, useEditorUploadImage } from '@/functions/editor'
-import config from '@/config'
+import cover from '@/plugins/cover'
 
 export default defineComponent({
     components: {Editor},
@@ -63,7 +63,7 @@ function mapItem(item: any): Instance {
         remark: item['remark'],
         isOrganization: item['is_organization'],
         occupation: item['occupation'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : null,
+        cover: cover.staffOrNull(item['cover']),
         coverFile: null
     }
 }

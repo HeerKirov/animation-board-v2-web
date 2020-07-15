@@ -27,13 +27,12 @@ div.ui.form
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, PropType, Ref } from 'vue'
+import { defineComponent, ref, watch, PropType } from 'vue'
 import InputBox from '@/components/InputBox.vue'
-import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
+import ItemSelector from '@/components/ItemSelector.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
 import { watchEditorValidate, useImageUploader } from '@/functions/editor'
-
-const emptyAvatar = require('@/assets/empty_avatar.jpg')
+import { emptyAvatar } from '@/plugins/cover'
 
 export interface Instance {
     id: number | null
@@ -46,7 +45,7 @@ export interface Instance {
     coverFile: File | null
 }
 
-function defaultInstance(): Instance {
+export function defaultInstance(): Instance {
     return {
         id: null,
         name: undefined,

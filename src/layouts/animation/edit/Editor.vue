@@ -83,28 +83,27 @@ div.ui.form
                     label STAFF
                     StaffEditor.mt-2(:value="data.staffs.STAFF")
             div.eight.wide.field
-                StaffPicker
+                StaffPicker(@append="onStaffAppend")
     template(v-if="panelIndex === 3")
         RelationEditor(:value="data.relations", :title="data.title", :id="data.id")
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, watch, ref, Ref, computed } from 'vue'
+import { defineComponent, PropType, watch, ref, Ref, computed } from 'vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import InputBox from '@/components/InputBox.vue'
 import IntBox from '@/components/IntBox.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import PublishPlanPicker from './PublishPlanPicker.vue'
 import PublishPlanList from './PublishPlanList.vue'
-import StaffPicker from './StaffPicker.vue'
+import StaffPicker, { AppendEvent } from './StaffPicker.vue'
 import TagEditor, { TagItem } from './TagEditor.vue'
 import StaffEditor, { StaffItem } from './StaffEditor.vue'
 import RelationEditor, { RelationItem } from './RelationEditor.vue'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, sexLimitIntroductions, violenceLimitIntroductions } from '@/definitions/animation-definition'
 import { watchEditorValidate, useImageUploader } from '@/functions/editor'
 import { Calendar } from '@/functions/format'
-
-const emptyCover = require('@/assets/empty_cover.jpg')
+import { emptyCover } from '@/plugins/cover'
 
 export interface Instance {
     id: number | null
@@ -153,13 +152,13 @@ export default defineComponent({
     },
     emits:['update:value'],
     computed: {
-        emptyCover: () => emptyCover,
-        publishTypes: () => publishTypes,
-        originalWorkTypes: () => originalWorkTypes,
-        sexLimitLevels: () => sexLimitLevels,
-        violenceLimitLevels: () => violenceLimitLevels,
-        sexLimitIntroductions: () => sexLimitIntroductions,
-        violenceLimitIntroductions: () => violenceLimitIntroductions
+        emptyCover() { return emptyCover },
+        publishTypes() { return publishTypes },
+        originalWorkTypes() { return originalWorkTypes },
+        sexLimitLevels() { return sexLimitLevels },
+        violenceLimitLevels() { return violenceLimitLevels },
+        sexLimitIntroductions() { return sexLimitIntroductions },
+        violenceLimitIntroductions() { return violenceLimitIntroductions }
     },
     setup(props, {emit}) {
         const data = ref(props.value || defaultInstance())
@@ -178,7 +177,9 @@ export default defineComponent({
 
         const publishPlan = usePublishPlan(data)
 
-        return {data, ...imageUploader, ...publishPlan}
+        const staffEditor = useStaffEditor(data)
+
+        return {data, ...imageUploader, ...publishPlan, ...staffEditor}
     }
 })
 
@@ -197,6 +198,15 @@ function usePublishPlan(data: Ref<Instance>) {
     }
 
     return {publishPlanMaxCount, onPickPublishPlan, onDeletePublishPlan}
+}
+
+function useStaffEditor(data: Ref<Instance>) {
+    const onStaffAppend = (e: AppendEvent) => {
+        const list = data.value.staffs[e.type] || (data.value.staffs[e.type] = [])
+        list.splice(list.length, 0, e.item)
+    }
+
+    return {onStaffAppend}
 }
 </script>
 

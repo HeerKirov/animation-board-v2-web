@@ -33,9 +33,8 @@ div.ui.top.fixed.menu.blue.inverted.top-bar
 import { defineComponent, computed, toRef } from 'vue'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
+import cover from '@/plugins/cover'
 import config from '@/config'
-
-const emptyAvatar = require('@/assets/empty_avatar.jpg')
 
 export default defineComponent({
     setup() {
@@ -55,7 +54,7 @@ export default defineComponent({
 function mapUserInfo(data: any) {
     return {
         name: data['name'],
-        cover: data['cover'] ? `${config.BASIC_SERVICE_URL}/static/cover/${data['cover']}` : emptyAvatar
+        cover: cover.userOrEmpty(data['cover'])
     }
 }
 

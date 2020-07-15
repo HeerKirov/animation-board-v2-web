@@ -104,6 +104,7 @@ export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: a
 
     const { data, update, deleteInstance } = swr
     const editorValue = computed(() => data.value ? map(data.value) : null)
+    const originValue = computed(() => data.value ? map(data.value) : null)
     const outValue: Ref<T | undefined> = ref()
     const valueExists = computed(() => !!outValue.value)
     const updateLoading = ref(false)
@@ -123,7 +124,7 @@ export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: a
                 }
             }
 
-            const r = await update(remap(outValue.value, editorValue.value!), {errorHandler: options?.handleSubmit, method: options?.method})
+            const r = await update(remap(outValue.value, originValue.value!), {errorHandler: options?.handleSubmit, method: options?.method})
             
             if(options?.afterSubmit) {
                 const r2 = await options?.afterSubmit(outValue.value, r)

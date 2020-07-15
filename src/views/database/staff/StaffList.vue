@@ -53,9 +53,7 @@ import { useRouterQueryUtil } from '@/functions/routers'
 import { usePagination, useSort, useSelector } from '@/functions/parameters'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
-import config from '@/config'
-
-const emptyAvatar = require('@/assets/empty_avatar.jpg')
+import cover from '@/plugins/cover'
 
 const occupationMap = toMap(occupations)
 
@@ -145,7 +143,7 @@ function mapItem(item: any) {
         otherName: toSubTitle(item['origin_name'], item['remark']),
         isOrganization: item['is_organization'],
         occupation: item['occupation'] ? occupationMap[item['occupation']].title : null,
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : emptyAvatar
+        cover: cover.staffOrEmpty(item['cover'])
     }
 }
 </script>

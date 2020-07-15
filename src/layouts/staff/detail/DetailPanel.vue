@@ -44,10 +44,7 @@ import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { occupations } from '@/definitions/staff-definition'
 import { toMap } from '@/definitions/util'
 import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
-import config from '@/config'
-
-const emptyAvatar = require('@/assets/empty_avatar.jpg')
-const emptyCover = require('@/assets/empty_cover.jpg')
+import cover from '@/plugins/cover'
 
 const occupationMap = toMap(occupations)
 
@@ -79,7 +76,7 @@ function mapItem(item: any) {
         otherName: toSubTitle(item['origin_name'], item['remark']),
         isOrganization: item['is_organization'],
         occupation: occupationMap[item['occupation']]?.title,
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/staff/${item['cover']}` : emptyAvatar
+        cover: cover.staffOrEmpty(item['cover'])
     }
 }
 
@@ -87,7 +84,7 @@ function mapAnimation(item: any) {
     return {
         id: item['id'],
         title: item['title'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover
+        cover: cover.animationOrEmpty(item['cover'])
     }
 }
 </script>

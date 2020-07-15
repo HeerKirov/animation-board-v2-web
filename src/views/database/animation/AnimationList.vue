@@ -70,9 +70,7 @@ import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSort, usePagination, useSelector } from '@/functions/parameters'
-import config from '@/config'
-
-const img = require('@/assets/empty_cover.jpg')
+import cover from '@/plugins/cover'
 
 const orders = [
     {name: 'PUBLISH_TIME', title: '放送时间', icon: 'video icon', argument: ['publish_time', 'create_time']},
@@ -186,7 +184,7 @@ function mapItem(item: any) {
     return {
         id: item['id'],
         title: item['title'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : img,
+        cover: cover.animationOrEmpty(item['cover']),
         episode: item['published_episodes'] >= item['total_episodes'] ? `全${item['total_episodes']}话` : `${item['published_episodes']}/${item['total_episodes']}话`,
         publishTime: item['publish_time'] && toPublishTime(item['publish_time'])
     }

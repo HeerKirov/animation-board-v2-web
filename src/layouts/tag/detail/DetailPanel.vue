@@ -37,9 +37,7 @@ import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import { secondaryBarItems, detailItem } from '@/definitions/secondary-bar'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
-import config from '@/config'
-
-const emptyCover = require('@/assets/empty_cover.jpg')
+import cover from '@/plugins/cover'
 
 export default defineComponent({
     computed: {
@@ -74,7 +72,7 @@ function mapAnimation(item: any) {
     return {
         id: item['id'],
         title: item['title'],
-        cover: item['cover'] ? `${config.SERVER_URL}/api/database/cover/animation/${item['cover']}` : emptyCover,
+        cover: cover.animationOrEmpty(item['cover'])
     }
 }
 </script>
