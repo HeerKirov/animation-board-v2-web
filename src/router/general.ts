@@ -13,7 +13,7 @@ export default [
     {
         name: 'UserInfo',
         path: '/user/info',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/UserInfo.vue'),
         meta: {title: '个人中心'}
     }
 ]

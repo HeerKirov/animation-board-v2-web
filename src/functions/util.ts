@@ -23,3 +23,9 @@ export const objects = {
         return ret
     }
 }
+
+export const arrays = {
+    range(min: number, max: number): number[] {
+        return Array(max - min).fill(0).map((_, i) => min + i)
+    }
+}
