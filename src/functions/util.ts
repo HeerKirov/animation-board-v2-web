@@ -29,3 +29,16 @@ export const arrays = {
         return Array(max - min).fill(0).map((_, i) => min + i)
     }
 }
+
+export const cast = {
+    parseInt(s: string | null | undefined): number | undefined {
+        if(s == null || s == undefined) {
+            return undefined
+        }
+        try {
+            return parseInt(s)
+        }catch(e) {
+            return undefined
+        }
+    }
+}

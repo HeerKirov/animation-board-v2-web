@@ -40,7 +40,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, Ref, reactive, watchEffect, toRef} from 'vue'
+import { defineComponent, ref, Ref, reactive, watchEffect, toRef } from 'vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'

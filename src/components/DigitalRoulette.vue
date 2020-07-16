@@ -1,8 +1,10 @@
 <template lang="pug">
 div.text-center
-    button.ui.tertiary.mini.button(@click="minus") -{{step}}
+    button.ui.tertiary.mini.button(v-if="upButton", @click="plus") +{{step}}
+    button.ui.tertiary.mini.button(v-else, @click="minus") -{{step}}
     div.is-weight.font-size-18 {{value}}
-    button.ui.tertiary.mini.button(@click="plus") +{{step}}
+    button.ui.tertiary.mini.button(v-if="upButton", @click="minus") -{{step}}
+    button.ui.tertiary.mini.button(v-else, @click="plus") +{{step}}
 </template>
 
 <script lang="ts">
@@ -14,7 +16,8 @@ export default defineComponent({
         min: Number,
         max: Number,
         step: {type: Number, default: 1},
-        loop: {type: Boolean, default: false}
+        loop: {type: Boolean, default: false},
+        upButton: {type: Boolean, default: false}
     },
     emits: ['update:modelValue'],
     setup(props, {emit}) {

@@ -1,12 +1,14 @@
 <template lang="pug">
 div.is-inline-block
     div.is-inline-block.score.text-center.is-weight
-        span.ui.orange.text {{value}}
-    i.orange(v-for="c in stars", :class="c")
+        span.ui.text(:class="color") {{value}}
+    i(v-for="c in stars", :class="[color, c]")
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, toRef, Ref } from 'vue'
+import { defineComponent, ref, watchEffect, toRef, Ref, computed } from 'vue'
+
+const colors = ['grey', 'brown', 'brown', 'yellow', 'yellow', 'yellow', 'yellow', 'orange', 'orange', 'red']
 
 export default defineComponent({
     props: {
@@ -18,8 +20,9 @@ export default defineComponent({
     setup(props) {
         const value = toRef(props, 'value')
         const stars = useStars(value)
+        const color = computed(() => props.value ? colors[props.value - 1] : '')
 
-        return {stars}
+        return {stars, color}
     }
 })
 

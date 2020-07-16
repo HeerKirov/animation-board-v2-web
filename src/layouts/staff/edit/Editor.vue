@@ -23,7 +23,7 @@ div.ui.form
         div.ui.twelve.wide.field
             label 职业分类
             ItemSelector(:items="occupations", :show-none="false", v-model:selected="data.occupation")
-    input.hidden-input(type="file", ref="uploader", @change="onUpload")
+    input.hidden-input(type="file", accept="image/png,image/jpeg", ref="uploader", @change="onUpload")
 </template>
 
 <script lang="ts">

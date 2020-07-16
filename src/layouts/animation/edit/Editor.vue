@@ -41,7 +41,7 @@ div.ui.form
         div.ui.field
             label 简介
             textarea.ui.input(placeholder="用不长的一段文字简要介绍此动画", v-model="data.introduction")
-        input.hidden-input(type="file", ref="uploader", @change="onUpload")
+        input.hidden-input(type="file", accept="image/png,image/jpeg", ref="uploader", @change="onUpload")
     template(v-if="panelIndex === 1")
         div.field
             label 放送类型
