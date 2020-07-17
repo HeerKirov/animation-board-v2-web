@@ -23,13 +23,13 @@ export interface ChangedEvent {
 export default defineComponent({
     props: {
         showNone: {type: Boolean, default: true},
-        noneName: {type: (null as any) as PropType<string|null>, default: null},
+        noneName: {type: (null as any) as PropType<string | null>, default: null},
         noneTitle: {type: String, default: "全部"},
         noneColor: {type: String, default: "primary"},
         column: {type: Number, default: null},
         color: {type: String, default: "primary"},
         items: (null as any) as PropType<Item[]>,
-        selected: (null as any) as PropType<string|null>
+        selected: (null as any) as PropType<string | null>
     },
     emits: ['changed', 'update:selected'],
     setup(props, {emit}) {

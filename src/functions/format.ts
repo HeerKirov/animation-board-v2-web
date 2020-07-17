@@ -50,3 +50,9 @@ export function getDayCountOfMonth(year: number, month: number) {
 export function dateToUTCString(date: Date): string {
     return `${date.getUTCFullYear()}-${fmt(date.getUTCMonth() + 1)}-${fmt(date.getUTCDate())}T${fmt(date.getUTCHours())}:${fmt(date.getUTCMinutes())}:${fmt(date.getUTCSeconds())}Z`
 }
+
+export function firstDayOfWeek(date: Date): Date {
+    const ret = new Date(date)
+    ret.setDate(ret.getDate() - (ret.getDay() || 7) + 1)
+    return ret
+}

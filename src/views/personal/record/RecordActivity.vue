@@ -16,8 +16,7 @@ div.ui.container
                             router-link.user(:to="{name: 'Record.Detail', params: {id: item.id}}") {{item.title}}
                             = ' {{item.activeEvent}}'
                             div.date {{item.activeTime}}
-                            div.float-right(v-if="item.progress") {{item.progress}}%
-                            //- TODO 做一个进度条
+                            div.meta.extra.mt-0.float-right(v-if="item.progress") {{item.progress}}%
         div.four.wide.column
             div.ui.segment
                 SearchBox(:value="search", @search="onSearch")

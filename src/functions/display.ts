@@ -1,4 +1,4 @@
-import { fmt } from './format'
+import { fmt, firstDayOfWeek } from './format'
 
 export function toSubTitle(t1: any, t2: any): string {
     if(t1 && t2) return `${t1} / ${t2}`
@@ -38,4 +38,19 @@ export function toFriendlyTime(date: Date, now?: Date): string {
         return `昨天${fmt(date.getHours())}:${fmt(date.getMinutes())}`
     }
     return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+const weekdayName = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+export function toWeekdayTableTime(date: Date, now?: Date, nightDelay?: number): string {
+    if(!now) now = new Date()
+    if(nightDelay) date.setHours(date.getHours() - nightDelay)
+
+    const weekday = date.getDay()
+    const diff = Math.floor((date.getTime() - firstDayOfWeek(now).getTime()) / (1000 * 60 * 60 * 24))
+
+    const prefix = diff < 7 ? `本${weekdayName[weekday]}` :
+                    diff < 14 ? `下${weekdayName[weekday]}` :
+                    `${date.getFullYear() !== now.getFullYear() ? date.getFullYear() + '年' : ''}${date.getMonth() + 1}月${date.getDate()}日`
+    const suffix = date.getFullYear() !== now.getFullYear() ? '' : `${fmt(date.getHours() + (nightDelay || 0))}:${fmt(date.getMinutes())}`
+    return prefix + suffix
 }

@@ -7,8 +7,8 @@ div.ui.container
     div.ui.grid
         div.twelve.wide.column
             div.ui.inline.active.centered.loader(v-if="loading")
-            div.ui.stackable.four.columns.grid(v-else)
-                div.column(v-for="item in items", :key="item.id")
+            div.ui.stackable.five.columns.grid.px-1(v-else)
+                div.column.p-2(v-for="item in items", :key="item.id")
                     div.ui.card
                         router-link.image(:to="{name: 'Comment.New', params: {id: item.id}}")
                             img(:src='item.cover')
@@ -43,12 +43,12 @@ import cover from '@/plugins/cover'
 const orders = [
     {name: 'FINISH_TIME', title: '看完时间', icon: 'eye icon', argument: 'finish_time'},
     {name: 'CREATE_TIME', title: '创建时间', icon: 'folder plus icon', argument: 'create_time'},
-    {name: 'PUBLISH_TIME', title: '放送时间', icon: 'video icon', argument: 'publish_time'}
+    {name: 'PUBLISH_TIME', title: '放送时间', icon: 'video icon', argument: 'publish_time,-create_time'}
 ]
 const defaultOrderValue = "CREATE_TIME"
 const defaultOrderDirection = -1
 
-const limit = 12
+const limit = 15
 
 export default defineComponent({
     components: {SearchBox, PageSelector, SortSelector},
