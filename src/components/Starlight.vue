@@ -1,8 +1,8 @@
 <template lang="pug">
 div.is-inline-block
-    div.is-inline-block.score.text-center.is-weight
-        span.ui.text(:class="color") {{value}}
-    i(v-for="c in stars", :class="[color, c]")
+    div.is-inline-block.text-center.is-weight(:class="large ? 'large-score' : 'score'")
+        span.ui.text(:class="{[color]: true, large}") {{value}}
+    i(v-for="c in stars", :class="{large, [color]: true, [c]: true}")
 </template>
 
 <script lang="ts">
@@ -12,10 +12,8 @@ const colors = ['grey', 'brown', 'brown', 'yellow', 'yellow', 'yellow', 'yellow'
 
 export default defineComponent({
     props: {
-        value: {
-            type: Number,
-            default: 0
-        }
+        value: {type: Number, default: 0},
+        large: {type: Boolean, default: false}
     },
     setup(props) {
         const value = toRef(props, 'value')
@@ -27,18 +25,17 @@ export default defineComponent({
 })
 
 function useStars(value: Ref<number>) {
-    const stars: Ref<any[]> = ref([])
+    const stars: Ref<string[]> = ref([])
 
     watchEffect(() => {
-        const arr: any[] = []
+        const arr: string[] = []
         const max = Math.ceil(value.value / 2)
         const half = value.value % 2 == 1
-        for(let i = 1; i <= max; ++i) {
-            if(half && i === max) {
-                arr.push('half star icon')
-            }else{
-                arr.push('star icon')
-            }
+        for(let i = 1; i < max; ++i) {
+            arr.push('star icon')
+        }
+        if(max > 0) {
+            arr.push(half ? 'half star icon' : 'star icon')
         }
         stars.value = arr
     })
@@ -50,6 +47,9 @@ function useStars(value: Ref<number>) {
 
 <style scoped>
     .score {
-        width: 19.93px !important
+        width: 20px !important
+    }
+    .large-score {
+        width: 25px !important;
     }
 </style>

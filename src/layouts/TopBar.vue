@@ -1,18 +1,10 @@
 <template lang="pug">
--   
-    const topBarItems = [
-        {name: '日记', icon: 'book icon', link: 'Record'},
-        {name: '评价', icon: 'bookmark icon', link: 'Comment'},
-        {name: '统计', icon: 'chart bar icon', link: 'Statistics'},
-        {name: '数据库', icon: 'database icon', link: 'Database'}
-    ]
 div.ui.top.fixed.menu.blue.inverted.top-bar
     div.ui.container
         router-link.item.header(:to="{name: 'Home'}") Animation Board
-        - for(let item of topBarItems)
-            router-link.item.px-3(:to=`{name: '${item.link}'}`, v-if="isLogin")
-                i(class=item.icon)
-                span= item.name
+        router-link.item.px-3(v-for="item in topBarItems", :to="item.link", v-if="isLogin")
+            i(:class="item.icon")
+            span {{item.title}}
         template(v-if="isLogin")
             a.right.item(@click="message.openMessage")
                 i.mr-0(:class="message.num ? 'envelope icon' : 'envelope outline icon'")
@@ -48,11 +40,12 @@ template(v-if="message.isOpen")
 
 <script lang="ts">
 import { defineComponent, computed, toRef, ref, reactive, Ref } from 'vue'
-import { useRouter, Router } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { arrays } from '@/functions/util'
 import { useAuth } from '@/functions/auth'
 import { useSWR, useServer } from '@/functions/server'
-import { arrays } from '@/functions/util'
-import cover, { emptyCover } from '@/plugins/cover'
+import { topBarItems } from '@/definitions/secondary-bar'
+import cover from '@/plugins/cover'
 import config from '@/config'
 
 interface Message {
@@ -65,7 +58,9 @@ interface Message {
 }
 
 export default defineComponent({
-    computed: {emptyCover() { return emptyCover }},
+    computed: {
+        topBarItems() { return topBarItems }
+    },
     setup() {
         const { stats } = useAuth()
         const { data } = useSWR('/api/user/', null, {baseUrl: config.BASIC_SERVICE_URL, byAuthorization: "LOGIN"})

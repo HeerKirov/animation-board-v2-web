@@ -23,7 +23,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, reactive, computed, Ref, toRef} from 'vue'
+import { defineComponent, ref, reactive, computed, Ref, toRef } from 'vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'

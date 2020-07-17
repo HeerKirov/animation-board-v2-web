@@ -6,7 +6,8 @@ div.ui.container
             = '{{item.title}}'
     div.ui.grid
         div.twelve.wide.column
-            div.ui.stackable.three.columns.grid
+            div.ui.inline.active.centered.loader(v-if="loading")
+            div.ui.stackable.three.columns.grid(v-else)
                 div.column.px-2.pb-1(v-for="item in items")
                     div.ui.segment.py-2.pl-2.pr-0
                         router-link(:to="{name: 'Comment.Detail', params: {id: item.id}}")
@@ -30,14 +31,14 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, reactive, watchEffect, toRef } from 'vue'
+import { defineComponent, ref, Ref, reactive, watchEffect } from 'vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/PageSelector.vue'
 import DigitalRoulette from '@/components/DigitalRoulette.vue'
 import Starlight from '@/components/Starlight.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
-import { usePagination, useSort, useSelector } from '@/functions/parameters'
+import { usePagination } from '@/functions/parameters'
 import { cast } from '@/functions/util'
 import { useSWR } from '@/functions/server'
 import cover from '@/plugins/cover'
@@ -122,7 +123,7 @@ function mapItem(item: any) {
     }
     .starlight {
         position: absolute;
-        bottom: 15px;
+        bottom: 13px;
         transform: translateX(3px);
     }
     .arrow-icon {

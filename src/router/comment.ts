@@ -25,13 +25,13 @@ export default [
     {
         name: 'Comment.New',
         path: '/personal/comments/new/:id',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/personal/comment/CommentNew.vue'),
         meta: {nav: ['comment', '@new'], title: ['评价', '新建']}
     },
     {
         name: 'Comment.Detail',
         path: '/personal/comments/detail/:id',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/personal/comment/CommentDetail.vue'),
         meta: {nav: ['comment', '@detail'], title: '评价'}
     }
 ]

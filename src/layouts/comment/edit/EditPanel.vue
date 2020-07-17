@@ -18,26 +18,25 @@ div.ui.secondary.pointing.menu
             i.close.icon
             = '放弃更改'
 div.ui.grid
-    div.ui.eight.wide.centered.column
+    div.ui.fourteen.wide.centered.column
         Editor(:value="editorValue", @update:value="onEditorChanged")
         button.ui.tertiary.button.float-right(@click="onDelete")
             i.trash.icon
-            = '删除此条目'
+            = '删除评价记录'
 </template>
 
 <script lang="ts">
 import { defineComponent, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Editor, { Instance } from './Editor.vue'
-import { secondaryBarItems, editItem } from '@/definitions/secondary-bar'
+import { topBarItems, editItem } from '@/definitions/secondary-bar'
 import { editInjectionKey, swrInjectionKey } from '@/definitions/injections'
-import { useEditorForm, useEditorUploadImage } from '@/functions/editor'
-import cover from '@/plugins/cover'
+import { useEditorForm } from '@/functions/editor'
 
 export default defineComponent({
     components: {Editor},
     computed: {
-        barItems: () => [secondaryBarItems.database.staff, editItem]
+        barItems: () => [topBarItems.comment, editItem]
     },
     setup() {
         const router = useRouter()
@@ -45,10 +44,9 @@ export default defineComponent({
         const swr = inject(swrInjectionKey)!
         const editMode = inject(editInjectionKey)!
 
-        const { beforeSubmit } = useEditorUploadImage<Instance>(v => v.coverFile, v => `/api/database/staffs/${v.id}/cover`)
         const form = useEditorForm<Instance>(swr, editMode, mapItem, remapData, {
-            beforeSubmit,
-            afterDelete() { router.push({name: 'Staff.List'}) }
+            method: "PATCH",
+            afterDelete() { router.push({name: 'Comment.Activity'}) }
         })
 
         return {...form}
@@ -57,24 +55,23 @@ export default defineComponent({
 
 function mapItem(item: any): Instance {
     return {
-        id: item['id'],
-        name: item['name'],
-        originName: item['origin_name'],
-        remark: item['remark'],
-        isOrganization: item['is_organization'],
-        occupation: item['occupation'],
-        cover: cover.staffOrNull(item['cover']),
-        coverFile: null
+        id: item['animation_id'],
+        title: item['title'],
+        score: item['score'],
+        articleTitle: item['article_title'],
+        article: item['article']
     }
 }
 
-function remapData(item: Instance) {
-    return {
-        name: item.name,
-        origin_name: item.originName,
-        remark: item.remark,
-        is_organization: item.isOrganization,
-        occupation: item.occupation
-    }
+function remapData(item: Instance, old: Instance) {
+    const data: {[s: string]: any} = {}
+    if(item.score !== old.score) data['score'] = item.score
+    if(item.articleTitle !== old.articleTitle) data['article_title'] = item.articleTitle || ''
+    if(item.article !== old.article) data['article'] = item.article || ''
+    return data
 }
 </script>
+
+<style scoped>
+
+</style>

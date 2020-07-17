@@ -1,5 +1,5 @@
-import { App, Ref, watch, watchEffect, ref, computed, inject, InjectionKey } from "vue"
-import { useRoute } from "vue-router"
+import { App, Ref, watch, watchEffect, ref, computed, inject, InjectionKey } from 'vue'
+import { useRoute } from 'vue-router'
 
 export function createDocumentManager() {
     const documentTitle = useDocumentTitle()

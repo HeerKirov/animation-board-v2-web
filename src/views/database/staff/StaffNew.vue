@@ -17,10 +17,10 @@ div.ui.container
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
 import Editor, { Instance } from '@/layouts/staff/edit/Editor.vue'
 import { secondaryBarItems, newItem } from '@/definitions/secondary-bar'
-import { useRouter } from 'vue-router'
-import {useCreatorForm, useEditorUploadImage} from '@/functions/editor'
+import { useCreatorForm, useEditorUploadImage } from '@/functions/editor'
 
 export default defineComponent({
     components: {Editor},

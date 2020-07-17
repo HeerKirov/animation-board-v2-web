@@ -75,7 +75,7 @@ div.ui.centered.grid
 </template>
 
 <script lang="ts">
-import {defineComponent, inject, computed, toRef} from 'vue'
+import { defineComponent, inject, computed, toRef } from 'vue'
 import DiaryPanel from './DiaryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
 import LimitLevelLabel from './LimitLevelLabel.vue'

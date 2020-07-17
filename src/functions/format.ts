@@ -1,4 +1,4 @@
-function fmt(n: number): string { return n >= 10 ? n + '' : `0${n}` }
+export function fmt(n: number): string { return n >= 10 ? n + '' : `0${n}` }
 
 export interface Calendar {
     year: number

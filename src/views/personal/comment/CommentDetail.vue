@@ -7,18 +7,19 @@ div.ui.container
 <script lang="ts">
 import { defineComponent, computed, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
-import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
+import DetailPanel from '@/layouts/comment/detail/DetailPanel.vue'
+import EditPanel from '@/layouts/comment/edit/EditPanel.vue'
 import { useSWR } from '@/functions/server'
 import { watchPageTitle } from '@/functions/document'
 import { swrInjectionKey, editInjectionKey } from '@/definitions/injections'
+
 
 export default defineComponent({
     components: {DetailPanel, EditPanel},
     setup() {
         const route = useRoute()
 
-        const swr = useSWR(computed(() => route.name === 'Animation.Detail' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
+        const swr = useSWR(computed(() => route.name === 'Comment.Detail' && route.params['id'] ? `/api/personal/comments/${route.params['id']}` : null), null, {byAuthorization: 'LOGIN'})
 
         const editMode = ref(false)
 

@@ -8,7 +8,7 @@ div.notification-content
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {useNotification} from "@/functions/notification";
+import { useNotification } from '@/functions/notification'
 
 export default defineComponent({
     computed: {
