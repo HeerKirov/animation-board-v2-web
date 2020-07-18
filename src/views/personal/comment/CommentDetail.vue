@@ -6,7 +6,7 @@ div.ui.container
 
 <script lang="ts">
 import { defineComponent, computed, provide, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DetailPanel from '@/layouts/comment/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/comment/edit/EditPanel.vue'
 import { useSWR } from '@/functions/server'
@@ -18,8 +18,18 @@ export default defineComponent({
     components: {DetailPanel, EditPanel},
     setup() {
         const route = useRoute()
+        const router = useRouter()
 
-        const swr = useSWR(computed(() => route.name === 'Comment.Detail' && route.params['id'] ? `/api/personal/comments/${route.params['id']}` : null), null, {byAuthorization: 'LOGIN'})
+        const swr = useSWR(computed(() => route.name === 'Comment.Detail' && route.params['id'] ? `/api/personal/comments/${route.params['id']}` : null), null, {
+            byAuthorization: 'LOGIN',
+            errorHandler(code, data, parent) {
+                if(code === 404) {
+                    router.replace({name: 'Comment.New', params: {id: route.params['id']}})
+                }else{
+                    parent?.(code, data)
+                }
+            }
+        })
 
         const editMode = ref(false)
 

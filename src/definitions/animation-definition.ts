@@ -7,7 +7,7 @@ export const publishTypes: DefinitionItem[] = [
 ]
 export const originalWorkTypes: DefinitionItem[] = [
     {name: 'MANGA', title: '漫画', color: 'red'}, 
-    {name: 'NOVEL', title: '小说', color: 'novel'}, 
+    {name: 'NOVEL', title: '小说', color: 'brown'}, 
     {name: 'GAME', title: '游戏', color: 'blue'}, 
     {name: 'ORIGINAL', title: '原创', color: 'green'}, 
     {name: 'OTHER', title: '其他', color: 'pink'}

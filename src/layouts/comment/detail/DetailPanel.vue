@@ -14,7 +14,8 @@ div.ui.centered.grid
     div.ui.fourteen.wide.column(v-else-if="obj")
         div.ui.stackable.grid
             div.three.wide.column
-                img.cover-image(:src="obj.cover")
+                div.ui.card
+                    img.cover-image(:src="obj.cover")
             div.nine.wide.column
                 h1.text.ui.header.is-inline-block {{obj.title}}
                 div.article-title(v-if="obj.articleTitle")
@@ -26,7 +27,8 @@ div.ui.centered.grid
                     Starlight(:value="obj.score", :large="true")
                     div.text-right.mt-1: span.ui.large.text {{scoreDescriptions[obj.score].header}}
                     div.text-right: span.ui.grey.text {{scoreDescriptions[obj.score].content}}
-            div.fourteen.wide.centered.column(v-if="obj.article")
+            div.three.wide.column
+            div.twelve.wide.column(v-if="obj.article")
                 div(v-html="obj.article")
 </template>
 

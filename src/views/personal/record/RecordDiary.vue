@@ -8,7 +8,7 @@ div.ui.container
         div.twelve.wide.column
             div.ui.inline.active.centered.loader(v-if="loading")
             template(v-else)
-                div.ui.segment.diary-item(v-for="item in items")
+                div.ui.segment.diary-item(v-for="(item, index) in items", :key="item.id")
                     router-link.cover(:to="{name: 'Record.Detail', params: {id: item.id}}")
                         img(:src="item.cover")
                         div.title: h2 {{item.title}}
@@ -22,9 +22,10 @@ div.ui.container
                             span.ui.teal.label {{item.publishedEpisodes}}
                             = '/'
                         span.ui.grey.label {{item.totalEpisodes}}
-                        div.next(v-if="item.nextWatch != null"): button.ui.tertiary.small.button 
+                        div.next(v-if="item.nextWatch != null"): button.ui.tertiary.small.button(@click="onNext(index)", :class="{disabled: item.updateLoading}")
                             = 'NEXT 第{{item.nextWatch}}话'
-                            i.plane.icon.ml-1.mr-0
+                            i.notched.circle.loading.icon.ml-1.mr-0(v-if="item.updateLoading")
+                            i.plane.icon.ml-1.mr-0(v-else)
 
         div.four.wide.column
             div.ui.segment.pb-4
@@ -37,7 +38,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, reactive, watchEffect, computed } from 'vue'
+import { defineComponent, ref, Ref, reactive, watchEffect, computed, watch } from 'vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemIconSelector from '@/components/ItemIconSelector.vue'
@@ -46,7 +47,7 @@ import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSelector, useSort } from '@/functions/parameters'
 import { toWeekdayTableTime } from '@/functions/display'
-import { useSWR } from '@/functions/server'
+import { useSWR, useServer } from '@/functions/server'
 import cover from '@/plugins/cover'
 
 const orders = [
@@ -65,6 +66,19 @@ const filters = [
     {name: 'SHELVE', title: '已搁置', icon: 'pause icon'}
 ]
 
+interface Instance {
+    id: number
+    title: string
+    cover: string
+    totalEpisodes: number
+    publishedEpisodes: number
+    watchedEpisodes: number | null
+    nextPublishPlan: string | null
+    nextPublish: number | null
+    nextWatch: number | null
+    updateLoading: boolean
+}
+
 export default defineComponent({
     components: {SearchBox, SortSelector, ItemIconSelector},
     computed: {
@@ -73,6 +87,7 @@ export default defineComponent({
         filters() { return filters }
     },
     setup() {
+        const { request } = useServer()
         const { updateQuery, watchQuery } = useRouterQueryUtil()
 
         const search: Ref<string | undefined> = ref()
@@ -97,20 +112,32 @@ export default defineComponent({
 
         const { loading, data } = useSWR('/api/personal/records/diary', fetcher, {byAuthorization: 'LOGIN'})
 
-        const items: Ref<any[]> = computed(() => {
+        const items: Ref<Instance[]> = ref([])
+        watch(data, () => {
             const now = new Date()
-            return data.value ? (data.value['result'] as any[]).map(i => mapItem(i, now, data.value['night_time_table'])) : []
+            items.value = data.value ? (data.value['result'] as any[]).map(i => mapItem(i, now, data.value['night_time_table'])) : []
         })
+
+        const onNext = async (index: number) => {
+            const item = items.value[index]
+            item.updateLoading = true
+            const r = await request(`/api/personal/records/${item.id}/next-episode`, 'POST', null)
+            item.updateLoading = false
+            if(r.ok) {
+                item.watchedEpisodes = r.data['watched_episodes']
+                item.nextWatch = item.publishedEpisodes > (item.watchedEpisodes ?? 0) ? (item.watchedEpisodes ?? 0) + 1 : null
+            }
+        }
 
         return {
             search, onSearch, filter, onFilterUpdate,
             sortValue, sortDirection, onSortChanged,
-            loading, items
+            loading, items, onNext
         }
     }
 })
 
-function mapItem(item: any, now: Date, nightTimeTable: boolean) {
+function mapItem(item: any, now: Date, nightTimeTable: boolean): Instance {
     const publishedEpisodes = item['published_episodes'] as number
     const watchedEpisodes = item['watched_episodes'] as number | null
     const nextPublishPlan = item['next_publish_plan'] ? toWeekdayTableTime(new Date(item['next_publish_plan']), now, nightTimeTable ? 2 : 0) : null
@@ -122,7 +149,8 @@ function mapItem(item: any, now: Date, nightTimeTable: boolean) {
         totalEpisodes: item['total_episodes'], 
         publishedEpisodes, watchedEpisodes, nextPublishPlan,
         nextWatch: publishedEpisodes > (watchedEpisodes ?? 0) ? (watchedEpisodes ?? 0) + 1 : null,
-        nextPublish: nextPublishPlan != null ? (publishedEpisodes + 1) : null
+        nextPublish: nextPublishPlan != null ? (publishedEpisodes + 1) : null,
+        updateLoading: false
     }
 }
 </script>

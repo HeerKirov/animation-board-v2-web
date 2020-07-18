@@ -19,14 +19,17 @@ export function calendarToDate(calendar: Calendar): Date {
     return new Date(calendar.year, calendar.month - 1, calendar.day ?? 1, calendar.hour ?? 0, calendar.minute ?? 0, calendar.second ?? 0)
 }
 
-export function dateToCalendar(date: Date): Calendar {
+export enum CalendarUntilPart {
+    Month = 0, Day = 1, Hour = 2, Minute = 3, Second = 4
+}
+export function dateToCalendar(date: Date, until?: CalendarUntilPart): Calendar {
     return {
         year: date.getFullYear(),
         month: date.getMonth() + 1,
-        day: date.getDate(),
-        hour: date.getHours(),
-        minute: date.getMinutes(),
-        second: date.getSeconds()
+        day: until === undefined || until >= 1 ? date.getDate() : undefined,
+        hour: until === undefined || until >= 2 ? date.getHours() : undefined,
+        minute: until === undefined || until >= 3 ? date.getMinutes() : undefined,
+        second: until === undefined || until >= 4 ? date.getSeconds() : undefined
     }
 }
 

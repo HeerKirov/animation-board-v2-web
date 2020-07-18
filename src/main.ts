@@ -4,6 +4,7 @@ import App from '@/App.vue'
 import router from '@/router'
 import '@/styles/layout.css'
 import '@/styles/format.css'
+import '@/styles/util.css'
 
 
 createApp(App)

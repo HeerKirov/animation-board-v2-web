@@ -11,7 +11,8 @@ div.ui.centered.grid
     div.ui.fourteen.wide.column(v-else-if="obj")
         div.ui.grid
             div.four.wide.column
-                img.cover-image(:src="obj.cover")
+                div.ui.card
+                    img.cover-image(:src="obj.cover")
             div.twelve.wide.column
                 div.ui.grid
                     div.row

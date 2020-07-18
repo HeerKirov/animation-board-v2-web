@@ -31,7 +31,7 @@ export default [
     {
         name: 'Record.Detail',
         path: '/personal/records/detail/:id',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/personal/record/RecordDetail.vue'),
         meta: {nav: ['record', '@detail'], title: '日记'}
     }
 ]
