@@ -115,6 +115,7 @@ export interface SWR {
     updateLoading: Ref<boolean>
     update: SWRUpdate
     deleteInstance: SWRDelete
+    manual: () => void
 }
 
 export function useSWR(url: Ref<string | null> | string, data?: any, options?: SWROptions): SWR {
@@ -133,27 +134,22 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
     const updateLoadingRef = ref(false)
     const update = useUpdateFunction(dataRef, updateLoadingRef, headers, baseUrl, url, throwError)
     const deleteInstance = useDeleteFunction(updateLoadingRef, headers, baseUrl, url, throwError)
+    const { manual, trigger } = useManualFunction()
 
     const fetcher: RequestParam = reactive({[method == 'GET' ? 'query' : 'data']: data || undefined, headers})
 
-    watch(() => [url, fetcher, passAuthorization], async (_v, _o, onInvalidate) => {
-        if(!passAuthorization.value) {
-            return
-        }
+    watch(() => [url, fetcher, passAuthorization, trigger], async (_v, _o, onInvalidate) => {
+        if(!passAuthorization.value) { return }
 
         const unrefUrl = unref(url)
-        if(!unrefUrl) {
-            return
-        }
+        if(!unrefUrl) { return }
 
         let validate = true
         onInvalidate(() => {validate = false})
 
         loadingRef.value = true
         const r = await request0(baseUrl + unrefUrl, method, toRaw(fetcher))
-        if(!validate) {
-            return
-        }
+        if(!validate) { return }
 
         loadingRef.value = false
         if(r.status === 'OK') {
@@ -164,7 +160,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         }
     }, {deep: true, immediate: true})
 
-    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance}
+    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance, manual}
 }
 
 function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRUpdate {
@@ -204,6 +200,12 @@ function useDeleteFunction(updateLoadingRef: Ref<boolean>, headers: any, baseUrl
             return {ok: false, data: undefined}
         }
     }
+}
+
+function useManualFunction() {
+    const trigger = ref(0)
+    const manual = () => { trigger.value += 1 }
+    return {manual, trigger}
 }
 
 //== Continuous ==

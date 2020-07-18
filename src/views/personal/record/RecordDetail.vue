@@ -51,50 +51,9 @@ div.ui.container
                             i.chart.bar.icon
                             = '离散图'
                     div(v-if="currentPanel === 'progress'")
-                        div.ui.grid(v-if="progressFirst")
-                            div.ui.row.pb-0
-                                div.ui.twelve.wide.column.pr-1half
-                                    span.ui.label {{progressFirst.ordinal > 1 ? `${progressFirst.ordinal}周目` : "首次订阅"}}
-                                    a.ui.tertiary.mini.button.right.floated
-                                        //- i.notched.circle.loading.icon.ml-1.mr-0(v-if="item.updateLoading")
-                                        i.plane.icon
-                                        = 'NEXT 第{{progressFirst.watchedEpisodes + 1}}话'
-                                div.ui.four.wide.column
-                                    a.ui.tertiary.mini.button.right.floated
-                                            = '删除这一条进度'
-                                            i.close.icon.mr-0.ml-1
-                            div.ui.row
-                                div.ui.twelve.wide.column
-                                    span {{Math.floor(progressFirst.watchedEpisodes / detail.totalEpisodes * 100)}}%
-                                    span.float-right.bottom-gap 已看完
-                                        a.ui.label.mini {{progressFirst.watchedEpisodes}}
-                                        = '话'
-                                    div.progress-bar
-                                        div.content(:style="{width: `${Math.floor(progressFirst.watchedEpisodes / detail.totalEpisodes * 100)}%`}")
-                                div.ui.four.wide.column.px-2
-                                    div 
-                                        i.calendar.plus.outline.icon
-                                        = '订阅时间 {{progressFirst.startTime}}'
-                                    div.mt-1
-                                        i.calendar.check.icon
-                                        = '完成时间 {{progressFirst.finishTime}}'
-                        div.ui.divider.mb-0
-                        table.ui.very.basic.table.mt-0(v-if="progress.length > 0")
-                            tbody
-                                tr(v-for="item in progress")
-                                    td
-                                        div.ui.label {{item.ordinal}}
-                                        = '周目'
-                                    td
-                                        i {{item.watchedEpisodes}}
-                                        = '话 已完成'
-                                    td.right.aligned.collapsing {{item.startTime ?? '(未知时间)'}}
-                                    td.collapsing →
-                                    td.collapsing {{item.finishTime}}
-                                    td.collapsing: a.ui.tertiary.mini.icon.button: i.close.icon
-                        a.ui.tertiary.mini.button.right.floated(v-if="progressFirst && progressFirst.watchedEpisodes >= detail.totalEpisodes")
-                            = '新建进度'
-                            i.plus.icon.mr-0.ml-1
+                        ProgressBoard(:id="idRef", :total-episodes="detail.totalEpisodes", :published-episodes="detail.publishedEpisodes", @detailChanged="manual")
+                    div(v-else)
+                        
                     
 </template>
 
@@ -102,6 +61,8 @@ div.ui.container
 import { defineComponent, computed, Ref, watch, ref, watchEffect } from 'vue'
 import { useRoute, RouteLocationNormalizedLoaded, useRouter } from 'vue-router'
 import LabelSwitch from '@/components/LabelSwitch.vue'
+import ProgressBoard from '@/layouts/record/ProgressBoard.vue'
+import GraphBoard from '@/layouts/record/GraphBoard.vue'
 import { detailItem, topBarItems } from '@/definitions/secondary-bar'
 import { useSWR } from '@/functions/server'
 import { useMessageBox } from '@/functions/message-box'
@@ -125,7 +86,7 @@ const statusMap: {[name: string]: {title: string, color: string}} = {
 }
 
 export default defineComponent({
-    components: {LabelSwitch},
+    components: {LabelSwitch, ProgressBoard, GraphBoard},
     computed: {
         barItems: () => [topBarItems.record, detailItem],
     },
@@ -137,9 +98,7 @@ export default defineComponent({
 
         const mainDetail = useMainDetail(idRef)
 
-        const progress = useProgress(idRef, currentPanel)
-
-        return {currentPanel, ...mainDetail, ...progress}
+        return {idRef, currentPanel, ...mainDetail}
     }
 })
 
@@ -147,7 +106,7 @@ function useMainDetail(idRef: Ref<string | null>) {
     const router = useRouter()
     const { message } = useMessageBox()
 
-    const { loading, data, update, deleteInstance } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}` : null), null, {byAuthorization: 'LOGIN'})
+    const { loading, data, update, deleteInstance, manual } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}` : null), null, {byAuthorization: 'LOGIN'})
     watchPageTitle(() => data.value?.["title"])
 
     const detail = computed(() => data.value ? mapDetail(data.value) : null)
@@ -171,38 +130,7 @@ function useMainDetail(idRef: Ref<string | null>) {
         }
     }
 
-    return {loading, detail, onDetailUpdate, onDelete}
-}
-
-function useProgress(idRef: Ref<string | null>, currentPanel: Ref<"progress" | "graph">) {
-    const init = ref(false)
-    const stopInit = watch(currentPanel, () => { 
-        if(currentPanel.value === 'progress') {
-            init.value = true
-            stopInit?.()
-        } 
-    }, {immediate: true})
-
-    const { data } = useSWR(computed(() => init.value && idRef.value ? `/api/personal/records/${idRef.value}/progress` : null), null, {byAuthorization: 'LOGIN'})
-
-    const progress: Ref<Progress[]> = ref([])
-    const progressFirst: Ref<Progress | null> = ref(null)
-
-    watch(data, () => { 
-        const list = data.value ? (data.value as any[]).map(mapProgress).reverse() : []
-        if(list.length === 0) {
-            progress.value = []
-            progressFirst.value = null
-        }else if(list.length === 1) {
-            progress.value = []
-            progressFirst.value = list[0]
-        }else{
-            progress.value = list.slice(1)
-            progressFirst.value = list[0]
-        }
-    }, {immediate: true})
-
-    return {progress, progressFirst}
+    return {loading, manual, detail, onDetailUpdate, onDelete}
 }
 
 function mapDetail(data: any) {
@@ -227,14 +155,6 @@ function mapPublishPlan(data: string[]) {
     return origin.map(d => calendarToString(dateToCalendar(new Date(d), CalendarUntilPart.Minute)))
 }
 
-function mapProgress(item: any): Progress {
-    return {
-        ordinal: item['ordinal'],
-        watchedEpisodes: item['watched_episodes'],
-        startTime: item['start_time'] ? toCNStringDate(new Date(item['start_time'])) : null,
-        finishTime: item['finish_time'] ? toCNStringDate(new Date(item['finish_time'])) : null
-    }
-}
 </script>
 
 <style scoped>

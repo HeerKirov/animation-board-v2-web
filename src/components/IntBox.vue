@@ -1,5 +1,6 @@
 <template lang="pug">
-input.ui.input(:placeholder="placeholder", v-model="value", type="number", :min="min", :max="max")
+div.ui.input
+    input(:placeholder="placeholder", v-model="value", type="number", :min="min", :max="max")
 div.ui.pointing.label.red.basic(v-if="error") {{error}}
 </template>
 

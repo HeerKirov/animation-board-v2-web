@@ -121,7 +121,7 @@ export default defineComponent({
         const onNext = async (index: number) => {
             const item = items.value[index]
             item.updateLoading = true
-            const r = await request(`/api/personal/records/${item.id}/next-episode`, 'POST', null)
+            const r = await request(`/api/personal/records/${item.id}/next-episode`, 'POST')
             item.updateLoading = false
             if(r.ok) {
                 item.watchedEpisodes = r.data['watched_episodes']
