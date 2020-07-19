@@ -4,10 +4,10 @@ div.ui.left.icon.input(ref="refInput")
     i.calendar.link.icon(@click="onOpen")
 div(v-if="visible", ref="refPanel")
     div.ui.segment.panel.pt-1
-        button.ui.tertiary.mini.button(:class="{primary: currentPanel === 'year'}", @click="currentPanel = 'year'") {{editorValue.year}}年
-        button.ui.tertiary.mini.button(v-if="showTab.month && editorValue.year != null", :class="{primary: currentPanel === 'month'}", @click="currentPanel = 'month'") {{editorValue.month}}月
-        button.ui.tertiary.mini.button(v-if="showTab.day && editorValue.month != null", :class="{primary: currentPanel === 'day'}", @click="currentPanel = 'day'") {{editorValue.day}}日
-        button.ui.tertiary.mini.button(v-if="showTab.time && editorValue.day != null", :class="{primary: currentPanel === 'time'}", @click="currentPanel = 'time'") {{editorValue.hour ?? '...'}}时{{editorValue.minute ?? '...'}}分
+        button.ui.tertiary.mini.button.is-inline-block(:class="{primary: currentPanel === 'year'}", @click="currentPanel = 'year'") {{editorValue.year}}年
+        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.month && editorValue.year != null", :class="{primary: currentPanel === 'month'}", @click="currentPanel = 'month'") {{editorValue.month}}月
+        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.day && editorValue.month != null", :class="{primary: currentPanel === 'day'}", @click="currentPanel = 'day'") {{editorValue.day}}日
+        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.time && editorValue.day != null", :class="{primary: currentPanel === 'time'}", @click="currentPanel = 'time'") {{editorValue.hour ?? '...'}}时{{editorValue.minute ?? '...'}}分
         div.ui.divider.mt-0
         div.ui.three.columns.grid.px-1(v-show="currentPanel === 'year'")
             div.ui.row.pt-1.pb-0

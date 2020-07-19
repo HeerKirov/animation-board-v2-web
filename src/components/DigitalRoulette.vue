@@ -1,10 +1,10 @@
 <template lang="pug">
 div.text-center
-    button.ui.tertiary.mini.button(v-if="upButton", @click="plus") +{{step}}
-    button.ui.tertiary.mini.button(v-else, @click="minus") -{{step}}
+    button.ui.tertiary.mini.button.is-inline-block(v-if="upButton", @click="plus") +{{step}}
+    button.ui.tertiary.mini.button.is-inline-block(v-else, @click="minus") -{{step}}
     div.is-weight.font-size-18 {{value}}
-    button.ui.tertiary.mini.button(v-if="upButton", @click="minus") -{{step}}
-    button.ui.tertiary.mini.button(v-else, @click="plus") +{{step}}
+    button.ui.tertiary.mini.button.is-inline-block(v-if="upButton", @click="minus") -{{step}}
+    button.ui.tertiary.mini.button.is-inline-block(v-else, @click="plus") +{{step}}
 </template>
 
 <script lang="ts">

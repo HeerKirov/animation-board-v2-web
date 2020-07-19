@@ -6,6 +6,7 @@ template(v-if="visible")
         div.content {{content}}
         div.actions
             button.ui.button(v-for="action in actions", :class="action.color", @click="onClick(action.value)") {{action.name}}
+div#modal-target
 </template>
 
 <script lang="ts">

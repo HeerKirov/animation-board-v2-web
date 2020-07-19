@@ -39,5 +39,6 @@ export default defineComponent({
         top: 50px;
         min-width: 200px;
         max-width: 500px;
+        z-index: 1005;
     }
 </style>

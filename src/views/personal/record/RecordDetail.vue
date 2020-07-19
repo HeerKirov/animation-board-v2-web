@@ -12,7 +12,7 @@ div.ui.container
                 i.bookmark.icon
                 = '评价'
     div.ui.centered.grid
-        div.ui.active.centered.inline.loader.mt-4(v-if="loading")
+        div.ui.active.centered.inline.loader.mt-4(v-if="loading && !detail")
         div.ui.fourteen.wide.column(v-else-if="detail")
             div.ui.stackable.grid
                 div.three.wide.column

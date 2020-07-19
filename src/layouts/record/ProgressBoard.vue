@@ -1,65 +1,68 @@
 <template lang="pug">
-div.ui.grid(v-if="progressFirst")
-    div.ui.row.pb-0
-        div.ui.twelve.wide.column.pr-1half
-            span.ui.label {{progressFirst.ordinal > 1 ? `${progressFirst.ordinal}周目` : "首次订阅"}}
-            a.ui.tertiary.mini.button.right.floated(v-if="publishedEpisodes > (progressFirst.watchedEpisodes ?? 0)", @click="onNext")
-                i.notched.circle.loading.icon.ml-1.mr-0(v-if="progressFirst.updateLoading")
-                i.plane.icon(v-else)
-                = 'NEXT 第{{progressFirst.watchedEpisodes + 1}}话'
-        div.ui.four.wide.column
-            a.ui.tertiary.mini.button.right.floated(@click="onDeleteProgress(null)")
-                    = '删除这一条进度'
-                    i.close.icon.mr-0.ml-1
-    div.ui.row
-        div.ui.twelve.wide.column
-            span {{Math.floor(progressFirst.watchedEpisodes / totalEpisodes * 100)}}%
-            div.float-right.bottom-gap(v-if="editEpisodeMode")
-                IntBox.mini(:not-null="true", :min="0", :max="totalEpisodes", v-model="editEpisodeValue")
-                button.ui.green.tertiary.mini.button(@click="onSaveEpisode", :class="{disabled: editEpisodeLoading}")
-                    i.notched.circle.loading.icon(v-if="editEpisodeLoading")
-                    i.save.icon(v-else)
-                    = '保存'
-            span.float-right.bottom-gap(v-else) 已看完
-                a.ui.label.mini(@click="editEpisodeMode = true") {{progressFirst.watchedEpisodes}}
-                = '话'
-            div.progress-bar
-                div.secondary-content(:style="{width: `${Math.floor(publishedEpisodes / totalEpisodes * 100)}%`}")
-                div.content(:style="{width: `${Math.floor(progressFirst.watchedEpisodes / totalEpisodes * 100)}%`}")
-        div.ui.four.wide.column.px-2
-            div 
-                i.calendar.plus.outline.icon
-                = '订阅时间 {{progressFirst.startTime}}'
-            div.mt-1
-                i.calendar.check.icon
-                = '完成时间 {{progressFirst.finishTime}}'
-div.ui.divider.mb-0
-table.ui.very.basic.table.mt-0(v-if="progress.length > 0")
-    tbody
-        tr(v-for="(item, index) in progress")
-            td
-                div.ui.label {{item.ordinal}}
-                = '周目'
-            td
-                i {{item.watchedEpisodes}}
-                = '话 已完成'
-            td.right.aligned.collapsing {{item.startTime ?? '(未知时间)'}}
-            td.collapsing →
-            td.collapsing {{item.finishTime}}
-            td.collapsing: a.ui.tertiary.mini.icon.button(@click="onDeleteProgress(index)"): i.close.icon
-div.text-center(v-if="!progressFirst")
-    = '还没有任何进度。'
-    a.ui.tertiary.button
-        i.plus.icon
-        = '创建第一条进度'
-a.ui.tertiary.mini.button.right.floated(v-else-if="progressFirst.watchedEpisodes >= totalEpisodes")
-    = '新建进度'
-    i.plus.icon.mr-0.ml-1
+template(v-if="!loading")
+    div.ui.grid(v-if="progressFirst")
+        div.ui.row.pb-0
+            div.ui.twelve.wide.column.pr-1half
+                span.ui.label {{progressFirst.ordinal > 1 ? `${progressFirst.ordinal}周目` : "首次订阅"}}
+                a.ui.tertiary.mini.button.right.floated(v-if="publishedEpisodes > (progressFirst.watchedEpisodes ?? 0)", @click="onNext")
+                    i.notched.circle.loading.icon.ml-1.mr-0(v-if="progressFirst.updateLoading")
+                    i.plane.icon(v-else)
+                    = 'NEXT 第{{progressFirst.watchedEpisodes + 1}}话'
+            div.ui.four.wide.column
+                a.ui.tertiary.mini.button.right.floated(@click="onDeleteProgress(null)")
+                        = '删除这一条进度'
+                        i.close.icon.mr-0.ml-1
+        div.ui.row
+            div.ui.twelve.wide.column
+                span {{Math.floor(progressFirst.watchedEpisodes / totalEpisodes * 100)}}%
+                div.float-right.bottom-gap(v-if="editEpisodeMode")
+                    IntBox.mini(:not-null="true", :min="0", :max="totalEpisodes", v-model="editEpisodeValue")
+                    button.ui.green.tertiary.mini.button(@click="onSaveEpisode", :class="{disabled: editEpisodeLoading}")
+                        i.notched.circle.loading.icon(v-if="editEpisodeLoading")
+                        i.save.icon(v-else)
+                        = '保存'
+                span.float-right.bottom-gap(v-else) 已看完
+                    a.ui.label.mini(@click="editEpisodeMode = true") {{progressFirst.watchedEpisodes}}
+                    = '话'
+                div.progress-bar
+                    div.secondary-content(:style="{width: `${Math.floor(publishedEpisodes / totalEpisodes * 100)}%`}")
+                    div.content(:style="{width: `${Math.floor(progressFirst.watchedEpisodes / totalEpisodes * 100)}%`}")
+            div.ui.four.wide.column.px-2
+                div 
+                    i.calendar.plus.outline.icon
+                    = '订阅时间 {{progressFirst.startTime}}'
+                div.mt-1
+                    i.calendar.check.icon
+                    = '完成时间 {{progressFirst.finishTime}}'
+    div.ui.divider.mb-0
+    table.ui.very.basic.table.mt-0(v-if="progress.length > 0")
+        tbody
+            tr(v-for="(item, index) in progress")
+                td
+                    div.ui.label {{item.ordinal}}
+                    = '周目'
+                td
+                    i {{item.watchedEpisodes}}
+                    = '话 已完成'
+                td.right.aligned.collapsing {{item.startTime ?? '(未知时间)'}}
+                td.collapsing →
+                td.collapsing {{item.finishTime}}
+                td.collapsing: a.ui.tertiary.mini.icon.button(@click="onDeleteProgress(index)"): i.close.icon
+    div.text-center(v-if="!progressFirst")
+        = '还没有任何进度。'
+        a.ui.tertiary.button(@click="openProgressModal")
+            i.plus.icon
+            = '创建第一条进度'
+    a.ui.tertiary.mini.button.right.floated(v-else-if="progressFirst.watchedEpisodes >= totalEpisodes", @click="openProgressModal")
+        = '新建进度'
+        i.plus.icon.mr-0.ml-1
+    ProgressModal(v-model:visible="progressModalVisible", :id="id", :published-episodes="publishedEpisodes", @success="onProgressModalSuccess")
 </template>
 
 <script lang="ts">
 import { defineComponent, Ref, ref, watch, computed } from 'vue'
 import IntBox from '@/components/IntBox.vue'
+import ProgressModal from './ProgressModal.vue'
 import { useSWR, useServer } from '@/functions/server'
 import { useMessageBox } from '@/functions/message-box'
 import { toCNStringDate } from '@/functions/display'
@@ -72,9 +75,8 @@ interface Progress {
     updateLoading?: boolean
 }
 
-//TODO 新建进度面板&实现
 export default defineComponent({
-    components: {IntBox},
+    components: {IntBox, ProgressModal},
     props: {
         id: String,
         totalEpisodes: Number,
@@ -86,7 +88,7 @@ export default defineComponent({
         const { message } = useMessageBox()
 
         const idRef: Ref<string | null> = computed(() => props.id ?? null)
-        const { data } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}/progress` : null), null, {byAuthorization: 'LOGIN'})
+        const { loading, data, manual } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}/progress` : null), null, {byAuthorization: 'LOGIN'})
 
         const progress: Ref<Progress[]> = ref([])
         const progressFirst: Ref<Progress | null> = ref(null)
@@ -113,8 +115,6 @@ export default defineComponent({
             }
         }
 
-        const editEpisode = useEditEpisode(idRef, progressFirst, updateProgress)
-
         const onDeleteProgress = async (index: number | null) => {
             const action = await message({
                 header: '删除确认',
@@ -137,12 +137,24 @@ export default defineComponent({
                         }
                     }else{
                         progress.value.splice(index, 1)
+                        if(progress.value.length === 0) {
+                            emit('detailChanged')
+                        }
                     }
                 }
             }
         }
 
-        return {progress, progressFirst, onDeleteProgress, ...editEpisode}
+        const editEpisode = useEditEpisode(idRef, progressFirst, updateProgress)
+
+        const progressModalVisible = ref(false)
+        const openProgressModal = () => { progressModalVisible.value = true }
+        const onProgressModalSuccess = () => {
+            manual()
+            updateProgress(null, null)
+        }
+
+        return {loading, progress, progressFirst, onDeleteProgress, ...editEpisode, progressModalVisible, openProgressModal, onProgressModalSuccess}
     }
 })
 
