@@ -13,7 +13,7 @@ div.sixteen.wide.column.py-0(v-if="showBoard")
     div.list-content
         button.ui.tertiary.mini.button(v-for="item in result", :key="item.id", @click="onChoose(item)") {{item.name}}
         button.ui.tertiary.mini.button(v-if="hasNext", @click="requestForNext") 获取更多结果...
-    div.ui.divider.mb-0(v-if="items.length > 0")
+    div.ui.divider.mb-0(v-if="result.length > 0")
 </template>
 
 <script lang="ts">

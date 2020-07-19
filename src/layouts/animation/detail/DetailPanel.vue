@@ -167,6 +167,7 @@ function mapRelation(r: any) {
     }
     .relations.item-image {
         width: 25%;
+        border-radius: 3px;
     }
     .relations.item-content {
         width: 75%;

@@ -58,7 +58,7 @@ import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
 import cover from '@/plugins/cover'
 import config from '@/config'
-import { useNotification } from '../functions/notification'
+import { useNotification } from '@/functions/notification'
 import { useRouter } from 'vue-router'
 
 const switchItems = [{name: 'false', title: '关闭'}, {name: 'true', title: '开启'}]

@@ -51,6 +51,10 @@ export function toWeekdayTableTime(date: Date, now?: Date, nightDelay?: number):
     const prefix = diff < 7 ? `本${weekdayName[weekday]}` :
                     diff < 14 ? `下${weekdayName[weekday]}` :
                     `${date.getFullYear() !== now.getFullYear() ? date.getFullYear() + '年' : ''}${date.getMonth() + 1}月${date.getDate()}日`
-    const suffix = date.getFullYear() !== now.getFullYear() ? '' : `${fmt(date.getHours() + (nightDelay || 0))}:${fmt(date.getMinutes())}`
+    const suffix = date.getFullYear() !== now.getFullYear() ? '' : toTimeTableTime(date, nightDelay)
     return prefix + suffix
+}
+
+export function toTimeTableTime(date: Date, nightDelay?: number): string {
+    return `${fmt(date.getHours() + (nightDelay || 0))}:${fmt(date.getMinutes())}`
 }

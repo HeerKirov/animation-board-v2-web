@@ -82,11 +82,11 @@ export default defineComponent({
     }
 })
 
-function mapItem(item: any) {
+export function mapItem(item: any) {
     const eventType = item['active_event']['type']
     const activeEvent = eventType === 'CREATE_RECORD' ? '加入日记'
         : eventType === 'CREATE_PROGRESS' ? '创建新的进度'
-        : eventType === 'WATCH_EPISODE' ? `观看第${(item['active_event']['episode'] as number[]).join(', ')}话`
+        : eventType === 'WATCH_EPISODE' ? `看完第${(item['active_event']['episode'] as number[]).join(', ')}话`
         : '未知类型的事件'
     return {
         id: item['animation_id'],
