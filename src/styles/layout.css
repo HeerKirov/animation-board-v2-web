@@ -117,3 +117,5 @@ body {height: auto !important}
 .is-inline-block {display: inline-block !important}
 
 .float-right {float: right}
+
+.min-height-0 {min-height: 0 !important}

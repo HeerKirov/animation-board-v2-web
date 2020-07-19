@@ -59,10 +59,11 @@ div.ui.centered.grid
                             div.ui.label STAFF
                         div.nine.wide.column.staff.item-content
                             router-link.ui.tertiary.mini.button(v-for="i in (obj.staffs.STAFF || [])", :to="{name: 'Staff.Detail', params: {id: i.id}}") {{i.name}}
-            div.six.wide.column
-                DiaryPanel
-            div.six.wide.column
-                CommentPanel
+            template(v-if="isLogin")
+                div.six.wide.column
+                    DiaryPanel
+                div.six.wide.column
+                    CommentPanel
         template(v-if="obj.relations && obj.relations.length > 0")
             div.ui.divider
             div.sub-title.mb-2 相关动画
@@ -106,7 +107,7 @@ export default defineComponent({
         const editMode = inject(editInjectionKey)!
         const onEdit = () => { editMode.value = true }
 
-        return {obj, loading, onEdit, isStaff: toRef(stats, 'isStaff')}
+        return {obj, loading, onEdit, isLogin: toRef(stats, 'isLogin'), isStaff: toRef(stats, 'isStaff')}
     }
 })
 

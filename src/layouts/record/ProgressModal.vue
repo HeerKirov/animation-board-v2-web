@@ -29,8 +29,10 @@ teleport(to='#modal-target')
                         div.ui.field
                             label 已看集数
                             IntBox(:min="0", :max="publishedEpisodes", v-model="supplement.data.watchedEpisodes")
-                        button.ui.green.fluid.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}") 提交并保存
-                            i.notched.circle.loading.icon(v-if="supplement.updateLoading")
+            div.actions(v-if="currentPanel === 'supplement'")
+                button.ui.green.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}")
+                    i.notched.circle.loading.icon(v-if="supplement.updateLoading")
+                    = '提交并保存'
 
 </template>
 
@@ -39,6 +41,7 @@ import { defineComponent, ref, watch, Ref, reactive, computed } from 'vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import IntBox from '@/components/IntBox.vue'
 import { useServer } from '@/functions/server'
+import { useNotification } from '@/functions/notification'
 import { Calendar, calendarToDate, dateToUTCString } from '@/functions/format'
 
 export default defineComponent({
@@ -83,11 +86,13 @@ export default defineComponent({
 
 function useSupplement(idRef: Ref<string | null>, success: () => void) {
     const { request } = useServer()
+    const { notify } = useNotification()
 
     const data: {startTime: Calendar | null, finishTime: Calendar | null, watchedEpisodes: number} = reactive({startTime: null, finishTime: null, watchedEpisodes: 0})
     const updateLoading = ref(false)
 
     const onSave = async () => {
+        if(!validate()) { return }
         updateLoading.value = true
         const r = await request(`/api/personal/records/${idRef.value}/progress`, 'POST', {
             supplement: true,
@@ -97,6 +102,14 @@ function useSupplement(idRef: Ref<string | null>, success: () => void) {
         })
         if(r.ok) { success() }
         updateLoading.value = false
+    }
+
+    const validate = () => {
+        if(data.startTime != null && data.finishTime != null && calendarToDate(data.startTime).getTime() > calendarToDate(data.finishTime).getTime()) {
+            notify('格式错误', 'error', '进度开始时间不能晚于结束时间。')
+            return false
+        }
+        return true
     }
 
     return {data, onSave, updateLoading}

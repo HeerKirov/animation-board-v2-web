@@ -33,35 +33,21 @@ div.ui.segment.panel(v-else-if="data")
                     div.value {{data.watchedEpisodes}}/{{data.totalEpisodes}}
                     div.label 已看
 div.ui.placeholder.segment.panel(v-else)
-    template(v-if="guide === 'default'")
-        span.font-size-14.text-center.is-weight.mb-1 未订阅此动画
-        button.ui.primary.button(@click="onClickFirst")
-            i.book.icon
-            = '加入日记'
-    template(v-else-if="guide === 'choose'")
-        span.text-center.is-weight.mb-2 以何种方式将此动画加入日记？
-        div.ui.three.columns.center.aligned.grid
-            div.middle.aligned.row.pb-2
-                div.column.px-1
-                    i.thumbtack.icon.font-size-42
-                    div.sub-title 从头开始观看
-                    button.ui.green.mini.fluid.button(@click="onSubscribe") 订阅
-                div.column.px-1
-                    i.pencil.alternate.icon.font-size-42
-                    div.sub-title 早就看过了？
-                    button.ui.mini.fluid.button(@click="onSupplement") 补齐记录
-                div.column.px-1
-                    i.flag.icon.font-size-42
-                    div.sub-title 只是随便看看
-                    button.ui.mini.fluid.button.px-1(@click="onRecord") 仅列入日记
+    span.font-size-14.text-center.is-weight.mb-1 未订阅此动画
+    button.ui.primary.button(@click="onOpenCreateModal")
+        i.book.icon
+        = '加入日记'
+CreateModal(:id="id", v-model:visible="modalVisible", :published-episodes="data?.publishedEpisodes", :total-episodes="data?.totalEpisodes")
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, computed, Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import CreateModal from '@/layouts/record/CreateModal.vue'
 import { useSWR } from '@/functions/server'
 
 export default defineComponent({
+    components: {CreateModal},
     setup() {
         const route = useRoute()
 
@@ -75,33 +61,17 @@ export default defineComponent({
         })
         const dataComputed = computed(() => data.value ? mapData(data.value) : null)
         
-        const { guide, onClickFirst, onSubscribe, onSupplement, onRecord } = useNewPanel(id)
+        const { modalVisible, onOpenCreateModal } = useNewPanel(id)
 
-        return {id, loading, data: dataComputed, guide, onClickFirst, onSubscribe, onSupplement, onRecord}
+        return {id, loading, data: dataComputed, modalVisible, onOpenCreateModal}
     }
 })
 
 function useNewPanel(id: Ref<any>) {
-    const router = useRouter()
+    const modalVisible = ref(false)
+    const onOpenCreateModal = () => { modalVisible.value = true }
 
-    const guide = ref("default")
-
-    const onClickFirst = () => {
-        guide.value = "choose"
-    }
-
-    //TODO 完成新建record的实现代码
-    const onSupplement = () => {
-        
-    }
-    const onSubscribe = () => {
-
-    }
-    const onRecord = () => {
-
-    }
-
-    return {guide, onClickFirst, onSubscribe, onSupplement, onRecord}
+    return {modalVisible, onOpenCreateModal}
 }
 
 function mapData(item: any) {
@@ -111,6 +81,7 @@ function mapData(item: any) {
         seenOriginal: item['seen_original'],
         progressCount: item['progress_count'],
         watchedEpisodes: item['watched_episodes'],
+        publishedEpisodes: item['published_episodes'],
         totalEpisodes: item['total_episodes']
     }
 }
