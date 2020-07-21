@@ -39,7 +39,3 @@ function defaultUserInfo() {
     return {name: '', cover: cover.userOrEmpty(null)}
 }
 </script>
-
-<style scoped>
-
-</style>

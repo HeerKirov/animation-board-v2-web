@@ -71,7 +71,3 @@ function remapData(item: Instance, old: Instance) {
     return data
 }
 </script>
-
-<style scoped>
-
-</style>

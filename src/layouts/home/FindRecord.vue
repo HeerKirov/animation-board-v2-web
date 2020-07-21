@@ -40,7 +40,3 @@ function mapItem(item: any) {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

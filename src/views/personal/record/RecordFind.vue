@@ -130,7 +130,3 @@ function mapItem(item: any, filter: string) {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

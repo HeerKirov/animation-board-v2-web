@@ -47,7 +47,7 @@ function useStars(value: Ref<number>) {
 
 <style scoped>
     .score {
-        width: 20px !important
+        width: 20px !important;
     }
     .large-score {
         width: 25px !important;

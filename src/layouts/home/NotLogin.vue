@@ -74,7 +74,3 @@ function mapAnimationItem(item: any) {
     }
 }
 </script>
-
-<style scoped>
-
-</style>
