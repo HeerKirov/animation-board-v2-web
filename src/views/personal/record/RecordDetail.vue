@@ -53,7 +53,7 @@ div.ui.container
                     div(v-if="currentPanel === 'progress'")
                         ProgressBoard(:id="idRef", :total-episodes="detail.totalEpisodes", :published-episodes="detail.publishedEpisodes", @detailChanged="manual")
                     div(v-else)
-                        
+                        GraphBoard(:id="idRef", :total-episodes="detail.totalEpisodes", @detailChanged="manual")
                     
 </template>
 

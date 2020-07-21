@@ -2,7 +2,7 @@
 div.ui.segment
     div.ui.grid
         div.thirteen.wide.column
-            div.ui.label(v-for="(item, index) in items", :class="{'green basic': !item.id}") {{item.name}}
+            div.ui.label.mb-1(v-for="(item, index) in items", :class="{'green basic': !item.id}") {{item.name}}
                 i.delete.icon(v-if="editMode", @click="onDelete(index)")
         div.three.wide.column
             button.ui.mini.button.float-right(:class="{basic: !editMode}", @click="editMode = !editMode")
@@ -117,6 +117,8 @@ function useBoard(items: Ref<TagItem[]>, editMode: Ref<boolean>) {
             })
 
             items.value.splice(items.value.length, 0, ...append)
+
+            searchBoxText.value = ''
         }
     }
 

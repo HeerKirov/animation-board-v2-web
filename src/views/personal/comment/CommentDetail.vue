@@ -5,7 +5,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, provide, ref } from 'vue'
+import { defineComponent, computed, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DetailPanel from '@/layouts/comment/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/comment/edit/EditPanel.vue'
@@ -32,6 +32,7 @@ export default defineComponent({
         })
 
         const editMode = ref(false)
+        watch(() => route.params, () => { editMode.value = false })
 
         watchPageTitle(() => swr.data.value?.["title"])
 

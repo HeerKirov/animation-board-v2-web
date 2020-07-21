@@ -5,7 +5,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, provide, ref } from 'vue'
+import { defineComponent, computed, provide, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailPanel from '@/layouts/animation/detail/DetailPanel.vue'
 import EditPanel from '@/layouts/animation/edit/EditPanel.vue'
@@ -21,6 +21,7 @@ export default defineComponent({
         const swr = useSWR(computed(() => route.name === 'Animation.Detail' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
 
         const editMode = ref(false)
+        watch(() => route.params, () => { editMode.value = false })
 
         watchPageTitle(() => swr.data.value?.["title"])
 
