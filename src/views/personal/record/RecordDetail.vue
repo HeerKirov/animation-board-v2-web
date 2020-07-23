@@ -30,9 +30,9 @@ div.ui.container
                         div.extra.content.px-1.pb-1(v-if="detail.publishPlan.length > 0")
                             div.mb-1 后续发布
                             div.publish-plan-gap(v-for="(plan, index) in detail.publishPlan")
-                                div.ui.teal.fluid.label
+                                div.ui.teal.fluid.label.pr-0
                                     span {{index + detail.publishedEpisodes + 1}}
-                                    div.detail {{plan}}
+                                    div.detail.publish-plan-overflow {{plan}}
                     a.ui.red.fluid.mini.button(@click="onDelete")
                         i.trash.icon
                         = '删除记录'
@@ -53,7 +53,7 @@ div.ui.container
                     div(v-if="currentPanel === 'progress'")
                         ProgressBoard(:id="idRef", :total-episodes="detail.totalEpisodes", :published-episodes="detail.publishedEpisodes", @detailChanged="manual")
                     div(v-else)
-                        GraphBoard(:id="idRef", :total-episodes="detail.totalEpisodes", @detailChanged="manual")
+                        GraphBoard(:id="idRef", :total-episodes="detail.totalEpisodes", :published-episodes="detail.publishedEpisodes", @detailChanged="manual")
                     
 </template>
 
@@ -70,13 +70,6 @@ import { watchPageTitle } from '@/functions/document'
 import { toWeekdayTableTime, toCNStringDate } from '@/functions/display'
 import { dateToCalendar, calendarToString, CalendarUntilPart } from '@/functions/format'
 import cover from '@/plugins/cover'
-
-interface Progress {
-    ordinal: number
-    watchedEpisodes: number
-    startTime: string | null
-    finishTime: string | null
-}
 
 const statusMap: {[name: string]: {title: string, color: string}} = {
     NO_PROGRESS: {title: '无进度', color: ''},
@@ -164,21 +157,8 @@ function mapPublishPlan(data: string[]) {
     .publish-plan-gap {
         margin-bottom: 3px;
     }
-    .progress-bar {
-        height: 15px; 
-        width: 100%; 
-        background-color: lightgray; 
-        border-radius: 3px;
-        overflow: hidden;
-    }
-    .progress-bar .content {
-        height: 100%;
-        background-color: #21BA45;
-    }
-    .pr-1half {
-        padding-right: 7px !important;
-    }
-    .bottom-gap {
-        margin-bottom: 3px;
+    .publish-plan-overflow {
+        width: 0;
+        white-space: nowrap;
     }
 </style>

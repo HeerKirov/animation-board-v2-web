@@ -7,6 +7,7 @@
 ### Setup
 ```bash
 npm install
+cp src/config.ts.example src/config.ts  # 拷贝并编写正确的配置
 ```
 ### Development
 ```bash

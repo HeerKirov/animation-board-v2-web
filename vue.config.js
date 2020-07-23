@@ -1,9 +1,13 @@
+const webpack = require('webpack')
+
 module.exports = {
   productionSourceMap: false,
-  publicPath: undefined,
-  outputDir: undefined,
-  assetsDir: undefined,
-  runtimeCompiler: undefined,
-  parallel: undefined,
-  css: undefined
+  configureWebpack: {
+    plugins: [
+      new webpack.DefinePlugin({
+        '__VUE_OPTIONS_API__': true,
+        '__VUE_PROD_DEVTOOLS__': false
+      })
+    ]
+  }
 }

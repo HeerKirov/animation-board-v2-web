@@ -172,7 +172,7 @@ function mapItem(item: any, now: Date, nightTimeTable: boolean): Instance {
         position: absolute;
         left: 100px;
         top: 50%;
-        width: calc((100% - 100px) * 0.5);
+        width: calc((100% - 100px) * 0.45);
         transform: translateY(-55%);
         padding-left: 5px;
     }
@@ -182,16 +182,17 @@ function mapItem(item: any, now: Date, nightTimeTable: boolean): Instance {
     }
     .diary-item .publish-plan {
         position: absolute;
-        left: calc((100% - 100px) * 0.5 + 100px);
+        left: calc((100% - 100px) * 0.45 + 100px);
         top: 50%;
         width: calc((100% - 100px) * 0.3);
         transform: translateY(-50%);
+        padding-left: 5px;
     }
     .diary-item .episodes {
         position: absolute;
         right: 0;
         top: 50%;
-        width: calc((100% - 100px) * 0.2);
+        width: calc((100% - 100px) * 0.25);
         transform: translateY(-50%);
         text-align: right;
         padding-right: 15px;

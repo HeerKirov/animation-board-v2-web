@@ -6,9 +6,9 @@ div.ui.card
         div.header.text-center {{userInfo.name}}
     div.extra.content
         div.ui.two.columns.grid.text-center
-            div.column: router-link(:to="{name: 'Comment.Activity'}") 评论动态
+            div.column.px-1: router-link(:to="{name: 'Comment.Activity'}") 评论动态
             div.column: router-link(:to="{name: 'Comment.Rank'}") 评分表
-            div.column: router-link(:to="{name: 'Record.Activity'}") 日记动态
+            div.column.px-1: router-link(:to="{name: 'Record.Activity'}") 日记动态
             div.column: router-link(:to="{name: 'Record.History'}") 足迹
 </template>
 

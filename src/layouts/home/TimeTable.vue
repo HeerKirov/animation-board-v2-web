@@ -1,11 +1,11 @@
 <template lang="pug">
 div.ui.segment.px-0
     h4.ui.horizontal.divider.header.mx-3 {{seasonHeader}}
-    a.ui.tertiary.mini.icon.button.left.floated.angle-button(@click="todayMinus")
+    a.ui.tertiary.mini.icon.button.angle-button.left(@click="todayMinus")
         i.angle.left.icon
-    a.ui.tertiary.mini.icon.button.right.floated.angle-button(@click="todayPlus")
+    a.ui.tertiary.mini.icon.button.angle-button.right(@click="todayPlus")
         i.angle.right.icon
-    div.ui.five.columns.grid
+    div.ui.five.columns.grid.px-6
         div.ui.column.px-0(v-for="weekday in weekdays")
             div.ui.horizontal.divider.mx-1: span.ui.text(:class="{primary: todayWeekday === weekday.day}") {{weekday.title}}
             template(v-for="item in weekday.items")
@@ -87,7 +87,15 @@ function mapItem(item: any, nightTimeTable: boolean) {
 
 <style scoped>
     .angle-button {
+        position: absolute;
+    }
+    .angle-button.left {
         transform: translateY(6px);
+        left: 0;
+    }
+    .angle-button.right {
+        transform: translate(3px, 6px);
+        right: 0;
     }
     .publish-time {
         color: grey;

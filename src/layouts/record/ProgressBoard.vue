@@ -27,11 +27,11 @@ template(v-if="!loading")
                 div.progress-bar
                     div.secondary-content(:style="{width: `${Math.floor(publishedEpisodes / totalEpisodes * 100)}%`}")
                     div.content(:style="{width: `${Math.floor(progressFirst.watchedEpisodes / totalEpisodes * 100)}%`}")
-            div.ui.four.wide.column.px-2
-                div 
+            div.ui.four.wide.column.pl-1
+                div.date-overflow
                     i.calendar.plus.outline.icon
                     = '订阅时间 {{progressFirst.startTime}}'
-                div.mt-1
+                div.date-overflow.mt-1
                     i.calendar.check.icon
                     = '完成时间 {{progressFirst.finishTime}}'
     div.ui.divider.mb-0
@@ -230,5 +230,9 @@ function mapProgress(item: any): Progress {
     }
     .bottom-gap {
         margin-bottom: 3px;
+    }
+    .date-overflow {
+        width: 0;
+        white-space: nowrap;
     }
 </style>
