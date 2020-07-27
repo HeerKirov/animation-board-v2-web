@@ -22,7 +22,13 @@ export const secondaryBarItems: {[t: string]: {[r: string]: BarItem}} = {
         tag: {name: 'tag', title: '标签', icon: 'tags icon', link: {name: 'Tag.List'}},
         staff: {name: 'staff', title: 'STAFF', icon: 'users icon', link: {name: 'Staff.List'}}
     },
-    statistics: {}
+    statistics: {
+        overview: {name: 'overview', title: '概览', icon: 'landmark icon', link: {name: 'Statistics.Overview'}},
+        season: {name: 'season', title: '季度', icon: 'coffee icon', link: {name: 'Statistics.Season'}},
+        timeline: {name: 'timeline', title: '时间线', icon: 'hourglass half icon', link: {name: 'Statistics.Timeline'}},
+        historyline: {name: 'historyline', title: '历史线', icon: 'history icon', link: {name: 'Statistics.HistoryLine'}},
+        period: {name: 'period', title: '周期', icon: 'chart pie icon', link: {name: 'Statistics.Period'}}
+    }
 }
 
 export const topBarItems: {[r: string]: BarItem} = {
