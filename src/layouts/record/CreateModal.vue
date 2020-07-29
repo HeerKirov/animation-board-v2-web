@@ -97,7 +97,12 @@ export default defineComponent({
         
         const recordLoading = ref(false)
 
-        return {visible, onClose, currentPanel, recordLoading, subscribe, supplement, record}
+        return {
+            visible, onClose, currentPanel, recordLoading, 
+            subscribe: reactive(subscribe), 
+            supplement: reactive(supplement), 
+            record: reactive(record)
+        }
     }
 })
 

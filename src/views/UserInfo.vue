@@ -52,7 +52,7 @@ div.ui.container
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, toRef, toRefs, ref, Ref, watch } from 'vue'
+import { defineComponent, computed, toRef, toRefs, ref, Ref, watch, reactive } from 'vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import { useAuth } from '@/functions/auth'
 import { useSWR } from '@/functions/server'
@@ -69,13 +69,11 @@ export default defineComponent({
         switchItems() { return switchItems }
     },
     setup() {
-        const currentPanel = ref("info")
-
-        const info = useUserInfo()
-
-        const setting = useSetting()
-
-        return {currentPanel, info, setting}
+        return {
+            currentPanel: ref("info"), 
+            info: reactive(useUserInfo()), 
+            setting: reactive(useSetting())
+        }
     }
 })
 

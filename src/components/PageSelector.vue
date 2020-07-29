@@ -34,9 +34,7 @@ export default defineComponent({
     setup(props, {emit}) {
         const {pageData, onJumpTo} = usePageData(props, emit)
 
-        const ui = useUI(pageData)
-
-        return {ui, onJumpTo}
+        return {ui: reactive(useUI(pageData)), onJumpTo}
     }
 })
 
@@ -84,7 +82,7 @@ function useUI(pageData: {max: number, current: number}) {
             last = pageData.max
             first = last - itemCount + 1
         }
-        const items = []
+        const items: {index: number, active: boolean}[] = []
         for(let i = first; i <= last; ++i) {
             items.push({index: i, active: current === i})
         }

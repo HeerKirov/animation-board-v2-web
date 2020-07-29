@@ -80,7 +80,7 @@ export default defineComponent({
             if(r.ok) { onSuccess() }
         }
 
-        return {visible, onClose, currentPanel, supplement, onCreateNew}
+        return {visible, onClose, currentPanel, supplement: reactive(supplement), onCreateNew}
     }
 })
 

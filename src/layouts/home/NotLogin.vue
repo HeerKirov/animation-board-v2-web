@@ -33,18 +33,14 @@ div.ui.grid
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, reactive } from 'vue'
 import { useSWR } from '@/functions/server'
 import { toPublishTime } from '@/functions/display'
 import cover from '@/plugins/cover'
 
 export default defineComponent({
     setup() {
-        const animation = useAnimations()
-
-        const tag = useTags()
-
-        return {animation, tag}
+        return {animation: reactive(useAnimations()), tag: reactive(useTags())}
     }
 })
 

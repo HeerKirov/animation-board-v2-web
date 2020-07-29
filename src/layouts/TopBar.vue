@@ -64,11 +64,12 @@ export default defineComponent({
     setup() {
         const { stats } = useAuth()
         const { data } = useSWR('/api/user/', null, {baseUrl: config.BASIC_SERVICE_URL, byAuthorization: "LOGIN"})
-        const userInfo = computed(() => data.value ? mapUserInfo(data.value) : {})
 
-        const message = useMessage()
-
-        return {isLogin: toRef(stats, 'isLogin'), userInfo, message}
+        return {
+            isLogin: toRef(stats, 'isLogin'), 
+            userInfo: reactive(computed(() => data.value ? mapUserInfo(data.value) : {})), 
+            message: reactive(useMessage())
+        }
     }
 })
 

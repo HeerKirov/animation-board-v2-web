@@ -78,7 +78,7 @@ export default defineComponent({
 })
 
 function range(start: number, end: number): number[] {
-    const array = []
+    const array: number[] = []
     if(start <= end) {
         for(let i = start; i <= end; ++i) array.push(i)
     }else{
