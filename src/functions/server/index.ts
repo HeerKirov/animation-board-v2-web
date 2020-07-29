@@ -111,6 +111,7 @@ export interface SWROptions extends RequestOptions {
 
 export interface SWR {
     loading: Ref<boolean>
+    error: Ref<{code: number, data: any} | null>
     data: Ref<any>
     updateLoading: Ref<boolean>
     update: SWRUpdate
@@ -132,6 +133,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
     const loadingRef = ref(false)
     const dataRef = ref(null)
     const updateLoadingRef = ref(false)
+    const errorRef: Ref<{code: number, data: any} | null> = ref(null)
     const update = useUpdateFunction(dataRef, updateLoadingRef, headers, baseUrl, url, throwError)
     const deleteInstance = useDeleteFunction(updateLoadingRef, headers, baseUrl, url, throwError)
     const { manual, trigger } = useManualFunction()
@@ -154,13 +156,15 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         loadingRef.value = false
         if(r.status === 'OK') {
             dataRef.value = r.data
+            errorRef.value = null
         }else{
             dataRef.value = null
+            errorRef.value = {code: r.code, data: r.data}
             throwError?.(r.code, r.data)
         }
     }, {deep: true, immediate: true})
 
-    return {loading: loadingRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance, manual}
+    return {loading: loadingRef, error: errorRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance, manual}
 }
 
 function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRUpdate {
