@@ -32,7 +32,7 @@ export const arrays = {
 
 export const cast = {
     parseInt(s: string | null | undefined): number | undefined {
-        if(s == null || s == undefined) {
+        if(s == null) {
             return undefined
         }
         try {

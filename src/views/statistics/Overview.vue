@@ -4,13 +4,13 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'overview'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        a.icon.item(@click="showHelp = true"): i.help.icon
+        a.right.icon.item(@click="showHelp = true"): i.question.circle.icon
     div.ui.active.centered.inline.loader.mt-4(v-if="loading || updateLoading")
     div.ui.placeholder.segment(v-else-if="notFound")
         div.ui.icon.header
             i.industry.icon
             h2 统计数据暂未生成
-            a.ui.green.mini.button(@click="update") 手动生成数据
+            a.ui.green.button(@click="onUpdate") 手动生成数据
     div.ui.centered.grid(v-else): div.ui.fourteen.wide.column
         div.ui.grid
             div.ui.row(v-if="basicData"): div.ui.column
@@ -55,13 +55,24 @@ div.ui.container
             div.ui.row(v-if="basicData")
                 div.ui.column.text-right
                     span.ui.grey.text.font-size-11 上次更新时间 {{basicData.updateTime}}
-    StatisticModal(v-model:visible="showHelp", @refresh="update")
+    StatisticModal(title="概览", v-model:visible="showHelp", @refresh="onUpdate")
+        div 一份从数量和评分入手的基础数据概览。从总览和各个维度的角度出发，总结所有订阅的动画的数量和平均评分。
+        h5 总览
+        p: i - 动画总数: 所有订阅且至少有过任意观看记录的动画的数量。
+        p: i - 累计观看集数: 全部观看记录中，记录在案的集数的累计总和。
+        p: i - 累计观看时长: 全部观看记录中，记录在案的集数的累计总时长。
+        p: i - 平均分: 全部动画的平均分。
+        h5 维度信息
+        p 提供的维度有原作类型、放送类型、评分、分级、标签。
+        p 其中，原作类型、放送类型、评分只提供数量分布。其评分分布意义不大，或不能统计。
+        p 分级和标签维度同时提供数量分布和评分分布，同时提供数量和维度的平均分信息。
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from 'vue'
+import { ChartData } from 'chart.js'
+import { defineComponent, computed, ref, Ref } from 'vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
-import { useDoughnut, useBar } from '@/functions/chart'
+import { useDoughnut, useChart } from '@/functions/chart'
 import { useSWR } from '@/functions/server'
 import { toCNStringDate } from '@/functions/display'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
@@ -89,6 +100,7 @@ export default defineComponent({
             errorHandler(code, data, parent) { if(code !== 404) { parent?.(code, data) } }
         })
         const notFound = computed(() => error.value?.code === 404)
+        const onUpdate = () => { update(null, {method: 'POST'}) }
 
         const basicData = computed(() => data.value ? mapBasicData(data.value) : null)
 
@@ -114,17 +126,29 @@ export default defineComponent({
         const { ctx: violenceAvgCtx } = useDoughnut(violenceAvgData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}, type: 'polarArea'})
 
         const tagData = useSingleBarData(() => data.value?.['tag_counts'], {backgroundColor: colorCSS.blue, sorted: true})
-        const { ctx: tagCtx } = useBar(tagData, {title: '标签', horizontal: true, aspectRatio: 0.8})
+        const { ctx: tagCtx } = useTagBar(tagData)
 
         const tagAvgData = useSingleBarData(() => data.value?.['tag_avg_scores'], {backgroundColor(_, s) { return scoreLabels.backgroundColor[Math.round(s) - 1] }, sorted: true})
-        const { ctx: tagAvgCtx } = useBar(tagAvgData, {title: '标签', horizontal: true, aspectRatio: 0.8, xSuggestedMax: 10})
+        const { ctx: tagAvgCtx } = useTagBar(tagAvgData, {xMax: 10})
 
         const mode = ref("count")
         const showHelp = ref(false)
 
-        return {loading, updateLoading, update, notFound, mode, showHelp, basicData, originalWorkTypeCtx, publishTypeCtx, scoreCtx, sexCtx, violenceCtx, tagCtx, sexAvgCtx, violenceAvgCtx, tagAvgCtx}
+        return {loading, updateLoading, onUpdate, notFound, mode, showHelp, basicData, originalWorkTypeCtx, publishTypeCtx, scoreCtx, sexCtx, violenceCtx, tagCtx, sexAvgCtx, violenceAvgCtx, tagAvgCtx}
     }
 })
+
+function useTagBar(data: Ref<ChartData>, options?: {xMax?: number}) {
+    return useChart(data, 'horizontalBar', {
+        title: {display: true, text: '标签'}, 
+        legend: undefined, 
+        aspectRatio: 0.7, 
+        scales: {
+            yAxes: [{ticks: {beginAtZero: true, stepSize: 1}, gridLines: {display: false}}], 
+            xAxes: [{ticks: {beginAtZero: true, suggestedMax: options?.xMax}}]
+        }
+    })
+}
 
 function useSingleBarData(effect: () => {[key: string]: number} | null, options: {backgroundColor: string | ((string, number) => string), sorted?: boolean}) {
     const defaultBackgroundColor = typeof options.backgroundColor === 'string' ? options.backgroundColor : null
@@ -172,7 +196,3 @@ function mapBasicData(data: any) {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -1,15 +1,14 @@
 <template lang="pug">
-teleport(to='#modal-target')
-    template(v-if="visible")
-        div.ui.dimmer.active(@click="onClose")
-        div.ui.modal.active.center-box
-            div.header {{title}}
-            div.content
-                slot
-            div.actions
-                a.ui.basic.button(@click="onRefresh") 
-                    i.refresh.icon
-                    = '手动刷新数据'
+template(v-if="visible")
+    div.ui.dimmer.active(@click="onClose")
+    div.ui.modal.active.center-box
+        div.header {{title}}
+        div.content
+            slot
+        div.actions
+            a.ui.basic.button(@click="onRefresh") 
+                i.refresh.icon
+                = '手动刷新数据'
 </template>
 
 <script lang="ts">
@@ -33,6 +32,17 @@ export default defineComponent({
             emit('refresh')
             onClose()
         }
+
+        return {onClose, onRefresh, visible}
     }
 })
 </script>
+
+<style scoped>
+    .center-box {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%)
+    }
+</style>

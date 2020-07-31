@@ -1,55 +1,54 @@
 <template lang="pug">
-teleport(to='#modal-target')
-    template(v-if="visible")
-        div.ui.dimmer.active(@click="onClose")
-        div.ui.modal.tiny.active.center-box(v-if="currentPanel === 'main'")
-            div.header 加入日记
-            div.content
-                div.ui.segment.placeholder
-                    div.text-center.is-weight.mb-4 以何种方式将此动画加入日记？
-                    div.ui.very.relaxed.stackable.grid.three.column
-                        div.middle.aligned.column
-                            div.ui.center.aligned.icon.header.mb-0
-                                i.thumbtack.icon
-                                div.sub.header.mb-3.font-size-16 从头开始观看
-                            button.ui.fluid.green.button(@click="subscribe.onCreate", :class="{disabled: subscribe.updateLoading}")
-                                i.notched.circle.loading.icon(v-if="subscribe.updateLoading")
-                                = '订阅'
-                        div.middle.aligned.column
-                            div.ui.center.aligned.icon.header.mb-0
-                                i.pencil.alternate.icon
-                                div.sub.header.mb-3.font-size-16 早就看过了？
-                            button.ui.fluid.button(@click="currentPanel = 'supplement'") 补齐记录
-                        div.middle.aligned.column
-                            div.ui.center.aligned.icon.header.mb-0
-                                i.flag.icon
-                                div.sub.header.mb-3.font-size-16 只是随便看看
-                            button.ui.fluid.button.px-1(@click="record.onCreate", :class="{disabled: record.updateLoading}")
-                                i.notched.circle.loading.icon(v-if="record.updateLoading")
-                                = '仅列入日记'
-        div.ui.modal.active.center-box(v-else-if="currentPanel === 'supplement'")
-            div.header 补齐记录
-            div.content
-                div.ui.segment.placeholder.min-height-0
-                    div.ui.form
-                        div.fields(v-for="(item, index) in supplement.data")
-                            div.two.wide.field
-                            div.four.wide.field
-                                label 进度开始时间
-                                CalendarBox(v-model="item.startTime")
-                            div.four.wide.field
-                                label 进度完成时间
-                                CalendarBox(v-model="item.finishTime")
-                            div.three.wide.field
-                                label 已看集数
-                                IntBox(:min="0", :max="publishedEpisodes", v-model="item.watchedEpisodes")
-                            div.one.wide.field
-                                label.hidden DELETE
-                                button.ui.red.icon.button(@click="supplement.onDeleteItem(index)"): i.close.icon
-            div.actions
-                a.ui.button(@click="supplement.onAppendItem") 追加一条进度
-                a.ui.green.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}") 提交并保存
-                    i.notched.circle.loading.icon(v-if="supplement.updateLoading")
+template(v-if="visible")
+    div.ui.dimmer.active(@click="onClose")
+    div.ui.modal.tiny.active.center-box(v-if="currentPanel === 'main'")
+        div.header 加入日记
+        div.content
+            div.ui.segment.placeholder
+                div.text-center.is-weight.mb-4 以何种方式将此动画加入日记？
+                div.ui.very.relaxed.stackable.grid.three.column
+                    div.middle.aligned.column
+                        div.ui.center.aligned.icon.header.mb-0
+                            i.thumbtack.icon
+                            div.sub.header.mb-3.font-size-16 从头开始观看
+                        button.ui.fluid.green.button(@click="subscribe.onCreate", :class="{disabled: subscribe.updateLoading}")
+                            i.notched.circle.loading.icon(v-if="subscribe.updateLoading")
+                            = '订阅'
+                    div.middle.aligned.column
+                        div.ui.center.aligned.icon.header.mb-0
+                            i.pencil.alternate.icon
+                            div.sub.header.mb-3.font-size-16 早就看过了？
+                        button.ui.fluid.button(@click="currentPanel = 'supplement'") 补齐记录
+                    div.middle.aligned.column
+                        div.ui.center.aligned.icon.header.mb-0
+                            i.flag.icon
+                            div.sub.header.mb-3.font-size-16 只是随便看看
+                        button.ui.fluid.button.px-1(@click="record.onCreate", :class="{disabled: record.updateLoading}")
+                            i.notched.circle.loading.icon(v-if="record.updateLoading")
+                            = '仅列入日记'
+    div.ui.modal.active.center-box(v-else-if="currentPanel === 'supplement'")
+        div.header 补齐记录
+        div.content
+            div.ui.segment.placeholder.min-height-0
+                div.ui.form
+                    div.fields(v-for="(item, index) in supplement.data")
+                        div.two.wide.field
+                        div.four.wide.field
+                            label 进度开始时间
+                            CalendarBox(v-model="item.startTime")
+                        div.four.wide.field
+                            label 进度完成时间
+                            CalendarBox(v-model="item.finishTime")
+                        div.three.wide.field
+                            label 已看集数
+                            IntBox(:min="0", :max="publishedEpisodes", v-model="item.watchedEpisodes")
+                        div.one.wide.field
+                            label.hidden DELETE
+                            button.ui.red.icon.button(@click="supplement.onDeleteItem(index)"): i.close.icon
+        div.actions
+            a.ui.button(@click="supplement.onAppendItem") 追加一条进度
+            a.ui.green.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}") 提交并保存
+                i.notched.circle.loading.icon(v-if="supplement.updateLoading")
 
 </template>
 

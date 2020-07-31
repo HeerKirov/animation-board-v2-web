@@ -18,8 +18,6 @@ export default defineComponent({
     components: {TopBar, Footer, Notification, Modal},
     setup() {
         watchRouterTitle()
-
-        return {}
     }
 })
 </script>

@@ -100,13 +100,17 @@ function throwErrorToConsole(code: number, data: any) {
 
 //== SWR ==
 
-type SWRUpdate = (data?: any, options?: SWROptions) => Promise<Response>
+type SWRUpdate = (data?: any, options?: SWRUpdateOptions) => Promise<Response>
 
 type SWRDelete = (options?: SWROptions) => Promise<Response>
 
 export interface SWROptions extends RequestOptions {
     method?: Method
     byAuthorization?: "LOGIN" | "COMPLETED"
+}
+
+export interface SWRUpdateOptions extends SWROptions {
+    url?: string
 }
 
 export interface SWR {
@@ -150,7 +154,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         onInvalidate(() => {validate = false})
 
         loadingRef.value = true
-        const r = await request0(baseUrl + unrefUrl, method, toRaw(fetcher))
+        const r = await request0(baseUrl + unrefUrl, method, fetcher)
         if(!validate) { return }
 
         loadingRef.value = false
@@ -169,9 +173,10 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
 
 function useUpdateFunction(dataRef: Ref<any>, updateLoadingRef: Ref<boolean>, headers: any, baseUrl: string, url: Ref<string | null> | string | null, throwError?: ErrorHandler): SWRUpdate {
     return async (data, options) => {
+        const requestUrl = (options?.baseUrl ?? baseUrl) + (options?.url ?? unref(url))
         const method = options?.method || 'PUT'
         updateLoadingRef.value = true
-        const r = await request0((options?.baseUrl || baseUrl) + unref(url), method, {headers, [method == 'GET' ? 'query' : 'data']: data || undefined})
+        const r = await request0(requestUrl, method, {headers, [method == 'GET' ? 'query' : 'data']: data || undefined})
         updateLoadingRef.value = false
         if(r.status === 'OK') {
             dataRef.value = r.data

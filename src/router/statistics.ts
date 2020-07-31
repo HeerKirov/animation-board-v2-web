@@ -20,7 +20,7 @@ export default [
     {
         name: 'Statistics.Timeline',
         path: '/statistics/timeline',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/statistics/Timeline.vue'),
         meta: {nav: ['statistics'], title: ['统计', '时间线']}
     },
     {

@@ -1,48 +1,49 @@
 <template lang="pug">
-div.ui.left.icon.input(ref="refInput")
-    input(:placeholder="placeholder", readonly="readonly", @focus="onOpen", :value="displayValue")
-    i.calendar.link.icon(@click="onOpen")
-div(v-if="visible", ref="refPanel")
-    div.ui.segment.panel.pt-1
-        button.ui.tertiary.mini.button.is-inline-block(:class="{primary: currentPanel === 'year'}", @click="currentPanel = 'year'") {{editorValue.year}}年
-        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.month && editorValue.year != null", :class="{primary: currentPanel === 'month'}", @click="currentPanel = 'month'") {{editorValue.month}}月
-        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.day && editorValue.month != null", :class="{primary: currentPanel === 'day'}", @click="currentPanel = 'day'") {{editorValue.day}}日
-        button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.time && editorValue.day != null", :class="{primary: currentPanel === 'time'}", @click="currentPanel = 'time'") {{editorValue.hour ?? '...'}}时{{editorValue.minute ?? '...'}}分
-        div.ui.divider.mt-0
-        div.ui.three.columns.grid.px-1(v-show="currentPanel === 'year'")
-            div.ui.row.pt-1.pb-0
-                div.ui.column.px-1.text-center
-                    a.ui.tertiary.mini.button(@click="yearPanel.era -= 10")
-                        i.angle.double.left.icon.mr-0
-                div.ui.column.px-1.text-center
-                    a.ui.tertiary.mini.button(@click="yearPanel.returnToSelected") {{yearPanel.items[0]}}~{{yearPanel.items[yearPanel.items.length - 1]}}
-                div.ui.column.px-1.text-center
-                    a.ui.tertiary.mini.button(@click="yearPanel.era += 10")
-                        i.angle.double.right.icon.ml-0
-            div.ui.row.pt-1.pb-2
-                div.ui.column.px-1.text-center(v-for=" i in yearPanel.items")
-                    a.ui.tertiary.mini.button(:class="{primary: editorValue.year === i}", @click="yearPanel.select(i)") {{i}}年
-        div.ui.three.columns.grid.px-1(v-show="currentPanel === 'month'")
-            div.ui.column.px-1.py-1.text-center(v-for="i in Array(12).fill(null).map((_, i) => i + 1)")
-                a.ui.tertiary.mini.button(:class="{primary: editorValue.month === i}", @click="monthPanel.select(i)") {{i}}月
-        div.ui.seven.columns.grid.px-1(v-show="currentPanel === 'day'")
-            div.ui.row.py-2
-                each header in ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                    div.ui.column.px-1.text-center.is-weight= header
-            div.ui.row.pt-1.pb-2
-                div.ui.column.px-1.text-center(v-for="i in dayPanel.items")
-                    a.ui.tertiary.mini.button(v-if="i", :class="{primary: editorValue.day === i}", @click="dayPanel.select(i)") {{i}}
-        div.ui.two.columns.grid.px-1(v-show="currentPanel === 'time'")
-            div.ui.column.text-center
-                DigitalRoulette(v-model="editorValue.hour", :min="0", :max="23", :loop="true")
-            div.ui.column.text-center
-                DigitalRoulette(v-model="editorValue.minute", :min="0", :max="59", :step="5", :loop="true")
+div
+    div.ui.left.icon.input(ref="refInput")
+        input(:placeholder="placeholder", readonly="readonly", @focus="onOpen", :value="displayValue", :style="{'max-width': maxWidth ?? undefined}")
+        i.calendar.link.icon(@click="onOpen")
+    div(v-if="visible", ref="refPanel")
+        div.ui.segment.panel.pt-1
+            button.ui.tertiary.mini.button.is-inline-block(:class="{primary: currentPanel === 'year'}", @click="currentPanel = 'year'") {{editorValue.year}}年
+            button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.month && editorValue.year != null", :class="{primary: currentPanel === 'month'}", @click="currentPanel = 'month'") {{editorValue.month}}月
+            button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.day && editorValue.month != null", :class="{primary: currentPanel === 'day'}", @click="currentPanel = 'day'") {{editorValue.day}}日
+            button.ui.tertiary.mini.button.is-inline-block(v-if="showTab.time && editorValue.day != null", :class="{primary: currentPanel === 'time'}", @click="currentPanel = 'time'") {{editorValue.hour ?? '...'}}时{{editorValue.minute ?? '...'}}分
+            div.ui.divider.mt-0
+            div.ui.three.columns.grid.px-1(v-show="currentPanel === 'year'")
+                div.ui.row.pt-1.pb-0
+                    div.ui.column.px-1.text-center
+                        a.ui.tertiary.mini.button(@click="yearPanel.era -= 10")
+                            i.angle.double.left.icon.mr-0
+                    div.ui.column.px-1.text-center
+                        a.ui.tertiary.mini.button(@click="yearPanel.returnToSelected") {{yearPanel.items[0]}}~{{yearPanel.items[yearPanel.items.length - 1]}}
+                    div.ui.column.px-1.text-center
+                        a.ui.tertiary.mini.button(@click="yearPanel.era += 10")
+                            i.angle.double.right.icon.ml-0
+                div.ui.row.pt-1.pb-2
+                    div.ui.column.px-1.text-center(v-for=" i in yearPanel.items")
+                        a.ui.tertiary.mini.button(:class="{primary: editorValue.year === i}", @click="yearPanel.select(i)") {{i}}年
+            div.ui.three.columns.grid.px-1(v-show="currentPanel === 'month'")
+                div.ui.column.px-1.py-1.text-center(v-for="i in Array(12).fill(null).map((_, i) => i + 1)")
+                    a.ui.tertiary.mini.button(:class="{primary: editorValue.month === i}", @click="monthPanel.select(i)") {{i}}月
+            div.ui.seven.columns.grid.px-1(v-show="currentPanel === 'day'")
+                div.ui.row.py-2
+                    each header in ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                        div.ui.column.px-1.text-center.is-weight= header
+                div.ui.row.pt-1.pb-2
+                    div.ui.column.px-1.text-center(v-for="i in dayPanel.items")
+                        a.ui.tertiary.mini.button(v-if="i", :class="{primary: editorValue.day === i}", @click="dayPanel.select(i)") {{i}}
+            div.ui.two.columns.grid.px-1(v-show="currentPanel === 'time'")
+                div.ui.column.text-center
+                    DigitalRoulette(v-model="editorValue.hour", :min="0", :max="23", :loop="true")
+                div.ui.column.text-center
+                    DigitalRoulette(v-model="editorValue.minute", :min="0", :max="59", :step="5", :loop="true")
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted, Ref, reactive, computed, watch, PropType } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted, Ref, reactive, computed, watch, PropType, toRaw } from 'vue'
 import DigitalRoulette from './DigitalRoulette.vue'
-import { Calendar, calendarToDate, dateToCalendar, getDayCountOfMonth, calendarToString } from '@/functions/format'
+import { Calendar, calendarToDate, dateToCalendar, getDayCountOfMonth, calendarToString, calendarEquals } from '@/functions/format'
 
 type PanelType = "year" | "month" | "day" | "time"
 
@@ -58,6 +59,7 @@ export default defineComponent({
     components: {DigitalRoulette},
     props: {
         placeholder: {type: String, default: ""},
+        maxWidth: String,
         first: {type: (null as any) as PropType<PanelType>, default: "day"},
         until: {type: (null as any) as PropType<PanelType>, default: "time"},
         modelValue: (null as any) as PropType<Calendar>
@@ -71,19 +73,31 @@ export default defineComponent({
             const editorValue = panel.editorValue
             if(until === 'year') {
                 if(editorValue.year != null) {
-                    emit('update:modelValue', {year: editorValue.year, month: 1})
+                    const v = {year: editorValue.year, month: 1}
+                    if(!calendarEquals(v, modelValue.value ?? null)) {
+                        emit('update:modelValue', v)
+                    }
                 }
             }else if(until === 'month') {
                 if(editorValue.year != null && editorValue.month != null) {
-                    emit('update:modelValue', {year: editorValue.year, month: editorValue.month})
+                    const v = {year: editorValue.year, month: editorValue.month}
+                    if(!calendarEquals(v, modelValue.value ?? null)) {
+                        emit('update:modelValue', v)
+                    }
                 }
             }else if(until === 'day') {
                 if(editorValue.year != null && editorValue.month != null && editorValue.day != null) {
-                    emit('update:modelValue', {year: editorValue.year, month: editorValue.month, day: editorValue.day})
+                    const v = {year: editorValue.year, month: editorValue.month, day: editorValue.day}
+                    if(!calendarEquals(v, modelValue.value ?? null)) {
+                        emit('update:modelValue', v)
+                    }
                 }
             }else if(until === 'time') {
                 if(editorValue.year != null && editorValue.month != null && editorValue.day != null && editorValue.hour != null && editorValue.minute != null) {
-                    emit('update:modelValue', {year: editorValue.year, month: editorValue.month, day: editorValue.day, hour: editorValue.hour, minute: editorValue.minute})
+                    const v = {year: editorValue.year, month: editorValue.month, day: editorValue.day, hour: editorValue.hour, minute: editorValue.minute}
+                    if(!calendarEquals(v, modelValue.value ?? null)) {
+                        emit('update:modelValue', v)
+                    }
                 }
             }
         }
@@ -139,12 +153,13 @@ function usePanel(props: {first: PanelType, until: PanelType, modelValue: Calend
         currentPanel.value = props.first
     })
 
-    const yearPanel = useYearPanel(editorValue, currentPanel, props.until)
-    const monthPanel = useMonthPanel(editorValue, currentPanel, props.until)
-    const dayPanel = useDayPanel(editorValue, currentPanel, props.until)
-    const timePanel = useTimePanel(editorValue, currentPanel, props.until)
-
-    return {currentPanel, editorValue, yearPanel, monthPanel, dayPanel, timePanel}
+    return {
+        currentPanel, editorValue, 
+        yearPanel: reactive(useYearPanel(editorValue, currentPanel, props.until)),
+        monthPanel: reactive(useMonthPanel(editorValue, currentPanel, props.until)),
+        dayPanel: reactive(useDayPanel(editorValue, currentPanel, props.until)),
+        timePanel: reactive(useTimePanel(editorValue, currentPanel, props.until))
+    }
 }
 
 function useYearPanel(editorValue: EditorValue, currentPanel: Ref<PanelType>, until: PanelType) {
@@ -224,7 +239,6 @@ function modelValueToEditor(modelValue: Calendar | undefined, to: PanelType): Ed
         transform: translateY(5px);
         position: absolute; 
         z-index: 1;
-        min-width: 230px;
-        max-width: 300px;
+        width: 250px;
     }
 </style>
