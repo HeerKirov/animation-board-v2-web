@@ -153,6 +153,7 @@ function digit(n: number | null): string | null {
         display: inline-block;
         vertical-align: top;
         height: 80px;
+        width: calc(100% - 80px)
     }
     .item.content .labels {
         height: 25px;
