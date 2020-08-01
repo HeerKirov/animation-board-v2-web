@@ -26,7 +26,7 @@ export default [
     {
         name: 'Statistics.HistoryLine',
         path: '/statistics/historyline',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/statistics/HistoryLine.vue'),
         meta: {nav: ['statistics'], title: ['统计', '历史轴']}
     },
     {
