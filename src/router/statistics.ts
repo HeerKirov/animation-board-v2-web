@@ -14,7 +14,7 @@ export default [
     {
         name: 'Statistics.Season',
         path: '/statistics/season',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/statistics/Season.vue'),
         meta: {nav: ['statistics'], title: ['统计', '季度']}
     },
     {

@@ -56,7 +56,7 @@ export function useChart(data: Ref<ChartData>, type: ChartType, options?: ChartO
                 chart.destroy()
                 chart = null
             }
-        })
+        }, {immediate: true})
 
         watch(data, () => {
             if(chart != null) {
@@ -69,6 +69,7 @@ export function useChart(data: Ref<ChartData>, type: ChartType, options?: ChartO
     onUnmounted(() => {
         if(chart != null) {
             chart.destroy()
+            chart = null
         }
     })
 

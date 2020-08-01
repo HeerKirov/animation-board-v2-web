@@ -35,17 +35,17 @@ div.ui.container
     StatisticModal(title="时间线", v-model:visible="showHelp", @refresh="onFullUpdate")
         div 以观看时间为基准，纵向比对生涯不同时期所看动画的数量和质量。
         h5 聚合信息
-        p: i - 时间粒度: 要浏览的数据的最小时间点。可选的时间点为月、季度或年。将在这些尺度上呈现数据。
-        p: i - 最早/最晚时间点: 要浏览的数据前后范围。
+        p - 时间粒度: 要浏览的数据的最小时间点。可选的时间点为月、季度或年。将在这些尺度上呈现数据。
+        p - 最早/最晚时间点: 要浏览的数据前后范围。
         h5 视图
-        p: i - 动画数量: 每个时间点看完的进度的数量。仅以看完时间为准。
-        p: i - 累计集数：每个时间点看完的动画总集数。任何存在观看记录时间点，或观看记录时间点可推断的数据都会被记录。
-        p: i - 累计时长: 每个时间点看完的动画总时长，单位分钟。其原理同上。
-        p: i - 评分分布: 每个时间点新看完的动画的评分情况，包括最低分、最高分、平均分。
+        p - 动画数量: 每个时间点看完的进度的数量。仅以看完时间为准。
+        p - 累计集数：每个时间点看完的动画总集数。任何存在观看记录时间点，或观看记录时间点可推断的数据都会被记录。
+        p - 累计时长: 每个时间点看完的动画总时长，单位分钟。其原理同上。
+        p - 评分分布: 每个时间点新看完的动画的评分情况，包括最低分、最高分、平均分。
         h5 维度
-        p: i - 首次看完: 第一次看完的动画或集数。
-        p: i - 重看看完: 重复观看时看完的动画或集数。二周目及以上的进度计算在内。
-        p: i - 离散数据: 通过离散标记的集数。
+        p - 首次看完: 第一次看完的动画或集数。
+        p - 重看看完: 重复观看时看完的动画或集数。二周目及以上的进度计算在内。
+        p - 离散数据: 通过离散标记的集数。
 </template>
 
 <script lang="ts">
@@ -122,7 +122,7 @@ export default defineComponent({
 })
 
 function useOverviewData() {
-    const { loading, data, updateLoading, update } = useSWR('/api/statistics/timeline/overview', null, {byAuthorization: 'LOGIN'})
+    const { loading, data, updateLoading, update } = useSWR('/api/statistics/timeline/overview', null)
     const notFound = ref(false)
     const metadata: Metadata = reactive({
         updateTime: null,
@@ -269,6 +269,3 @@ function mapTimeToLabel(time: string, aggregateTimeUnit: string): string {
 }
 </script>
 
-<style scoped>
-
-</style>

@@ -27,11 +27,11 @@ div.ui.container
                     div.value {{basicData.avgScore}}
                     div.label 平均分
             div.ui.row
-                div.ui.five.wide.column.px-0
+                div.ui.five.wide.column
                     canvas(ref="originalWorkTypeCtx")
-                div.ui.five.wide.column.px-0
+                div.ui.five.wide.column
                     canvas(ref="publishTypeCtx")
-                div.ui.six.wide.column.px-0
+                div.ui.six.wide.column
                     canvas(ref="scoreCtx")
             div.ui.row
                 div.ui.column

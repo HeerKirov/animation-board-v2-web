@@ -30,6 +30,8 @@ div.ui.container
                 div.ui.two.columns.grid.pt-6
                     div.ui.column: canvas(ref="hourCtx")
                     div.ui.column: canvas(ref="weekdayCtx")
+            div.ui.column.text-right.mt-4(v-if="data")
+                span.ui.grey.text.font-size-11 上次更新时间 {{data.updateTime}}
     StatisticModal(title="周期", v-model:visible="showHelp", @refresh="onFullUpdate")
         div 横向对比一个周期时间内的看番数量，了解看番的习惯时间。
         h5 周期时间
@@ -40,7 +42,7 @@ div.ui.container
 
 <script lang="ts">
 import { ChartData } from 'chart.js'
-import { defineComponent, computed, ref, Ref, reactive, watch } from 'vue'
+import { defineComponent, computed, ref, Ref, reactive, watch, toRef } from 'vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
@@ -89,16 +91,16 @@ export default defineComponent({
         const showHelp = ref(false)
 
         return {
-            loading, updateLoading, notFound, showHelp, metadata, onFullUpdate,
+            loading, updateLoading, notFound, showHelp, onFullUpdate,
             currentView, bound, boundList,
-            dataLoading, dataNotFound,
-            hourCtx, weekdayCtx
+            dataLoading, dataNotFound, data,
+            hourCtx, weekdayCtx,
         }
     }
 })
 
 function useOverviewData() {
-    const { loading, data, updateLoading, update } = useSWR('/api/statistics/period/overview', null, {byAuthorization: 'LOGIN'})
+    const { loading, data, updateLoading, update } = useSWR('/api/statistics/period/overview', null)
     const notFound = ref(false)
     const metadata: Metadata = reactive({
         lower: null,
@@ -181,7 +183,3 @@ function mapData(data: any): DataResult {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -154,7 +154,6 @@ function equalPublishPlan(a: Date[], b: Date[]): boolean {
     return true
 }
 function equalTags(a: TagItem[], b: TagItem[]): boolean {
-    console.log(a, b)
     if(a.length !== b.length) return false
     const setA = new Set(a.map(t => t.name)), setB = new Set(b.map(t => t.name))
     return sets.equals(setA, setB)

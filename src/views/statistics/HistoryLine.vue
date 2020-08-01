@@ -33,11 +33,11 @@ div.ui.container
     StatisticModal(title="历史线", v-model:visible="showHelp", @refresh="onFullUpdate")
         div 以动画发布时间为基准，纵向比对所看的不同年代的动画的数量和质量。
         h5 聚合信息
-        p: i - 时间粒度: 要浏览的数据的最小时间点。可选的时间点为季度或年。由于大部分TV动画集中在1、4、7、10月放送，按月聚合意义不大。
-        p: i - 最早/最晚时间点: 要浏览的数据前后范围。
+        p - 时间粒度: 要浏览的数据的最小时间点。可选的时间点为季度或年。由于大部分TV动画集中在1、4、7、10月放送，按月聚合意义不大。
+        p - 最早/最晚时间点: 要浏览的数据前后范围。
         h5 视图
-        p: i - 动画数量: 每个时间点看过的动画的数量。
-        p: i - 评分分布: 每个时间点看过的动画的评分情况，包括最低分、最高分、平均分。
+        p - 动画数量: 每个时间点看过的动画的数量。
+        p - 评分分布: 每个时间点看过的动画的评分情况，包括最低分、最高分、平均分。
 </template>
 
 <script lang="ts">
@@ -104,7 +104,7 @@ export default defineComponent({
 })
 
 function useOverviewData() {
-    const { loading, data, updateLoading, update } = useSWR('/api/statistics/historyline/overview', null, {byAuthorization: 'LOGIN'})
+    const { loading, data, updateLoading, update } = useSWR('/api/statistics/historyline/overview', null)
     const notFound = ref(false)
     const metadata: Metadata = reactive({
         updateTime: null,
@@ -214,7 +214,3 @@ function mapTimeToLabel(time: string, aggregateTimeUnit: string): string {
     }
 }
 </script>
-
-<style scoped>
-
-</style>
