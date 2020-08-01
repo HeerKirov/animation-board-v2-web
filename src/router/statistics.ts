@@ -32,7 +32,7 @@ export default [
     {
         name: 'Statistics.Period',
         path: '/statistics/period',
-        component: () => import('@/views/NotFound.vue'),
+        component: () => import('@/views/statistics/Period.vue'),
         meta: {nav: ['statistics'], title: ['统计', '周期']}
     }
 ]
