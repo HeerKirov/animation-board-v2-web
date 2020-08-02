@@ -1,6 +1,6 @@
 <template lang="pug">
 template(v-if="visible")
-    div.ui.dimmer.active(@click="onClose")
+    div.ui.dimmer.active.is-fixed(@click="onClose")
     div.ui.modal.tiny.active.center-box(v-if="currentPanel === 'main'")
         div.header 加入日记
         div.content

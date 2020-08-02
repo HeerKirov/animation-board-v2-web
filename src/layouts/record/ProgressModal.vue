@@ -1,38 +1,37 @@
 <template lang="pug">
-teleport(to='#modal-target')
-    template(v-if="visible")
-        div.ui.dimmer.active(@click="onClose")
-        div.ui.modal.tiny.active.center-box
-            div.header 新建进度
-            div.content
-                div.ui.segment.placeholder(v-if="currentPanel === 'main'")
-                    div.ui.vertical.divider 或
-                    div.ui.very.relaxed.stackable.grid.two.column
-                        div.middle.aligned.column
-                            div.ui.center.aligned.icon.header
-                                i.file.icon
-                                div.sub.header.mb-3.font-size-16 从零开始的新进度
-                                button.ui.fluid.green.button(@click="onCreateNew") 创建进度
-                        div.middle.aligned.column
-                            div.ui.center.aligned.icon.header
-                                i.pencil.icon
-                                div.sub.header.mb-3.font-size-16 有待补充的记录？
-                                button.ui.fluid.button(@click="currentPanel = 'supplement'") 补齐记录
-                div.ui.segment.placeholder(v-else-if="currentPanel === 'supplement'")
-                    div.ui.form
-                        div.ui.field
-                            label 进度开始时间
-                            CalendarBox(v-model="supplement.data.startTime")
-                        div.ui.field
-                            label 进度完成时间
-                            CalendarBox(v-model="supplement.data.finishTime")
-                        div.ui.field
-                            label 已看集数
-                            IntBox(:min="0", :max="publishedEpisodes", v-model="supplement.data.watchedEpisodes")
-            div.actions(v-if="currentPanel === 'supplement'")
-                button.ui.green.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}")
-                    i.notched.circle.loading.icon(v-if="supplement.updateLoading")
-                    = '提交并保存'
+template(v-if="visible")
+    div.ui.dimmer.active.is-fixed(@click="onClose")
+    div.ui.modal.tiny.active.center-box
+        div.header 新建进度
+        div.content
+            div.ui.segment.placeholder(v-if="currentPanel === 'main'")
+                div.ui.vertical.divider 或
+                div.ui.very.relaxed.stackable.grid.two.column
+                    div.middle.aligned.column
+                        div.ui.center.aligned.icon.header
+                            i.file.icon
+                            div.sub.header.mb-3.font-size-16 从零开始的新进度
+                            button.ui.fluid.green.button(@click="onCreateNew") 创建进度
+                    div.middle.aligned.column
+                        div.ui.center.aligned.icon.header
+                            i.pencil.icon
+                            div.sub.header.mb-3.font-size-16 有待补充的记录？
+                            button.ui.fluid.button(@click="currentPanel = 'supplement'") 补齐记录
+            div.ui.segment.placeholder(v-else-if="currentPanel === 'supplement'")
+                div.ui.form
+                    div.ui.field
+                        label 进度开始时间
+                        CalendarBox(v-model="supplement.data.startTime")
+                    div.ui.field
+                        label 进度完成时间
+                        CalendarBox(v-model="supplement.data.finishTime")
+                    div.ui.field
+                        label 已看集数
+                        IntBox(:min="0", :max="publishedEpisodes", v-model="supplement.data.watchedEpisodes")
+        div.actions(v-if="currentPanel === 'supplement'")
+            button.ui.green.button(@click="supplement.onSave", :class="{disabled: supplement.updateLoading}")
+                i.notched.circle.loading.icon(v-if="supplement.updateLoading")
+                = '提交并保存'
 
 </template>
 

@@ -119,3 +119,5 @@ body {height: auto !important}
 .float-right {float: right}
 
 .min-height-0 {min-height: 0 !important}
+
+.is-fixed {position: fixed !important}
