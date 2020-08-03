@@ -137,7 +137,7 @@ function defaultInstance(): Instance {
     return {
         id: null,
         title: undefined, originTitle: null, otherTitle: null, keyword: null, tags: [], sexLimitLevel: null, violenceLimitLevel: null, introduction: null,
-        publishType: null, publishTime: null, episodeDuration: null, totalEpisodes: 12, publishedEpisodes: 0, publishPlan: [],
+        publishType: null, publishTime: null, episodeDuration: 24, totalEpisodes: 12, publishedEpisodes: 0, publishPlan: [],
         originalWorkType: null, staffs: {AUTHOR: [], COMPANY: [], STAFF: []},
         relations: {},
         cover: null, coverFile: null

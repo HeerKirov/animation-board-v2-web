@@ -29,13 +29,22 @@ import { Instance, defaultInstance } from './Editor.vue'
 
 export default defineComponent({
     components: {InputBox, ItemSelector},
+    props: {
+        defaultName: String
+    },
     emits:['update:value'],
     computed: {
         isOrganizations() { return isOrganizations },
         occupations() { return occupations }
     },
-    setup(_, {emit}) {
+    setup(props, {emit}) {
         const data = ref(defaultInstance())
+        watch(() => props.defaultName, () => {
+            if(props.defaultName?.trim()) {
+                data.value.name = props.defaultName.trim()
+                emit('update:value', data.value)
+            }
+        }, {immediate: true})
 
         watchEditorValidate<Instance>(data, v => emit('update:value', v), v => {
             return v.name === undefined

@@ -56,7 +56,7 @@ import ItemSelector from '@/components/ItemSelector.vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
 import { useChart } from '@/functions/chart'
 import { useSWR } from '@/functions/server'
-import { Calendar } from '@/functions/format'
+import { Calendar, digit } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
@@ -252,7 +252,7 @@ function mapDataItem(item: any, aggregateTimeUnit: string): DataItem {
         scatterDuration: item['scatter_duration'],
         maxScore: item['max_score'] ?? 0,
         minScore: item['min_score'] ?? 0,
-        avgScore: item['avg_score'] ?? 0
+        avgScore: digit(item['avg_score']) ?? 0
     }
 }
 

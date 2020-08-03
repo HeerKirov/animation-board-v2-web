@@ -11,9 +11,10 @@ import { defineComponent, PropType, ref, Ref, computed, reactive, watch } from '
 import { ChartData } from 'chart.js'
 import { useSWR } from '@/functions/server'
 import { useChart } from '@/functions/chart'
+import { toCNStringDate } from '@/functions/display'
+import { digit } from '@/functions/format'
 import { DefinitionItem } from '@/definitions/util'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
-import { toCNStringDate } from '../../functions/display'
 
 interface Metadata {lowerYear: number | null, lowerSeason: number | null, upperYear: number | null, upperSeason: number | null}
 
@@ -99,8 +100,8 @@ function mapDataItem(item: any): DataItem {
         totalAnimations: item['total_animations'],
         maxScore: item['max_score'] ?? 0,
         minScore: item['min_score'] ?? 0,
-        avgScore: item['avg_score'] ?? 0,
-        avgPositivity: item['avg_positivity'] ?? 0
+        avgScore: digit(item['avg_score']) ?? 0,
+        avgPositivity: digit(item['avg_positivity']) ?? 0
     }
 }
 </script>

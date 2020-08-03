@@ -9,7 +9,7 @@ template(v-if="!creatorMode")
         button.ui.tertiary.mini.button(v-if="hasNext", @click="requestForNext") 获取更多结果
         p.mb-0: button.ui.tertiary.mini.button(@click="creatorMode = true") {{hasRequested ? '找不到想要的？新建STAFF条目' : '新建STAFF条目'}}
 template(v-else)
-    SimpleEditor(@update:value="onCreatorChanged")
+    SimpleEditor(@update:value="onCreatorChanged", :default-name="searchBoxText")
     div.ui.form
         div.ui.field
             label 将此条目直接添加到
@@ -61,7 +61,16 @@ export default defineComponent({
 
         const drag = useDrag()
 
-        const creator = useCreator(((type, item) => emit('append', {type, item} as AppendEvent)))
+        const creator = useCreator((type, item) => {
+            if(type != null) {
+                emit('append', {type, item} as AppendEvent)
+                board.searchBoxText.value = ""
+                board.clear()
+            }else{
+                board.searchBoxText.value = item.name
+                board.requestForFirst()
+            }
+        })
 
         return {...board, ...drag, ...creator}
     }
@@ -70,14 +79,14 @@ export default defineComponent({
 function useBoard() {
     const searchBoxText: Ref<string> = ref("")
 
-    const { result, requestForFirst, requestForNext, hasNext, hasRequested } = useContinuous('/api/database/staffs', {
+    const { result, requestForFirst, requestForNext, hasNext, hasRequested, clear } = useContinuous('/api/database/staffs', {
         findTotal(data) { return data['total'] },
         findData(data) { return (data['result'] as any[]).map(mapItem) },
         query(count, total, queryData) { return {offset: count, search: queryData, limit, order} },
         queryData: searchBoxText
     })
 
-    return {result, hasNext, requestForNext, requestForFirst, hasRequested, searchBoxText}
+    return {result, hasNext, requestForNext, requestForFirst, hasRequested, searchBoxText, clear}
 }
 
 function useDrag() {
@@ -88,21 +97,23 @@ function useDrag() {
     return {onDragStart}
 }
 
-function useCreator(appendItem: (type: string, item: StaffItem) => void) {
+function useCreator(onCreatedItem: (type: string | null, item: StaffItem) => void) {
     const creatorMode = ref(false)
+
+    const onOpenCreator = () => {
+        creatorMode.value = true
+    }
 
     const creatorAction: Ref<string | null> = ref(null)
 
     const { updateLoading, onEditorChanged, onSubmit } = useCreatorForm('/api/database/staffs', remapData, {
         success(r) {
-            if(creatorAction.value != null) {
-                appendItem(creatorAction.value, mapItem(r.data))
-            }
+            onCreatedItem(creatorAction.value, mapItem(r.data))
             creatorMode.value = false
         }
     })
 
-    return {creatorMode, creatorAction, createLoading: updateLoading, onCreatorChanged: onEditorChanged, onCreate: onSubmit }
+    return {creatorMode, creatorAction, onOpenCreator, createLoading: updateLoading, onCreatorChanged: onEditorChanged, onCreate: onSubmit }
 }
 
 function mapItem(item: any) {

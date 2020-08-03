@@ -59,3 +59,7 @@ export function firstDayOfWeek(date: Date): Date {
     ret.setDate(ret.getDate() - (ret.getDay() || 7) + 1)
     return ret
 }
+
+export function digit(n: number | null, w: number = 10): number | null {
+    return n != null ? (Math.round(n * w) / w) : null
+}

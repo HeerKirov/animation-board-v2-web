@@ -75,6 +75,7 @@ import StatisticModal from '@/layouts/StatisticModal.vue'
 import { useDoughnut, useChart } from '@/functions/chart'
 import { useSWR } from '@/functions/server'
 import { toCNStringDate } from '@/functions/display'
+import { digit } from '@/functions/format'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
@@ -119,16 +120,16 @@ export default defineComponent({
         const violenceData = useDoughnutData(violenceLimitLevelLabels, () => data.value?.['violence_limit_level_counts'])
         const { ctx: violenceCtx } = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}})
 
-        const sexAvgData = useDoughnutData(sexLimitLevelLabels, () => data.value?.['sex_limit_level_avg_scores'])
+        const sexAvgData = useDoughnutData(sexLimitLevelLabels, () => data.value?.['sex_limit_level_avg_scores'], true)
         const { ctx: sexAvgCtx } = useDoughnut(sexAvgData, {title: '分级·性', aspectRatio: 3, legend: {display: true}, type: 'polarArea'})
 
-        const violenceAvgData = useDoughnutData(violenceLimitLevelLabels, () => data.value?.['violence_limit_level_avg_scores'])
+        const violenceAvgData = useDoughnutData(violenceLimitLevelLabels, () => data.value?.['violence_limit_level_avg_scores'], true)
         const { ctx: violenceAvgCtx } = useDoughnut(violenceAvgData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}, type: 'polarArea'})
 
-        const tagData = useSingleBarData(() => data.value?.['tag_counts'], {backgroundColor: colorCSS.blue, sorted: true})
+        const tagData = useSingleBarData(() => data.value?.['tag_counts'], {backgroundColor: colorCSS.blue})
         const { ctx: tagCtx } = useTagBar(tagData)
 
-        const tagAvgData = useSingleBarData(() => data.value?.['tag_avg_scores'], {backgroundColor(_, s) { return scoreLabels.backgroundColor[Math.round(s) - 1] }, sorted: true})
+        const tagAvgData = useSingleBarData(() => data.value?.['tag_avg_scores'], {backgroundColor(_, s) { return scoreLabels.backgroundColor[Math.round(s) - 1] }, fixed: true})
         const { ctx: tagAvgCtx } = useTagBar(tagAvgData, {xMax: 10})
 
         const mode = ref("count")
@@ -150,17 +151,17 @@ function useTagBar(data: Ref<ChartData>, options?: {xMax?: number}) {
     })
 }
 
-function useSingleBarData(effect: () => {[key: string]: number} | null, options: {backgroundColor: string | ((string, number) => string), sorted?: boolean}) {
+function useSingleBarData(effect: () => {[key: string]: number} | null, options: {backgroundColor: string | ((string, number) => string), fixed?: boolean}) {
     const defaultBackgroundColor = typeof options.backgroundColor === 'string' ? options.backgroundColor : null
     return computed(() => {
         const items: {label: string, data: number, backgroundColor?: string}[] = []
         const effected = effect()
         if(effected != null) {
             for(const key in effected) {
-                items.push({label: key, data: effected[key], backgroundColor: typeof options.backgroundColor == 'function' ? options.backgroundColor(key, effected[key]) : undefined})
+                items.push({label: key, data: options.fixed ? digit(effected[key], 100)! : effected[key], backgroundColor: typeof options.backgroundColor == 'function' ? options.backgroundColor(key, effected[key]) : undefined})
             }
         }
-        if(options.sorted) { items.sort((a, b) => a.data === b.data ? 0 : a.data > b.data ? -1 : 1) }
+        items.sort((a, b) => a.data === b.data ? 0 : a.data > b.data ? -1 : 1)
         const labels = items.map(i => i.label)
         const data = items.map(i => i.data)
         const backgroundColor = defaultBackgroundColor ?? items.map(i => i.backgroundColor!)
@@ -169,10 +170,10 @@ function useSingleBarData(effect: () => {[key: string]: number} | null, options:
     })
 }
 
-function useDoughnutData(labels: {labels: string[], backgroundColor: string[], keys: string[]}, effect: () => {[key: string]: number} | null) {
+function useDoughnutData(labels: {labels: string[], backgroundColor: string[], keys: string[]}, effect: () => {[key: string]: number} | null, fixed?: boolean) {
     return computed(() => {
         const effected = effect()
-        const data = effected == null ? [] : labels.keys.map(key => effected[key])
+        const data = effected == null ? [] : fixed ? labels.keys.map(key => digit(effected[key])!) : labels.keys.map(key => effected[key])
 
         return {data, backgroundColor: labels.backgroundColor, labels: labels.labels}
     })
@@ -191,7 +192,7 @@ function mapBasicData(data: any) {
         totalAnimations: data['total_animations'],
         totalEpisodes: data['total_episodes'],
         totalDuration: data['total_duration'],
-        avgScore: (data['avg_score'] as number | null)?.toFixed(1),
+        avgScore: digit(data['avg_score'] as number | null),
         updateTime: toCNStringDate(new Date(data['update_time']))
     }
 }

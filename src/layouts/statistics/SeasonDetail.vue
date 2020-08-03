@@ -55,6 +55,7 @@ import { defineComponent, computed } from 'vue'
 import { useSWR } from '@/functions/server'
 import { useDoughnut } from '@/functions/chart'
 import { toCNStringDate } from '@/functions/display'
+import { digit } from '@/functions/format'
 import { sexLimitLevels, violenceLimitLevels } from '@/definitions/animation-definition'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
 import { DefinitionItem } from '@/definitions/util'
@@ -136,10 +137,6 @@ function mapAnimation(item: any) {
         score: item['score'],
         positivity: item['positivity'] ? digit(item['positivity']) : null
     }
-}
-
-function digit(n: number | null): string | null {
-    return n != null ? (Math.round(n * 10) / 10).toString() : null
 }
 </script>
 
