@@ -19,8 +19,8 @@ div.ui.container
                 div.ui.tabular.vertical.menu.mt-0
                     a.item(v-for="item in seasonList", :key="item.name", :class="{active: item.name === season}", @click="season = item.name") {{item.label}}
         div.ui.ten.wide.column
-            SeasonLine(v-if="season == null", :metadata="metadata")
-            SeasonDetail(v-else, :season="season")
+            SeasonLine(v-if="season == null", :metadata="metadata", ref="seasonLine")
+            SeasonDetail(v-else, :season="season", ref="seasonDetail")
     StatisticModal(title="季度", v-model:visible="showHelp", @refresh="onFullUpdate")
         div 大部分TV动画都按照冬、春、夏、秋的季度发布和放送。以季度为单位，纵览追番状况和每个季度的追番详情。
         h5 季度纵览
@@ -59,9 +59,18 @@ export default defineComponent({
 
         const showHelp = ref(false)
 
+        const seasonLine: Ref<any | null> = ref(null)
+        const seasonDetail: Ref<any | null> = ref(null)
+
         return {
-            loading, updateLoading, notFound, onFullUpdate, showHelp, 
-            seasonList, season, metadata
+            loading, updateLoading, notFound, showHelp, 
+            seasonList, season, metadata,
+            seasonLine, seasonDetail,
+            async onFullUpdate() {
+                await onFullUpdate()
+                seasonLine.value?.updateData()
+                seasonDetail.value?.updateData()
+            }
         }
     }
 })

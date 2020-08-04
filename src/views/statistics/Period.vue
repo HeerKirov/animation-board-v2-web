@@ -47,7 +47,7 @@ import CalendarBox from '@/components/CalendarBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
 import { useChart } from '@/functions/chart'
-import { useSWR } from '@/functions/server'
+import { useSWR, useServer } from '@/functions/server'
 import { Calendar } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
 import { arrays } from '@/functions/util'
@@ -84,17 +84,21 @@ export default defineComponent({
 
         const { currentView, bound, boundList } = useFilter(metadata)
 
-        const { dataLoading, dataNotFound, data } = useData(bound)
+        const { dataLoading, dataNotFound, data, updateData } = useData(bound)
 
         const { hourCtx, weekdayCtx } = useChartDisplay(data, currentView)
 
         const showHelp = ref(false)
 
         return {
-            loading, updateLoading, notFound, showHelp, onFullUpdate,
+            loading, updateLoading, notFound, showHelp,
             currentView, bound, boundList,
             dataLoading, dataNotFound, data,
             hourCtx, weekdayCtx,
+            async onFullUpdate() {
+                await onFullUpdate()
+                updateData()
+            }
         }
     }
 })
@@ -133,14 +137,14 @@ function useFilter(metadata: Metadata) {
 function useData(bound: Ref<string>) {
     const url = computed(() => `/api/statistics/period/${bound.value}`)
 
-    const { loading, data, error } = useSWR(url, null, {
+    const { loading, data, error, manual } = useSWR(url, null, {
         byAuthorization: 'LOGIN',
         errorHandler(code, data, parent) { if(code !== 404) { parent?.(code, data) } }
     })
     const notFound = computed(() => error.value?.code === 404)
     const dataResult: Ref<DataResult | null> = computed(() => data.value ? mapData(data.value) : null)
 
-    return {dataLoading: loading, dataNotFound: notFound, data: dataResult}
+    return {dataLoading: loading, dataNotFound: notFound, data: dataResult, updateData: manual}
 }
 
 function useChartDisplay(data: Ref<DataResult | null>, view: Ref<string>) {

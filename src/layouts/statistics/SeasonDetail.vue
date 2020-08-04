@@ -69,7 +69,7 @@ export default defineComponent({
         season: {type: String, required: true}
     },
     setup(props) {
-        const { data: originData, loading, updateLoading, error } = useSWR(computed(() => `/api/statistics/season/${props.season}`), null, {
+        const { data: originData, loading, updateLoading, error, manual: updateData } = useSWR(computed(() => `/api/statistics/season/${props.season}`), null, {
             errorHandler(code, data, parent) { if(code !== 404) { parent?.(code, data) } }
         })
         const notFound = computed(() => error.value?.code === 404)
@@ -82,7 +82,7 @@ export default defineComponent({
         const violenceData = useDoughnutData(violenceLimitLevelLabels, () => originData.value?.['violence_limit_level_counts'])
         const { ctx: violenceCtx } = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 1.4, legend: {display: true}})
 
-        return {loading, updateLoading, notFound, data, sexCtx, violenceCtx}
+        return {loading, updateLoading, notFound, data, updateData, sexCtx, violenceCtx}
     }
 })
 

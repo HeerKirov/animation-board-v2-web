@@ -55,7 +55,7 @@ import CalendarBox from '@/components/CalendarBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
 import { useChart } from '@/functions/chart'
-import { useSWR } from '@/functions/server'
+import { useSWR, useServer } from '@/functions/server'
 import { Calendar, digit } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
@@ -106,7 +106,7 @@ export default defineComponent({
 
         const { currentView, bound, aggregateTimeUnit } = useFilter(metadata)
 
-        const { data } = useData(bound, aggregateTimeUnit)
+        const { data, updateData } = useData(bound, aggregateTimeUnit)
 
         const { countCtx, scoreCtx } = useChartDisplay(data, currentView)
 
@@ -114,9 +114,13 @@ export default defineComponent({
 
         return {
             loading, updateLoading, notFound, showHelp,
-            metadata, onFullUpdate,
+            metadata,
             currentView, bound, aggregateTimeUnit,
-            countCtx, scoreCtx
+            countCtx, scoreCtx,
+            async onFullUpdate() {
+                await onFullUpdate()
+                updateData()
+            }
         }
     }
 })
@@ -172,12 +176,12 @@ function useData(bound: Bound, aggregateTimeUnit: Ref<string>) {
 
     const url = computed(() => query.value.lower && query.value.upper ? '/api/statistics/timeline' : null)
 
-    const { data } = useSWR(url, reactive(query))
+    const { data, manual: updateData } = useSWR(url, reactive(query))
 
     const items: Ref<DataItem[] | null> = ref(null)
     watch(data, () => { items.value = data.value ? (data.value['items'] as any[]).map(i => mapDataItem(i, aggregateTimeUnit.value)) : null })
 
-    return {data: items}
+    return {data: items, updateData}
 }
 
 function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>) {

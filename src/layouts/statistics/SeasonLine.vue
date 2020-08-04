@@ -43,11 +43,11 @@ export default defineComponent({
     setup(props) {
         const currentView = ref(views[0].name)
 
-        const { data, updateTime } = useData(computed(() => props.metadata))
+        const { data, updateTime, updateData } = useData(computed(() => props.metadata))
 
         const { ctx } = useChartDisplay(data, currentView)
 
-        return {currentView, ctx, updateTime}
+        return {currentView, ctx, updateTime, updateData}
     }
 })
 
@@ -59,12 +59,12 @@ function useData(metadata: Ref<Metadata>) {
         }
     })
 
-    const { data } = useSWR(computed(() => metadata.value.lowerYear != null && metadata.value.upperSeason != null ? '/api/statistics/season/line' : null), reactive(query))
+    const { data, manual } = useSWR(computed(() => metadata.value.lowerYear != null && metadata.value.upperSeason != null ? '/api/statistics/season/line' : null), reactive(query))
 
     const items: Ref<DataItem[] | null> = computed(() => data.value ? (data.value['items'] as any[]).map(mapDataItem) : null)
     const updateTime = computed(() => data.value ? toCNStringDate(new Date(data.value['update_time'])) : null)
 
-    return {data: items, updateTime}
+    return {data: items, updateTime, updateData: manual}
 }
 
 function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>) {
