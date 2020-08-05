@@ -5,18 +5,26 @@ div.float-right: a.ui.tertiary.button(@click="onGroup", :class="{disabled: group
     i.stream.icon(v-else)
     = '沉降进度'
 div.is-weight.font-size-13.mt-1 增加离散记录
-div.ui.segment
+div.ui.segment.mb-0
     div.ui.dimmer.inverted.active(v-if="addLoading")
         div.ui.loader
     div.ui.ten.columns.grid
         div.ui.column.px-2.py-2(v-for="i in publishedEpisodes")
             a.ui.basic.mini.fluid.button(@click="onAddScatter(i)") {{i}}
+div.text-right(v-if="undoItem != null")
+    a.ui.tertiary.mini.button(@click="undo", :class="{disabled: undoLoading}")
+        i.notched.circle.loading.icon(v-if="undoLoading")
+        i.undo.icon(v-else)
+        = '撤销第{{undoItem}}话的记录'
+    a.ui.tertiary.mini.icon.button(@click="clearUndo")
+        i.close.icon
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, Ref, onMounted, computed, watch, watchEffect, onUnmounted } from 'vue'
 import { Chart } from 'chart.js'
 import { useSWR, useServer } from '@/functions/server'
+import { useNotification } from '@/functions/notification'
 
 interface ScatterItem {
     episode: number
@@ -49,7 +57,7 @@ export default defineComponent({
         const totalEpisodes: Ref<number> = computed(() => props.totalEpisodes)
         const publishedEpisodes: Ref<number> = computed(() => props.publishedEpisodes)
 
-        const { data } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}/scatter` : null), null, {byAuthorization: 'LOGIN'})
+        const { data, manual } = useSWR(computed(() => idRef.value ? `/api/personal/records/${idRef.value}/scatter` : null), null, {byAuthorization: 'LOGIN'})
 
         const scatters: Ref<Scatters> = ref({episodes: [], progressTimes: [], scatterTimes: []})
 
@@ -71,13 +79,15 @@ export default defineComponent({
 
         const { ctx } = useChart(scatters)
 
-        const { onGroup, groupLoading, onAddScatter, addLoading } = useController(idRef, totalEpisodes, scatters, () => emit('detailChanged'))
+        const { undoItem, undoLoading, pushUndoItem, undo, clearUndo } = useUndoStack(idRef, manual)
 
-        return {ctx, onGroup, groupLoading, onAddScatter, addLoading}
+        const { onGroup, groupLoading, onAddScatter, addLoading } = useController(idRef, totalEpisodes, scatters, pushUndoItem, () => emit('detailChanged'))
+
+        return {ctx, onGroup, groupLoading, onAddScatter, addLoading, undoItem, undoLoading, undo, clearUndo}
     }
 })
 
-function useController(idRef: Ref<string | null>, totalEpisodes: Ref<number>, scatters: Ref<Scatters>, emitDetailChanged: () => void) {
+function useController(idRef: Ref<string | null>, totalEpisodes: Ref<number>, scatters: Ref<Scatters>, pushUndoItem: (episode: number) => void, emitDetailChanged: () => void) {
     const { request } = useServer()
 
     const groupLoading = ref(false)
@@ -116,11 +126,59 @@ function useController(idRef: Ref<string | null>, totalEpisodes: Ref<number>, sc
         const r = await request(`/api/personal/records/${idRef.value!}/scatter/watch`, 'POST', {episode})
         if(r.ok) {
             scatters.value.scatterTimes[episode - 1] += 1
+            pushUndoItem(episode)
         }
         addLoading.value = false
     }
 
     return {onGroup, groupLoading, onAddScatter, addLoading}
+}
+
+function useUndoStack(idRef: Ref<string | null>, emitUndoSuccess: () => void) {
+    const { request } = useServer()
+    const { notify } = useNotification()
+
+    const stack: number[] = []
+    const undoItem: Ref<number | null> = ref(null)
+    const undoLoading = ref(false)
+
+    const pushUndoItem = (episode: number) => {
+        if(undoItem.value != null) {
+            stack.push(undoItem.value)
+        }
+        undoItem.value = episode
+    }
+
+    const undo = async () => {
+        undoLoading.value = true
+        const r = await request(`/api/personal/records/${idRef.value!}/scatter/undo`, 'POST', null, {
+            errorHandler(code, data, parent) {
+                if(code !== 400) { 
+                    parent?.(code, data) 
+                }else{
+                    notify('撤销失败', 'error', '上次记录时间过于久远，已经不能撤销。')
+                    clearUndo()
+                }
+            }
+        })
+        if(r.ok) {
+            emitUndoSuccess()
+            if(stack.length > 0) {
+                const [ item ] = stack.splice(stack.length - 1, 1)
+                undoItem.value = item
+            }else{
+                undoItem.value = null
+            }
+        }
+        undoLoading.value = false
+    }
+
+    const clearUndo = () => {
+        stack.splice(0, stack.length)
+        undoItem.value = null
+    }
+
+    return {undoItem, undoLoading, pushUndoItem, undo, clearUndo}
 }
 
 function useChart(data: Ref<Scatters>) {
