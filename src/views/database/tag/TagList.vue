@@ -34,6 +34,7 @@ import { useAuth } from '@/functions/auth'
 
 const orders = [
     {name: 'NAME', title: '名称', icon: 'tags icon', argument: 'name'},
+    {name: 'COUNT', title: '动画数量', icon: 'calculator icon', argument: 'animation_count'},
     {name: 'CREATE_TIME', title: '创建时间', icon: 'folder plus icon', argument: 'create_time'},
     {name: 'UPDATE_TIME', title: '更新时间', icon: 'pen nib icon', argument: 'update_time'}
 ]

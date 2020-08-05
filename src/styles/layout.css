@@ -121,3 +121,5 @@ body {height: auto !important}
 .min-height-0 {min-height: 0 !important}
 
 .is-fixed {position: fixed !important}
+
+.hidden {visibility: hidden}

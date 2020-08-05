@@ -211,9 +211,6 @@ function useStaffEditor(data: Ref<Instance>) {
 </script>
 
 <style scoped>
-    .hidden {
-        visibility: hidden;
-    }
     .hidden-input {
         visibility: hidden; 
         height: 0; 

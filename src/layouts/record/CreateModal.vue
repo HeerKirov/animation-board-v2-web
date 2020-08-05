@@ -182,9 +182,6 @@ function useSupplement(idRef: Ref<string | null>, success: () => void) {
 </script>
 
 <style scoped>
-    .hidden {
-        visibility: hidden;
-    }
     .center-box {
         position: fixed;
         left: 50%;

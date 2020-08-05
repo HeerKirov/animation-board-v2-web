@@ -68,9 +68,3 @@ export default defineComponent({
     }
 })
 </script>
-
-<style scoped>
-    .hidden {
-        visibility: hidden;
-    }
-</style>

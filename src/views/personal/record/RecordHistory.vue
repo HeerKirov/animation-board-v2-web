@@ -19,6 +19,11 @@ div.ui.container
         div.four.wide.column
             div.ui.segment
                 SearchBox(:value="search", @search="onSearch")
+                div.ui.divider
+                div.ui.stackable.grid
+                    div.four.wide.column.px-0.font-size-12.text-right.py-2 进度筛选
+                    div.twelve.wide.column.pt-1.pb-2
+                        ItemSelector(:items="ordinals", :selected="ordinal", @changed="onOrdinalChanged")
             PageSelector(:max="pageMax", :current="page", @changed="onPageChanged")
             div.mt-2(v-if="totalNum != null") 共{{totalNum}}条记录
 </template>
@@ -30,17 +35,24 @@ import PageSelector, { ChangedEvent as PageChangedEvent } from '@/components/Pag
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
-import { usePagination } from '@/functions/parameters'
+import { usePagination, useSelector } from '@/functions/parameters'
 import { toCNStringDate } from '@/functions/display'
 import { useSWR } from '@/functions/server'
 import cover from '@/plugins/cover'
+import { toNameSet } from '@/definitions/util'
+
+const ordinals = [
+    {name: 'FIRST', title: '最早'},
+    {name: 'LAST', title: '最后'}
+]
 
 const limit = 15
 
 export default defineComponent({
     components: {SearchBox, PageSelector, ItemSelector},
     computed: {
-        barItems() { return secondaryBarItems.record }
+        barItems() { return secondaryBarItems.record },
+        ordinals() { return ordinals }
     },
     setup() {
         const { updateQuery, watchQuery } = useRouterQueryUtil({resetField: {field: 'page', value: undefined, excludes: ['order']}})
@@ -50,17 +62,21 @@ export default defineComponent({
 
         const search: Ref<string | undefined> = ref()
         const { page, pageMax, offset, pageToQuery, pageFromQuery } = usePagination(totalNum, limit)
+        const { selected: ordinal, toQuery: ordinalToQuery, fromQuery: ordinalFromQuery } = useSelector(toNameSet(ordinals))
 
         const onSearch = (e: SearchEvent) => updateQuery('search', e.text)
         const onPageChanged = (e: PageChangedEvent) => updateQuery('page', pageToQuery(e.page))
+        const onOrdinalChanged = (e: ItemChangedEvent) => updateQuery('ordinal', ordinalToQuery(e.name))
 
         watchQuery({
             'search'(value) { search.value = value || undefined },
+            'ordinal': ordinalFromQuery,
             'page': pageFromQuery
         })
 
         const fetcher = reactive({
             'search': search,
+            'ordinal': ordinal,
             'limit': limit,
             'offset': offset
         })
@@ -79,6 +95,7 @@ export default defineComponent({
 
         return {
             search, onSearch,
+            ordinal, onOrdinalChanged,
             page, pageMax, onPageChanged,
             loading, items, totalNum
         }

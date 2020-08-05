@@ -108,9 +108,3 @@ function remapData(item: Instance) {
     }
 }
 </script>
-
-<style scoped>
-    .hidden {
-        visibility: hidden;
-    }
-</style>
