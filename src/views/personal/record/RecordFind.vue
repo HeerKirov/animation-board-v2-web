@@ -5,7 +5,7 @@ div.ui.container
             i(:class="item.icon")
             = '{{item.title}}'
     div.ui.grid
-        div.twelve.wide.column
+        div.twelve.wide.column.mt-1
             div.ui.inline.active.centered.loader(v-if="loading")
             div.ui.stackable.five.columns.grid.px-1(v-else)
                 div.column.p-2(v-for="item in items", :key="item.id")

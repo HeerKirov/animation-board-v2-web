@@ -29,7 +29,7 @@ div.ui.grid(v-else-if="data")
                     img(:src="item.cover")
                     div.ui.top.right.attached.green.tiny.label.p-1(v-if='item.completed') 未看完
                 div.item.content 
-                    div.is-weight.font-size-16.mb-3 {{item.title}}
+                    div.title {{item.title}}
                     div.labels
                         div.ui.label.py-1(v-if="item.score")
                             i.star.icon
@@ -151,6 +151,12 @@ function mapAnimation(item: any) {
         vertical-align: top;
         height: 80px;
         width: calc(100% - 80px)
+    }
+    .item.content .title {
+        font-weight: 500;
+        font-size: 16px;
+        /* margin-bottom: 15px; */
+        height: 40px;
     }
     .item.content .labels {
         height: 25px;

@@ -13,7 +13,7 @@ div.ui.container
                         router-link(:to="{name: 'Comment.Detail', params: {id: item.id}}")
                             img.item-image(:src="item.cover")
                         div.item-content
-                            div: router-link.ui.tertiary.button(:to="{name: 'Comment.Detail', params: {id: item.id}}") {{item.title}}
+                            div: router-link.ui.tertiary.button.text-left(style="padding-top: 1px !important", :to="{name: 'Comment.Detail', params: {id: item.id}}") {{item.title}}
                             div.starlight: Starlight(:value="item.score")
         div.four.wide.column
             div.ui.segment.pb-4

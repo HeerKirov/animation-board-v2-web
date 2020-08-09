@@ -42,8 +42,9 @@ import cover from '@/plugins/cover'
 import { toNameSet } from '@/definitions/util'
 
 const ordinals = [
-    {name: 'FIRST', title: '最早'},
-    {name: 'LAST', title: '最后'}
+    {name: 'LAST', title: '最新进度'},
+    {name: 'FIRST', title: '首次进度'},
+    {name: 'REWATCHED', title: '重看进度'}
 ]
 
 const limit = 15
