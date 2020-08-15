@@ -53,7 +53,7 @@ function useAnimations() {
 }
 
 function useTags() {
-    const { loading, data } = useSWR('/api/database/tags', {limit: 10, order: 'name'})
+    const { loading, data } = useSWR('/api/database/tags', {limit: 10, order: '-animation_count'})
 
     const items = computed(() => data.value ? (data.value['result'] as any[]).map(i => i['name']) : [])
 

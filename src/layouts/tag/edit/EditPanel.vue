@@ -28,6 +28,9 @@ div.ui.grid
                     label 名称
                     InputBox(v-model="data.name", :max-length="16", :not-blank="true", placeholder="标签的唯一识别名")
                 div.ui.field
+                    label 分组
+                    InputBox(v-model="data.group", :max-length="16", placeholder="标签的分组")
+                div.ui.field
                     label 描述
                     InputBox(v-model="data.introduction", placeholder="标签的定义描述")
     div.ui.row
@@ -48,6 +51,7 @@ import { useEditorForm, watchEditorValidate } from '@/functions/editor'
 interface Instance {
     id: number | null
     name: string | undefined
+    group: string | null
     introduction: string | null | undefined
 }
 
@@ -55,6 +59,7 @@ function defaultInstance(): Instance {
     return {
         id: null,
         name: undefined,
+        group: null,
         introduction: null
     }
 }
@@ -71,6 +76,7 @@ export default defineComponent({
         const editMode = inject(editInjectionKey)!
 
         const { editorValue, valueExists, updateLoading, onEditorChanged, onSubmit, onCancel, onDelete } = useEditorForm<Instance>(swr, editMode, mapItem, remapData, {
+            method: 'PATCH',
             afterDelete() { router.push({name: 'Tag.List'}) }
         })
 
@@ -90,13 +96,15 @@ function mapItem(item: any) {
     return {
         id: item['id'],
         name: item['name'],
+        group: item['group'],
         introduction: item['introduction']
     }
 }
 
 function remapData(item: Instance) {
     return {
-        name: item['name'],
+        name: item['name'] || '',
+        group: item['group'] || '',
         introduction: item['introduction'] || ''
     }
 }

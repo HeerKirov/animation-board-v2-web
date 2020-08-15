@@ -15,9 +15,9 @@
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.23",
-    "@vue/cli-plugin-babel": "^4.4.6",
-    "@vue/cli-plugin-typescript": "^4.4.6",
-    "@vue/cli-service": "^4.4.6",
+    "@vue/cli-plugin-babel": "^4.5.3",
+    "@vue/cli-plugin-typescript": "^4.5.3",
+    "@vue/cli-service": "^4.5.3",
     "@vue/compiler-sfc": "^3.0.0-rc.5",
     "pug": "^2.0.4",
     "pug-plain-loader": "^1.0.0",

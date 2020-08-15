@@ -10,8 +10,8 @@ div.ui.container
     div.ui.grid
         div.twelve.wide.column
             div.ui.inline.active.centered.loader(v-if="loading")
-            div.ui.stackable.three.columns.grid(v-else)
-                div.column(v-for="item in items")
+            div.ui.stackable.three.columns.grid.pt-2(v-else)
+                div.column.py-1(v-for="item in items")
                     div.ui.segment.p-2
                         router-link(:to="{name: 'Staff.Detail', params: {id: item.id}}")
                             img.item-image(:src="item.cover")

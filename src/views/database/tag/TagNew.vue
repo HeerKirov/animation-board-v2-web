@@ -17,7 +17,10 @@ div.ui.container
                     div.five.wide.field.required
                         label 名称
                         InputBox(placeholder="标签的唯一识别名", v-model="item.name", :not-blank="true", :max-length="16")
-                    div.eleven.wide.field
+                    div.four.wide.field.required
+                        label 分组
+                        InputBox(placeholder="标签的分组", v-model="item.group", :max-length="16")
+                    div.ten.wide.field
                         label 描述
                         InputBox(placeholder="标签的定义描述", v-model="item.introduction")
                     div.one.wide.field
@@ -40,6 +43,7 @@ import { useServer } from '@/functions/server'
 interface Instance {
     flag: number
     name: string | undefined
+    group: string | null
     introduction: string
 }
 
@@ -47,6 +51,7 @@ function newInstance(flag: number) {
     return {
         flag,
         name: undefined,
+        group: null,
         introduction: ''
     }
 }
@@ -104,7 +109,8 @@ export default defineComponent({
 function remapData(item: Instance) {
     return {
         name: item.name,
-        introduction: item.introduction || ''
+        introduction: item.introduction || '',
+        group: item.group || null
     }
 }
 </script>

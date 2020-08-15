@@ -13,6 +13,7 @@ div.ui.grid
             h2.ui.icon.header
                 i.tag.icon
                 div.content {{obj.name}}
+                    div.sub.header(v-if="obj.group") {{obj.group}}
                     div.sub.header {{obj.introduction}}
         div.ui.row
             div.ui.twelve.wide.centered.column
@@ -64,6 +65,7 @@ export default defineComponent({
 function mapItem(item: any) {
     return {
         name: item['name'],
+        group: item['group'],
         introduction: item['introduction']
     }
 }
