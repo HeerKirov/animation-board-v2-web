@@ -13,20 +13,22 @@ div.ui.container
                 div.ui.active.inverted.dimmer(v-if="loading")
                     div.ui.loader
                 template(v-else)
-                    template(v-for="group in groups")
-                        div.font-size-14.is-weight.mb-1(v-if="grouped == 'true'") {{group.group || '未分组标签'}}
-                        router-link.ui.large.label.mr-2.mb-1(v-for="item in group.items", :to="{name: 'Tag.Detail', params: {id: item.id}}", :class="{primary: item.searchFlag}") {{item.name}}
+                    template(v-for="(group, i) in groups")
+                        div.font-size-14.is-weight.mb-1(v-if="grouped == 'true'", @dragover.prevent="", @drop.prevent="onDrop($event, i, group.items.length - 1)") {{group.group || '未分组标签'}}
+                        router-link.ui.large.label.mr-1.mb-1(v-for="(item, j) in group.items", :to="{name: 'Tag.Detail', params: {id: item.id}}", :class="{primary: item.searchFlag}", 
+                                                            draggable="true", @dragstart="onDragStart($event, i, j)",
+                                                            @dragover.prevent="", @drop.prevent="onDrop($event, i, j)") {{item.name}}
         div.four.wide.column
-            div.ui.segment.pb-4
+            div.ui.segment
                 SearchBox(:value="search", @search="onSearch")
                 div.ui.divider
-                SortSelector.px-2(:items="orders", :selected="sortValue", :direction="sortDirection", @changed="onSortChanged")
-                div.ui.divider
                 div.ui.stackable.grid
-                    div.four.wide.column.px-0.font-size-12.text-right.py-2 分组
+                    div.four.wide.column.px-0.font-size-12.text-right.py-2 分组显示
                     div.twelve.wide.column.pt-1.pb-2
                         ItemSelector(:items="isGroups", :show-none="false", v-model:selected="grouped")
-            div.mt-2(v-if="count > 0") 共{{count}}个标签
+            div.mt-2 共
+                span(v-if="grouped == 'true'") {{groups.length}}个分组，
+                span {{count}}个标签
 </template>
 
 <script lang="ts">
@@ -36,7 +38,7 @@ import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/Ite
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
-import { useSWR } from '@/functions/server'
+import { useSWR, useServer } from '@/functions/server'
 import { useSort, useSelector } from '@/functions/parameters'
 import { useAuth } from '@/functions/auth'
 import { toNameSet } from '@/definitions/util'
@@ -76,44 +78,29 @@ export default defineComponent({
             set(v) { groupedValue.value = v === 'true'},
             get() { return groupedValue.value.toString() }
         })
+
         const search: Ref<string | undefined> = ref()
-        const { sortValue, sortDirection, order, sortToQuery, sortFromQuery } = useSort(orders, defaultOrderValue, defaultOrderDirection)
+        const onSearch = (e: SearchEvent) => { search.value = e.text }
 
-        const onSearch = (e: SearchEvent) => updateQuery('search', e.text)
-        const onSortChanged = (e: SortChangedEvent) => updateQuery('order', sortToQuery(e.name, e.direction))
-
-        watchQuery({
-            'search'(value) { search.value = value || undefined },
-            'order': sortFromQuery
-        })
-
-        const fetcher = reactive({order})
-
-        const { loading, data } = useSWR('/api/database/tags', fetcher)
-        const items = computed(() => {
-            if(data.value) {
-                return data.value['result'].map(mapItem)
-            }else{
-                return []
-            }
-        })
+        const { loading, data, manual } = useSWR('/api/database/tags', {order: 'ordinal'})
+        const items = computed(() => data.value ? data.value['result'].map(mapItem) : [])
         const count = computed(() => items.value.length)
-        
-        const { groups } = useDisplayData(items, search, groupedValue)
+        const { groups } = useDisplayData(items, search)
+        const { onDragStart, onDrop } = useDrag(groups, manual)
 
         const { stats } = useAuth()
 
         return {
             grouped,
             search, onSearch,
-            sortValue, sortDirection, onSortChanged,
             loading, groups, count,
+            onDragStart, onDrop,
             isStaff: toRef(stats, 'isStaff')
         }
     }
 })
 
-function useDisplayData(items: Ref<Instance[]>, search: Ref<string | undefined>, grouped: Ref<boolean>) {
+function useDisplayData(items: Ref<Instance[]>, search: Ref<string | undefined>) {
     const groups = computed(() => {
         const s = search.value
         const list: Group[] = []
@@ -122,7 +109,7 @@ function useDisplayData(items: Ref<Instance[]>, search: Ref<string | undefined>,
 
         for(const instance of items.value) {
             const item: GroupItem = {id: instance.id, name: instance.name, searchFlag: s != undefined && instance.name.indexOf(s) >= 0}
-            if(!grouped.value || instance.group == null) {
+            if(instance.group == null) {
                 nullGroup.items.push(item)
             }else{
                 let group = map[instance.group]
@@ -142,6 +129,36 @@ function useDisplayData(items: Ref<Instance[]>, search: Ref<string | undefined>,
     })
 
     return {groups}
+}
+
+function useDrag(groups: Ref<Group[]>, manualUpdate: () => void) {
+    const { request } = useServer()
+
+    let fromGroup: number | null = null
+    let fromIndex: number | null = null
+
+    const onDragStart = (e: DragEvent, groupIndex: number, itemIndex: number) => {
+        fromGroup = groupIndex
+        fromIndex = itemIndex
+    }
+
+    const onDrop = async (e: DragEvent, groupIndex: number, itemIndex: number) => {
+        if(!(groupIndex == fromGroup && itemIndex == fromIndex)) {
+            const group = groups.value[groupIndex!].group
+            const ordinal = (() => {
+                let ordinal = 0
+                for(let i = 0; i < groupIndex; ++i) { ordinal += groups.value[groupIndex].items.length }
+                return ordinal + itemIndex + 2
+            })()
+
+            const r = await request(`/api/database/tags/${groups.value[fromGroup!].items[fromIndex!].id}`, 'PATCH', {group, ordinal})
+            if(r.ok) {
+                manualUpdate()
+            }
+        }        
+    }
+
+    return {onDragStart, onDrop}
 }
 
 function mapItem(item: any): Instance {
