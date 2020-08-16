@@ -48,7 +48,7 @@ export default defineComponent({
             return ret
         })
 
-        const todayWeekday = getTodayWeekday()
+        const todayWeekday = getTodayWeekday(computed(() => originData.value?.['night_time_table'] ?? false))
         const today = ref(todayWeekday)
 
         const todayPlus = () => { today.value = (today.value + 1) % 7 }
@@ -70,8 +70,12 @@ function getHeader() {
     return `${year}年·${season}季`
 }
 
-function getTodayWeekday(): number {
-    return new Date().getDay()
+function getTodayWeekday(nightTimeTable: Ref<boolean>): Ref<number> {
+    return computed(() => {
+        const now = new Date()
+        if(nightTimeTable) now.setHours(now.getHours() - 2)
+        return now.getDay()
+    })
 }
 
 function mapItem(item: any, nightTimeTable: boolean) {
