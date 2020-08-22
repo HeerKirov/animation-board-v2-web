@@ -17,6 +17,12 @@ export default [
         meta: {nav: ['record', 'activity'], title: ['日记', '动态']}
     },
     {
+        name: 'Record.Scale',
+        path: '/personal/records/scale',
+        component: () => import('@/views/personal/record/RecordScale.vue'),
+        meta: {nav: ['record', 'scale'], title: ['日记', '数轴']}
+    },
+    {
         name: 'Record.History',
         path: '/personal/records/history',
         component: () => import('@/views/personal/record/RecordHistory.vue'),

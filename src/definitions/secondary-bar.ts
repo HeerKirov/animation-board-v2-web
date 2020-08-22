@@ -9,6 +9,7 @@ export const secondaryBarItems: {[t: string]: {[r: string]: BarItem}} = {
     record: {
         diary: {name: 'diary', title: '订阅', icon: 'thumbtack icon', link: {name: 'Record.Diary'}},
         activity: {name: 'activity', title: '动态', icon: 'quote left icon', link: {name: 'Record.Activity'}},
+        scale: {name: 'scale', title: '数轴', icon: 'wave square icon', link: {name: 'Record.Scale'}},
         history: {name: 'history', title: '足迹', icon: 'shoe prints icon', link: {name: 'Record.History'}},
         find: {name: 'find', title: '发现', icon: 'search icon', link: {name: 'Record.Find'}},
     },
