@@ -25,8 +25,10 @@ div.ui.container
                 div.ui.eight.wide.column
                         CalendarBox.float-right(max-width="140px", placeholder="最晚时间点", v-model="bound.upper", first="year", until="month")
             div.ui.row
-                div.ui.column
-                    canvas(ref="ctx")
+                div.ui.column(v-if="currentView !== 'score'")
+                    canvas(ref="stackedCtx")
+                div.ui.column(v-else)
+                    canvas(ref="tiledCtx")
             div.ui.row
                 div.ui.column.text-right
                     span.ui.grey.text.font-size-11 上次更新时间 {{metadata.updateTime}}
@@ -53,6 +55,7 @@ import { toCNStringDate } from '@/functions/display'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
 import { DefinitionItem } from '@/definitions/util'
+import { arrays } from '@/functions/util'
 
 interface Bound {lower: Calendar | null, upper: Calendar | null}
 
@@ -60,15 +63,20 @@ interface Metadata extends Bound {updateTime: string | null}
 
 interface DataItem {
     label: string
-    totalAnimations: number
+    chaseAnimations: number
+    supplementAnimations: number
     maxScore: number
     minScore: number
     avgScore: number
+    scoreCounts: {[score: number]: number}
 }
+
+const scoreBackgroundColors = ['grey', 'brown', 'brown', 'yellow', 'yellow', 'yellow', 'yellow', 'orange', 'orange', 'red'].map(i => colorCSS[i])
 
 const views: DefinitionItem[] = [
     {name: 'count', title: '动画数量'},
-    {name: 'score', title: '评分分布'}
+    {name: 'score', title: '评分概况'},
+    {name: 'scoreMap', title: '评分分布'}
 ]
 
 const aggregations: DefinitionItem[] = [
@@ -90,7 +98,7 @@ export default defineComponent({
 
         const { data, updateData } = useData(bound, aggregateTimeUnit)
 
-        const { ctx } = useChartDisplay(data, currentView)
+        const { stackedCtx, tiledCtx } = useChartDisplay(data, currentView)
 
         const showHelp = ref(false)
 
@@ -98,7 +106,7 @@ export default defineComponent({
             loading, updateLoading, notFound, showHelp,
             metadata,
             currentView, bound, aggregateTimeUnit,
-            ctx,
+            stackedCtx, tiledCtx,
             async onFullUpdate() {
                 await onFullUpdate()
                 updateData()
@@ -167,12 +175,32 @@ function useData(bound: Bound, aggregateTimeUnit: Ref<string>) {
 }
 
 function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>) {
-    const countData: Ref<ChartData> = computed(() => {
+    const tiledSet = new Set(['score'])
+
+    const stackedData: Ref<ChartData> = computed(() => {
         return data.value == null ? {labels: [], datasets: []} : {
             labels: data.value.map(i => i.label),
             datasets: currentView.value === 'count' ? [
-                {label: '动画数量', backgroundColor: colorCSS.blue, data: data.value.map(i => i.totalAnimations)},
-            ] : [
+                {label: '追番数量', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseAnimations)},
+                {label: '非追番数量', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementAnimations)}
+            ] : currentView.value === 'scoreMap' ? arrays.range(1, 10 + 1).map(score => {
+                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], data: data.value!.map(i => i.scoreCounts[score])}
+            }) : []
+        }
+    })
+
+    const { ctx: stackedCtx } = useChart(stackedData, 'bar', {
+        aspectRatio: 3,
+        scales: {
+            yAxes: [{stacked: true, ticks: {beginAtZero: true}}],
+            xAxes: [{stacked: true, gridLines: {display: false}}]
+        }
+    })
+
+    const tiledData: Ref<ChartData> = computed(() => {
+        return !tiledSet.has(currentView.value) || data.value == null ? {labels: [], datasets: []} : {
+            labels: data.value.map(i => i.label),
+            datasets: [
                 {label: '最低分', backgroundColor: colorCSS.pink, data: data.value.map(i => i.minScore)},
                 {label: '平均分', backgroundColor: colorCSS.purple, data: data.value.map(i => i.avgScore)},
                 {label: '最高分', backgroundColor: colorCSS.violet, data: data.value.map(i => i.maxScore)}
@@ -180,7 +208,7 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    const { ctx } = useChart(countData, 'bar', {
+    const { ctx: tiledCtx } = useChart(tiledData, 'bar', {
         aspectRatio: 3,
         scales: {
             yAxes: [{ticks: {beginAtZero: true, suggestedMax: 10}}],
@@ -188,7 +216,7 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    return {ctx}
+    return {stackedCtx, tiledCtx}
 }
 
 function dateToBoundString(date: Calendar, aggregateTimeUnit: string) {
@@ -202,10 +230,12 @@ function dateToBoundString(date: Calendar, aggregateTimeUnit: string) {
 function mapDataItem(item: any, aggregateTimeUnit: string): DataItem {
     return {
         label: mapTimeToLabel(item['time'] as string, aggregateTimeUnit),
-        totalAnimations: item['total_animations'],
+        chaseAnimations: item['chase_animations'],
+        supplementAnimations: item['supplement_animations'],
         maxScore: item['max_score'] ?? 0,
         minScore: item['min_score'] ?? 0,
-        avgScore: digit(item['avg_score']) ?? 0
+        avgScore: digit(item['avg_score']) ?? 0,
+        scoreCounts: analyseScoreCounts(item['score_counts'])
     }
 }
 
@@ -216,5 +246,19 @@ function mapTimeToLabel(time: string, aggregateTimeUnit: string): string {
         const [y, s] = time.split('-')
         return `${y}年${'冬春夏秋'[parseInt(s) - 1]}季`
     }
+}
+
+function analyseScoreCounts(original: {[score: number]: number}): {[score: number]: number} {
+    let sum = 0
+    for(let i = 1; i <= 10; ++i) { sum += original[i] ?? 0 }
+    let ret: {[score: number]: number} = {}
+    if(sum > 0) {
+        for(let i = 1; i <= 10; ++i) {
+            if(original[i]) {
+                ret[i] = original[i] / sum
+            }
+        }
+    }
+    return ret
 }
 </script>

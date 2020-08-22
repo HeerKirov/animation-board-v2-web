@@ -25,10 +25,10 @@ div.ui.container
                 div.ui.eight.wide.column
                         CalendarBox.float-right(max-width="140px", placeholder="最晚时间点", v-model="bound.upper", first="year", until="month")
             div.ui.row
-                div.ui.column(v-if="currentView === 'score'")
-                    canvas(ref="scoreCtx")
+                div.ui.column(v-if="currentView !== 'score'")
+                    canvas(ref="stackedCtx")
                 div.ui.column(v-else)
-                    canvas(ref="countCtx")
+                    canvas(ref="tiledCtx")
             div.ui.row
                 div.ui.column.text-right
                     span.ui.grey.text.font-size-11 上次更新时间 {{metadata.updateTime}}
@@ -43,7 +43,8 @@ div.ui.container
         p - 累计时长: 每个时间点看完的动画总时长，单位分钟。其原理同上。
         p - 评分分布: 每个时间点新看完的动画的评分情况，包括最低分、最高分、平均分。
         h5 维度
-        p - 首次看完: 第一次看完的动画或集数。
+        p - 追番看完: 以追番方式看完的动画或集数。
+        p - 补番看完: 以补番方式看完的动画或集数。
         p - 重看看完: 重复观看时看完的动画或集数。二周目及以上的进度计算在内。
         p - 离散数据: 通过离散标记的集数。
 </template>
@@ -60,6 +61,7 @@ import { Calendar, digit } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
+import { arrays } from '@/functions/util'
 import { DefinitionItem } from '@/definitions/util'
 
 interface Bound {lower: Calendar | null, upper: Calendar | null}
@@ -68,24 +70,31 @@ interface Metadata extends Bound {updateTime: string | null}
 
 interface DataItem {
     label: string
-    watchedAnimations: number
+    chaseAnimations: number
+    chaseEpisodes: number
+    chaseDuration: number
+    supplementAnimations: number
+    supplementEpisodes: number
+    supplementDuration: number
     rewatchedAnimations: number
-    watchedEpisodes: number
     rewatchedEpisodes: number
-    scatterEpisodes: number
-    watchedDuration: number
     rewatchedDuration: number
+    scatterEpisodes: number
     scatterDuration: number
     maxScore: number
     minScore: number
     avgScore: number
+    scoreCounts: {[score: number]: number}
 }
+
+const scoreBackgroundColors = ['grey', 'brown', 'brown', 'yellow', 'yellow', 'yellow', 'yellow', 'orange', 'orange', 'red'].map(i => colorCSS[i])
 
 const views: DefinitionItem[] = [
     {name: 'count', title: '动画数量'},
     {name: 'episode', title: '累计集数'},
     {name: 'duration', title: '累计时长'},
-    {name: 'score', title: '评分分布'}
+    {name: 'score', title: '评分概况'},
+    {name: 'scoreMap', title: '评分分布'}
 ]
 
 const aggregations: DefinitionItem[] = [
@@ -108,7 +117,7 @@ export default defineComponent({
 
         const { data, updateData } = useData(bound, aggregateTimeUnit)
 
-        const { countCtx, scoreCtx } = useChartDisplay(data, currentView)
+        const { stackedCtx, tiledCtx } = useChartDisplay(data, currentView)
 
         const showHelp = ref(false)
 
@@ -116,7 +125,7 @@ export default defineComponent({
             loading, updateLoading, notFound, showHelp,
             metadata,
             currentView, bound, aggregateTimeUnit,
-            countCtx, scoreCtx,
+            stackedCtx, tiledCtx,
             async onFullUpdate() {
                 await onFullUpdate()
                 updateData()
@@ -185,25 +194,30 @@ function useData(bound: Bound, aggregateTimeUnit: Ref<string>) {
 }
 
 function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>) {
-    const countData: Ref<ChartData> = computed(() => {
+    const stackedData: Ref<ChartData> = computed(() => {
         return currentView.value === 'score' || data.value == null ? {labels: [], datasets: []} : {
             labels: data.value.map(i => i.label),
             datasets: currentView.value === 'count' ? [
-                {label: '首次看完动画', backgroundColor: colorCSS.blue, data: data.value.map(i => i.watchedAnimations)},
+                {label: '追番看完动画', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseAnimations)},
+                {label: '补番看完动画', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementAnimations)},
                 {label: '重看看完动画', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedAnimations)}
             ] : currentView.value === 'episode' ? [
-                {label: '首次看完集数', backgroundColor: colorCSS.blue, data: data.value.map(i => i.watchedEpisodes)},
+                {label: '追番看完集数', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseEpisodes)},
+                {label: '补番看完集数', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementEpisodes)},
                 {label: '重看看完集数', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedEpisodes)},
                 {label: '离散看完集数', backgroundColor: colorCSS.yellow, data: data.value.map(i => i.scatterEpisodes)}
             ] : currentView.value === 'duration' ? [
-                {label: '首次看完集数时长', backgroundColor: colorCSS.blue, data: data.value.map(i => i.watchedDuration)},
+                {label: '追番看完集数时长', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseDuration)},
+                {label: '补番看完集数时长', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementDuration)},
                 {label: '重看看完集数时长', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedDuration)},
                 {label: '离散看完集数时长', backgroundColor: colorCSS.yellow, data: data.value.map(i => i.scatterDuration)}
-            ] : []
+            ] : currentView.value === 'scoreMap' ? arrays.range(1, 10 + 1).map(score => {
+                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], data: data.value!.map(i => i.scoreCounts[score])}
+            }) : []
         }
     })
 
-    const { ctx: countCtx } = useChart(countData, 'bar', {
+    const { ctx: stackedCtx } = useChart(stackedData, 'bar', {
         aspectRatio: 3,
         scales: {
             yAxes: [{stacked: true, ticks: {beginAtZero: true}}],
@@ -211,8 +225,8 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    const scoreData: Ref<ChartData> = computed(() => {
-        return currentView.value !== 'score' || data.value == null ? {labels: [], datasets: []} : {
+    const tiledData: Ref<ChartData> = computed(() => {
+        return currentView.value != 'score' || data.value == null ? {labels: [], datasets: []} : {
             labels: data.value.map(i => i.label),
             datasets: [
                 {label: '最低分', backgroundColor: colorCSS.pink, data: data.value.map(i => i.minScore)},
@@ -222,7 +236,7 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    const { ctx: scoreCtx } = useChart(scoreData, 'bar', {
+    const { ctx: tiledCtx } = useChart(tiledData, 'bar', {
         aspectRatio: 3,
         scales: {
             yAxes: [{ticks: {beginAtZero: true, suggestedMax: 10}}],
@@ -230,7 +244,7 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    return {countCtx, scoreCtx}
+    return {stackedCtx, tiledCtx}
 }
 
 function dateToBoundString(date: Calendar, aggregateTimeUnit: string) {
@@ -246,17 +260,21 @@ function dateToBoundString(date: Calendar, aggregateTimeUnit: string) {
 function mapDataItem(item: any, aggregateTimeUnit: string): DataItem {
     return {
         label: mapTimeToLabel(item['time'] as string, aggregateTimeUnit),
-        watchedAnimations: item['watched_animations'],
+        chaseAnimations: item['chase_animations'],
+        chaseEpisodes: item['chase_episodes'],
+        chaseDuration: item['chase_duration'],
+        supplementAnimations: item['supplement_animations'],
+        supplementEpisodes: item['supplement_episodes'],
+        supplementDuration: item['supplement_duration'],
         rewatchedAnimations: item['rewatched_animations'],
-        watchedEpisodes: item['watched_episodes'],
         rewatchedEpisodes: item['rewatched_episodes'],
-        scatterEpisodes: item['scatter_episodes'],
-        watchedDuration: item['watched_duration'],
         rewatchedDuration: item['rewatched_duration'],
+        scatterEpisodes: item['scatter_episodes'],
         scatterDuration: item['scatter_duration'],
         maxScore: item['max_score'] ?? 0,
         minScore: item['min_score'] ?? 0,
-        avgScore: digit(item['avg_score']) ?? 0
+        avgScore: digit(item['avg_score']) ?? 0,
+        scoreCounts: analyseScoreCounts(item['score_counts'])
     }
 }
 
@@ -270,6 +288,20 @@ function mapTimeToLabel(time: string, aggregateTimeUnit: string): string {
         const [y, m] = time.split('-')
         return `${y}年${parseInt(m)}月`
     }
+}
+
+function analyseScoreCounts(original: {[score: number]: number}): {[score: number]: number} {
+    let sum = 0
+    for(let i = 1; i <= 10; ++i) { sum += original[i] ?? 0 }
+    let ret: {[score: number]: number} = {}
+    if(sum > 0) {
+        for(let i = 1; i <= 10; ++i) { 
+            if(original[i]) {
+                ret[i] = original[i] / sum
+            }
+        }
+    }
+    return ret
 }
 </script>
 

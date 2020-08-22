@@ -31,7 +31,7 @@ export function toFriendlyTime(date: Date, now?: Date): string {
     }else if(minuteMinus <= 10) {
         return `${minuteMinus}分钟前`
     }
-    const dayMinus = Math.floor(n.getTime() / 86400000) - Math.floor(date.getTime() / 86400000)
+    const dayMinus = (new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()) / 86400000
     if(dayMinus === 0) {
         return `${fmt(date.getHours())}:${fmt(date.getMinutes())}`
     }else if(dayMinus === 1) {

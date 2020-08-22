@@ -22,7 +22,7 @@ div.ui.container
                     div.label 累计观看集数
                 div.ui.small.statistic.px-2
                     div.value {{basicData.totalDuration}}
-                    div.label 累计观看时长/分钟
+                    div.label 累计观看时长
                 div.ui.statistic.right.floated.px-2
                     div.value {{basicData.avgScore}}
                     div.label 平均分
@@ -191,9 +191,13 @@ function mapBasicData(data: any) {
     return {
         totalAnimations: data['total_animations'],
         totalEpisodes: data['total_episodes'],
-        totalDuration: data['total_duration'],
+        totalDuration: toFriendlyDuration(data['total_duration'] as number),
         avgScore: digit(data['avg_score'] as number | null),
         updateTime: toCNStringDate(new Date(data['update_time']))
     }
+}
+
+function toFriendlyDuration(duration: number): string {
+    return `${Math.floor(duration / 60)}小时${duration % 60}分钟`
 }
 </script>

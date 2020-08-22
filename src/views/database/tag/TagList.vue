@@ -4,7 +4,10 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'tag'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-        router-link.right.item(v-if="isStaff", :to="{name: 'Tag.New'}")
+        a.right.item(v-if="isStaff", @click="editMode = !editMode")
+            i.align.left.icon
+            = '{{editMode ? "退出编辑模式" : "编辑模式"}}'
+        router-link.item(v-if="isStaff", :to="{name: 'Tag.New'}")
             i.plus.icon
             = '新建'
     div.ui.grid
@@ -13,26 +16,21 @@ div.ui.container
                 div.ui.active.inverted.dimmer(v-if="loading")
                     div.ui.loader
                 template(v-else)
-                    template(v-for="(group, i) in groups")
-                        div.font-size-14.is-weight.mb-1(v-if="grouped == 'true'", @dragover.prevent="", @drop.prevent="onDrop($event, i, group.items.length - 1)") {{group.group || '未分组标签'}}
-                        router-link.ui.large.label.mr-1.mb-1(v-for="(item, j) in group.items", :to="{name: 'Tag.Detail', params: {id: item.id}}", :class="{primary: item.searchFlag}", 
-                                                            draggable="true", @dragstart="onDragStart($event, i, j)",
-                                                            @dragover.prevent="", @drop.prevent="onDrop($event, i, j)") {{item.name}}
+                    template(v-for="group in items")
+                        div.font-size-14.is-weight.mb-1(v-if="group.group != null", @dragover.prevent="", @drop.prevent="onDrop($event, group.group, null)") {{group.group}}
+                        div.font-size-14.is-weight.mb-1(v-else) 未分组标签
+                        router-link.ui.large.label.mr-1.mb-1(v-for="(item, index) in group.items", :key="item.id", :to="editMode ? '' : {name: 'Tag.Detail', params: {id: item.id}}", 
+                                                            :class="isMarked(item.name) ? 'primary' : editMode ? 'grey' : ''", 
+                                                            :draggable="editMode", @dragstart="onDragStart($event, item.id)",
+                                                            @dragover.prevent="", @drop.prevent="onDrop($event, group.group, index + 1)") {{item.name}}
         div.four.wide.column
             div.ui.segment
                 SearchBox(:value="search", @search="onSearch")
-                div.ui.divider
-                div.ui.stackable.grid
-                    div.four.wide.column.px-0.font-size-12.text-right.py-2 分组显示
-                    div.twelve.wide.column.pt-1.pb-2
-                        ItemSelector(:items="isGroups", :show-none="false", v-model:selected="grouped")
-            div.mt-2 共
-                span(v-if="grouped == 'true'") {{groups.length}}个分组，
-                span {{count}}个标签
+            div.mt-2 共{{count.groupCount}}个分组，{{count.tagCount}}个标签
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed, Ref, toRef, watch } from 'vue'
+import { defineComponent, ref, reactive, computed, Ref, toRef, watch, toRefs } from 'vue'
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
@@ -43,130 +41,83 @@ import { useSort, useSelector } from '@/functions/parameters'
 import { useAuth } from '@/functions/auth'
 import { toNameSet } from '@/definitions/util'
 
-interface Instance {id: number, name: string, group: string | null}
+interface Group {group: string | null, items: Instance[]}
 
-interface Group {group: string | null, items: GroupItem[]}
+interface Instance {id: number, name: string}
 
-interface GroupItem {id: number, name: string, searchFlag: boolean}
-
-const isGroups = [
-    {name: 'true', title: '是'},
-    {name: 'false', title: '否'}
-]
-const orders = [
-    {name: 'ORDINAL', title: '预设排序', icon: 'sort amount down icon', argument: 'ordinal'},
-    {name: 'NAME', title: '名称', icon: 'tags icon', argument: 'name'},
-    {name: 'COUNT', title: '动画数量', icon: 'calculator icon', argument: 'animation_count'},
-    {name: 'CREATE_TIME', title: '创建时间', icon: 'folder plus icon', argument: 'create_time'},
-    {name: 'UPDATE_TIME', title: '更新时间', icon: 'pen nib icon', argument: 'update_time'}
-]
-const defaultOrderValue = "ORDINAL"
-const defaultOrderDirection = 1
-
+//TODO 重构drag/drop回归双index定位，手动移动数据，不再全局刷新数据，避免闪屏
+//TODO 添加group的drag/drop移动和group的重命名
 export default defineComponent({
     components: {SearchBox, SortSelector, ItemSelector},
     computed: {
-        barItems: () => secondaryBarItems.database,
-        orders() { return orders },
-        isGroups() { return isGroups }
+        barItems() { return secondaryBarItems.database }
     },
     setup() {
-        const { updateQuery, watchQuery } = useRouterQueryUtil()
-
-        const groupedValue = ref(true)
-        const grouped = computed({
-            set(v) { groupedValue.value = v === 'true'},
-            get() { return groupedValue.value.toString() }
-        })
-
-        const search: Ref<string | undefined> = ref()
-        const onSearch = (e: SearchEvent) => { search.value = e.text }
-
-        const { loading, data, manual } = useSWR('/api/database/tags', {order: 'ordinal'})
-        const items = computed(() => data.value ? data.value['result'].map(mapItem) : [])
-        const count = computed(() => items.value.length)
-        const { groups } = useDisplayData(items, search)
-        const { onDragStart, onDrop } = useDrag(groups, manual)
+        const { loading, data, manual } = useSWR('/api/database/tags/groups')
+        const items = computed(() => data.value ? (data.value as any[]).map(mapGroup) : [])
+        const count = computed(() => sumGroup(items.value))
 
         const { stats } = useAuth()
 
         return {
-            grouped,
-            search, onSearch,
-            loading, groups, count,
-            onDragStart, onDrop,
-            isStaff: toRef(stats, 'isStaff')
+            loading, items, count, 
+            isStaff: toRef(stats, 'isStaff'),
+            ...useFilter(),
+            ...useEditor(items, manual)
         }
     }
 })
 
-function useDisplayData(items: Ref<Instance[]>, search: Ref<string | undefined>) {
-    const groups = computed(() => {
-        const s = search.value
-        const list: Group[] = []
-        const map: {[key: string]: Group} = {}
-        const nullGroup: Group = {group: null, items: []}
+function useFilter() {
+    const search: Ref<string | undefined> = ref()
+    const onSearch = (e: SearchEvent) => { search.value = e.text }
 
-        for(const instance of items.value) {
-            const item: GroupItem = {id: instance.id, name: instance.name, searchFlag: s != undefined && instance.name.indexOf(s) >= 0}
-            if(instance.group == null) {
-                nullGroup.items.push(item)
-            }else{
-                let group = map[instance.group]
-                if(group == null) {
-                    group = {group: instance.group, items: []}
-                    list.push(group)
-                    map[instance.group] = group
-                }
-                group.items.push(item)
-            }
-        }
-        if(nullGroup.items.length > 0) {
-            list.push(nullGroup)
-        }
+    const isMarked = (name: string) => search.value != null && name.indexOf(search.value) >= 0
 
-        return list
-    })
-
-    return {groups}
+    return {search, onSearch, isMarked}
 }
 
-function useDrag(groups: Ref<Group[]>, manualUpdate: () => void) {
+function useEditor(items: Ref<Group[]>, manualUpdate: () => void) {
     const { request } = useServer()
 
-    let fromGroup: number | null = null
-    let fromIndex: number | null = null
+    const editMode = ref(false)
 
-    const onDragStart = (e: DragEvent, groupIndex: number, itemIndex: number) => {
-        fromGroup = groupIndex
-        fromIndex = itemIndex
+    let dragId: number | null = null
+
+    const onDragStart = (e: DragEvent, id: number) => { dragId = id }
+
+    const onDrop = async (e: DragEvent, group: string, ordinal: number | null) => {
+        const r = await request(`/api/database/tags/${dragId}`, 'PATCH', {group, ordinal})
+        if(r.ok) {
+            manualUpdate()
+        }
+        dragId = null
     }
 
-    const onDrop = async (e: DragEvent, groupIndex: number, itemIndex: number) => {
-        if(!(groupIndex == fromGroup && itemIndex == fromIndex)) {
-            const group = groups.value[groupIndex!].group
-            const ordinal = (() => {
-                let ordinal = 0
-                for(let i = 0; i < groupIndex; ++i) { ordinal += groups.value[groupIndex].items.length }
-                return ordinal + itemIndex + 2
-            })()
+    return {editMode, onDragStart, onDrop}
+}
 
-            const r = await request(`/api/database/tags/${groups.value[fromGroup!].items[fromIndex!].id}`, 'PATCH', {group, ordinal})
-            if(r.ok) {
-                manualUpdate()
-            }
-        }        
+function mapGroup(group: any): Group {
+    return {
+        group: group['group'],
+        items: (group['items'] as any[]).map(mapItem)
     }
-
-    return {onDragStart, onDrop}
 }
 
 function mapItem(item: any): Instance {
     return {
         id: item['id'],
-        name: item['name'],
-        group: item['group']
+        name: item['name']
     }
+}
+
+function sumGroup(groups: Group[]): {groupCount: number, tagCount: number} {
+    let groupCount = 0, tagCount = 0
+    for(const {group, items} of groups) {
+        if(group != null) { groupCount += 1 }
+        tagCount += items.length
+    }
+    return {groupCount, tagCount}
 }
 </script>
 

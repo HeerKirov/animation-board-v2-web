@@ -11,5 +11,7 @@ export const colorCSS = {
     pink: '#e03997',
     brown: '#a5673f',
     grey: '#767676',
-    black: '#1b1c1d'
+    black: '#1b1c1d',
+
+    alpha: '2F'
 }

@@ -23,10 +23,6 @@ div.ui.container
                     i.industry.icon
                     h2 未找到数据
             div(v-else)
-                div.ui.secondary.menu
-                    div.right.menu
-                        ItemSelector(:items="views", v-model:selected="currentView", :show-none="false")
-                div
                 div.ui.two.columns.grid.pt-6
                     div.ui.column: canvas(ref="hourCtx")
                     div.ui.column: canvas(ref="weekdayCtx")
@@ -37,6 +33,9 @@ div.ui.container
         h5 周期时间
         p 周期时间可以24小时或7天为周期，统计在一个周期的时间内，每个时间点看动画的频率。
         p 频率的方案有两种，按时间点频数统计或按时间点看番集数统计。
+        p: i - 集数频数：此时间点内总共观看的集数。
+        p: i - 时间频数：此时间点有多少次有过看番。
+        p: i 两者的区别在于，集数频数会统计一个时间点内的多集看番，时间频数则仅将有过看番的时间点计1。
         p 可以统计全部时间的数据，或者统计某一年的数据。
 </template>
 
@@ -68,31 +67,25 @@ interface DataResult {
 const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 const hourLabels = arrays.range(0, 24).map(i => `${i}时`)
 
-const views: DefinitionItem[] = [
-    {name: 'sum', title: '集数频数'},
-    {name: 'count', title: '时间频数'}
-]
-
 export default defineComponent({
     components: {CalendarBox, ItemSelector, StatisticModal},
     computed: {
-        barItems() { return secondaryBarItems.statistics },
-        views() { return views }
+        barItems() { return secondaryBarItems.statistics }
     },
     setup() {
         const { loading, updateLoading, notFound, metadata, onFullUpdate } = useOverviewData()
 
-        const { currentView, bound, boundList } = useFilter(metadata)
+        const { bound, boundList } = useFilter(metadata)
 
         const { dataLoading, dataNotFound, data, updateData } = useData(bound)
 
-        const { hourCtx, weekdayCtx } = useChartDisplay(data, currentView)
+        const { hourCtx, weekdayCtx } = useChartDisplay(data)
 
         const showHelp = ref(false)
 
         return {
             loading, updateLoading, notFound, showHelp,
-            currentView, bound, boundList,
+            bound, boundList,
             dataLoading, dataNotFound, data,
             hourCtx, weekdayCtx,
             async onFullUpdate() {
@@ -129,9 +122,7 @@ function useFilter(metadata: Metadata) {
 
     const boundList: Ref<string[]> = computed(() => metadata.lower != null && metadata.upper != null ? arrays.range(metadata.lower, metadata.upper + 1).map(i => i.toString()).reverse() : [])
 
-    const currentView = ref(views[0].name)
-
-    return {currentView, bound, boundList}
+    return {bound, boundList}
 }
 
 function useData(bound: Ref<string>) {
@@ -147,30 +138,60 @@ function useData(bound: Ref<string>) {
     return {dataLoading: loading, dataNotFound: notFound, data: dataResult, updateData: manual}
 }
 
-function useChartDisplay(data: Ref<DataResult | null>, view: Ref<string>) {
+function useChartDisplay(data: Ref<DataResult | null>) {
     const hourData: Ref<ChartData> = computed(() => {
         return data.value == null ? {labels: [], datasets: []} : {
             labels: hourLabels,
-            datasets: [{backgroundColor: colorCSS.blue, data: view.value === 'count' ? data.value.dayOfHours : data.value.episodeOfHours},]
+            datasets: [
+                {
+                    label: '集数频数',
+                    pointRadius: 2,
+                    borderColor: colorCSS.blue, 
+                    backgroundColor: colorCSS.blue + '2F',
+                    data: data.value.episodeOfHours
+                },
+                {
+                    label: '时间频数',
+                    pointRadius: 2,
+                    borderColor: colorCSS.pink, 
+                    backgroundColor: colorCSS.pink + '2F',
+                    data: data.value.dayOfHours
+                }
+            ]
         }
     })
 
-    const { ctx: hourCtx } = useChart(hourData, 'polarArea', {
+    const { ctx: hourCtx } = useChart(hourData, 'radar', {
         title: {display: true, text: '24小时'},
-        legend: {display: false},
+        legend: {display: true},
         aspectRatio: 1,
     })
 
     const weekdayData: Ref<ChartData> = computed(() => {
         return data.value == null ? {labels: [], datasets: []} : {
             labels: weekdayLabels,
-            datasets: [{backgroundColor: colorCSS.blue, data: view.value === 'count' ? data.value.dayOfWeekdays : data.value.episodeOfWeekdays},]
+            datasets: [
+                {
+                    label: '集数频数',
+                    pointStyle: 'rect',
+                    borderColor: colorCSS.blue, 
+                    backgroundColor: colorCSS.blue + '2F',
+                    data: data.value.episodeOfWeekdays
+                },
+                {
+                    label: '时间频数',
+                    pointStyle: 'rect',
+                    borderColor: colorCSS.pink, 
+                    backgroundColor: colorCSS.pink + '2F',
+                    data: data.value.dayOfWeekdays
+                }
+            ]
         }
     })
 
-    const { ctx: weekdayCtx } = useChart(weekdayData, 'polarArea', {
+    const { ctx: weekdayCtx } = useChart(weekdayData, 'radar', {
         title: {display: true, text: '7天'},
-        legend: {display: false},
+        legend: {display: true},
         aspectRatio: 1,
     })
 
