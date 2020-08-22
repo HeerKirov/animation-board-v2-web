@@ -182,9 +182,9 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
             labels: data.value.map(i => i.label),
             datasets: currentView.value === 'count' ? [
                 {label: '追番数量', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseAnimations)},
-                {label: '非追番数量', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementAnimations)}
+                {label: '非追番数量', backgroundColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.supplementAnimations)}
             ] : currentView.value === 'scoreMap' ? arrays.range(1, 10 + 1).map(score => {
-                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], data: data.value!.map(i => i.scoreCounts[score])}
+                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], borderWidth: 1, data: data.value!.map(i => i.scoreCounts[score])}
             }) : []
         }
     })

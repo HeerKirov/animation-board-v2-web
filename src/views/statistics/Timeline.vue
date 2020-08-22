@@ -199,20 +199,20 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
             labels: data.value.map(i => i.label),
             datasets: currentView.value === 'count' ? [
                 {label: '追番看完动画', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseAnimations)},
-                {label: '补番看完动画', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementAnimations)},
-                {label: '重看看完动画', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedAnimations)}
+                {label: '补番看完动画', backgroundColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.supplementAnimations)},
+                {label: '重看看完动画', backgroundColor: colorCSS.olive, borderWidth: 1, data: data.value.map(i => i.rewatchedAnimations)}
             ] : currentView.value === 'episode' ? [
                 {label: '追番看完集数', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseEpisodes)},
-                {label: '补番看完集数', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementEpisodes)},
-                {label: '重看看完集数', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedEpisodes)},
-                {label: '离散看完集数', backgroundColor: colorCSS.yellow, data: data.value.map(i => i.scatterEpisodes)}
+                {label: '补番看完集数', backgroundColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.supplementEpisodes)},
+                {label: '重看看完集数', backgroundColor: colorCSS.olive, borderWidth: 1, data: data.value.map(i => i.rewatchedEpisodes)},
+                {label: '离散看完集数', backgroundColor: colorCSS.yellow, borderWidth: 1, data: data.value.map(i => i.scatterEpisodes)}
             ] : currentView.value === 'duration' ? [
                 {label: '追番看完集数时长', backgroundColor: colorCSS.blue + '4F', borderColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.chaseDuration)},
-                {label: '补番看完集数时长', backgroundColor: colorCSS.blue, data: data.value.map(i => i.supplementDuration)},
-                {label: '重看看完集数时长', backgroundColor: colorCSS.olive, data: data.value.map(i => i.rewatchedDuration)},
-                {label: '离散看完集数时长', backgroundColor: colorCSS.yellow, data: data.value.map(i => i.scatterDuration)}
+                {label: '补番看完集数时长', backgroundColor: colorCSS.blue, borderWidth: 1, data: data.value.map(i => i.supplementDuration)},
+                {label: '重看看完集数时长', backgroundColor: colorCSS.olive, borderWidth: 1, data: data.value.map(i => i.rewatchedDuration)},
+                {label: '离散看完集数时长', backgroundColor: colorCSS.yellow, borderWidth: 1, data: data.value.map(i => i.scatterDuration)}
             ] : currentView.value === 'scoreMap' ? arrays.range(1, 10 + 1).map(score => {
-                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], data: data.value!.map(i => i.scoreCounts[score])}
+                return {label: score.toString(), backgroundColor: scoreBackgroundColors[score - 1], borderWidth: 1, data: data.value!.map(i => i.scoreCounts[score])}
             }) : []
         }
     })
