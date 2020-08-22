@@ -13,16 +13,16 @@ div.ui.container
     div.ui.grid
         div.twelve.wide.column
             div.ui.segment.px-6.main-panel
-                div.ui.active.inverted.dimmer(v-if="loading")
-                    div.ui.loader
-                template(v-else)
-                    template(v-for="group in items")
-                        div.font-size-14.is-weight.mb-1(v-if="group.group != null", @dragover.prevent="", @drop.prevent="onDrop($event, group.group, null)") {{group.group}}
-                        div.font-size-14.is-weight.mb-1(v-else) 未分组标签
-                        router-link.ui.large.label.mr-1.mb-1(v-for="(item, index) in group.items", :key="item.id", :to="editMode ? '' : {name: 'Tag.Detail', params: {id: item.id}}", 
-                                                            :class="isMarked(item.name) ? 'primary' : editMode ? 'grey' : ''", 
-                                                            :draggable="editMode", @dragstart="onDragStart($event, item.id)",
-                                                            @dragover.prevent="", @drop.prevent="onDrop($event, group.group, index + 1)") {{item.name}}
+                template(v-for="(group, groupIndex) in items", :key="group.group")
+                    div.font-size-14.is-weight.mb-1(v-if="group.group == null") 未分组标签
+                    GroupText(v-else-if="editMode", :value="group.group", @update:value="manual",
+                              @dragover.prevent="", @drop.prevent="onDrop($event, groupIndex, null)",
+                              :draggable="editMode", @dragstart="onDragGroup($event, group.group)")
+                    div.font-size-14.is-weight.mb-1(v-else) {{group.group}}
+                    router-link.ui.large.label.mr-1.mb-1(v-for="(item, index) in group.items", :key="item.id", :to="editMode ? '' : {name: 'Tag.Detail', params: {id: item.id}}", 
+                                                        :class="isMarked(item.name) ? 'primary' : editMode ? 'grey' : ''", 
+                                                        :draggable="editMode", @dragstart="onDragTag($event, item.id)",
+                                                        @dragover.prevent="", @drop.prevent="onDrop($event, groupIndex, index + 1)") {{item.name}}
         div.four.wide.column
             div.ui.segment
                 SearchBox(:value="search", @search="onSearch")
@@ -34,6 +34,7 @@ import { defineComponent, ref, reactive, computed, Ref, toRef, watch, toRefs } f
 import SortSelector, { ChangedEvent as SortChangedEvent } from '@/components/SortSelector.vue'
 import ItemSelector, { ChangedEvent as ItemChangedEvent } from '@/components/ItemSelector.vue'
 import SearchBox, { SearchEvent } from '@/components/SearchBox.vue'
+import GroupText from '@/layouts/tag/list/GroupText.vue'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import { useRouterQueryUtil } from '@/functions/routers'
 import { useSWR, useServer } from '@/functions/server'
@@ -45,10 +46,8 @@ interface Group {group: string | null, items: Instance[]}
 
 interface Instance {id: number, name: string}
 
-//TODO 重构drag/drop回归双index定位，手动移动数据，不再全局刷新数据，避免闪屏
-//TODO 添加group的drag/drop移动和group的重命名
 export default defineComponent({
-    components: {SearchBox, SortSelector, ItemSelector},
+    components: {SearchBox, SortSelector, ItemSelector, GroupText},
     computed: {
         barItems() { return secondaryBarItems.database }
     },
@@ -60,7 +59,7 @@ export default defineComponent({
         const { stats } = useAuth()
 
         return {
-            loading, items, count, 
+            loading, items, count, manual,
             isStaff: toRef(stats, 'isStaff'),
             ...useFilter(),
             ...useEditor(items, manual)
@@ -83,18 +82,39 @@ function useEditor(items: Ref<Group[]>, manualUpdate: () => void) {
     const editMode = ref(false)
 
     let dragId: number | null = null
+    let dragGroup: string | null = null
 
-    const onDragStart = (e: DragEvent, id: number) => { dragId = id }
+    const onDragTag = (e: DragEvent, id: number) => {
+        dragId = id 
+        dragGroup = null
+    }
 
-    const onDrop = async (e: DragEvent, group: string, ordinal: number | null) => {
-        const r = await request(`/api/database/tags/${dragId}`, 'PATCH', {group, ordinal})
-        if(r.ok) {
-            manualUpdate()
-        }
+    const onDragGroup = (e: DragEvent, group: string) => {
+        dragGroup = group
         dragId = null
     }
 
-    return {editMode, onDragStart, onDrop}
+    const onDrop = async (e: DragEvent, groupIndex: number, itemIndex: number | null) => {
+        if(dragGroup != null) {
+            const ordinal = groupIndex + 1
+            const r = await request(`/api/database/tags/groups/${dragGroup}`, 'PATCH', {ordinal})
+            if(r.ok) {
+                manualUpdate()
+            }
+        }else if(dragId != null) {
+            const group = items.value[groupIndex].group
+            const ordinal = itemIndex != null ? itemIndex + 1 : null
+            const r = await request(`/api/database/tags/${dragId}`, 'PATCH', {group, ordinal})
+            if(r.ok) {
+                manualUpdate()
+            }
+        }
+        
+        dragId = null
+        dragGroup = null
+    }
+
+    return {editMode, onDragTag, onDragGroup, onDrop}
 }
 
 function mapGroup(group: any): Group {
