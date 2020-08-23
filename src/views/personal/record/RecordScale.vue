@@ -12,7 +12,7 @@ div.ui.container
                 CalendarBox(max-width="140px", placeholder="最晚时间点", v-model="editorValue.upper", first="day", until="day")
             div.ui.one.wide.column
                 a.ui.green.icon.button(@click="onSearch"): i.search.icon
-    ScalePanel(:data="data")
+    ScalePanel(:data="data", :lower="panelBound.lower", :upper="panelBound.upper")
 </template>
 
 <script lang="ts">
@@ -28,21 +28,6 @@ import { toNameSet } from '@/definitions/util'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import cover from '@/plugins/cover'
 
-interface Item {
-    id: number
-    title: string
-    cover: string
-    ordinal: number
-    finished: boolean
-    startTime: Date
-    endTime: Date
-}
-
-//TODO 下一步将所有涉及坐标的计算都移到panel内进行，view只提供timestamp数值
-//TODO 因此需要为panel提供lower和upper范围
-//TODO 由于上述改动，可以判断progress的头尾是否溢出显示范围。只有确实溢出显示范围(而不是顶到显示范围边界)的progress，其圆角不显示
-//TODO 可以提供更多详细信息的progress
-//TODO 进度堆叠算法
 export default defineComponent({
     components: {CalendarBox, ScalePanel},
     computed: {
@@ -56,46 +41,22 @@ export default defineComponent({
             lower: dateToCalendar(lowerDate, CalendarUntilPart.Day),
             upper: dateToCalendar(upperDate, CalendarUntilPart.Day)
         })
+        const panelBound = computed(() => {
+            return {
+                lower: calendarToDate(bound.value.lower),
+                upper: calendarToDate(bound.value.upper)
+            }
+        })
 
         const { editorValue, onSearch } = useEditor(bound, updateQuery)
 
-        watchQuery({
-            'bound': queryToBound(bound)
-        })
+        watchQuery({'bound': queryToBound(bound)})
 
         const fetcher = useBoundFetcher(bound)
-
         const { loading, data: origin } = useSWR('/api/personal/records/scale', fetcher)
+        const data = computed(() => origin.value ? (origin.value as any[]).map(mapItem) : [])
 
-        const data: Ref<Instance[]> = ref([])
-
-        watch(origin, () => {
-            if(origin.value) {
-                const lowerTimestamp = calendarToDate(bound.value.lower).getTime()
-                const upperTimestamp = calendarToDate(bound.value.upper).getTime()
-                let i = 0
-                data.value = (origin.value as any[]).map(mapItem).map(item => {
-                    const left = (Math.max(lowerTimestamp, item.startTime.getTime()) - lowerTimestamp) * 100 / (upperTimestamp - lowerTimestamp)
-                    const right = (upperTimestamp - Math.min(upperTimestamp, item.endTime.getTime())) * 100 / (upperTimestamp - lowerTimestamp)
-                    return {
-                        id: item.id,
-                        title: item.title,
-                        cover: item.cover,
-                        ordinal: item.ordinal,
-                        finished: item.finished,
-                        startTime: item.startTime,
-                        endTime: item.endTime,
-                        left,
-                        right,
-                        row: i++
-                    }
-                })
-            }else{
-                data.value = []
-            }
-        }, {immediate: true})
-
-        return {editorValue, onSearch, data}
+        return {editorValue, onSearch, data, panelBound}
     }
 })
 
@@ -166,7 +127,7 @@ function getDefaultBound() {
     return [lowerDate, upperDate]
 }
 
-function mapItem(item: any): Item {
+function mapItem(item: any): Instance {
     const startTime = new Date(item['start'])
     const endTime = new Date(item['end'])
     return {

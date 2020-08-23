@@ -1,4 +1,4 @@
-import { App, Ref, watch, watchEffect, ref, computed, inject, InjectionKey } from 'vue'
+import { App, Ref, watch, watchEffect, ref, computed, inject, InjectionKey, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 export function createDocumentManager() {
@@ -63,4 +63,19 @@ export function watchPageTitle(callback: () => string | string[] | null) {
 export function usePageTitle() {
     const { titleFromPage } = inject(titleInjectionKey)!
     return titleFromPage
+}
+
+export function useMousePosition() {
+    const x = ref(0)
+    const y = ref(0)
+
+    const update = (e: MouseEvent) => {
+        x.value = e.pageX
+        y.value = e.pageY
+    }
+
+    onMounted(() => { window.addEventListener('mousemove', update) })
+    onUnmounted(() => { window.removeEventListener('mousemove', update) })
+
+    return {x, y}
 }
