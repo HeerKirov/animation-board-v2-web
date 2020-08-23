@@ -1,5 +1,5 @@
 import { Method } from 'axios'
-import { InjectionKey, inject, reactive, App, watch, toRaw, Ref, ref, unref, computed } from 'vue'
+import { InjectionKey, inject, reactive, App, watch, Ref, ref, unref, computed, isRef } from 'vue'
 import { request as request0, RequestParam } from '@/functions/request'
 import { AuthResult } from '@/functions/auth'
 
@@ -79,7 +79,9 @@ function useAuthorizations(auth: AuthResult | (() => AuthResult) | undefined, by
 
     const passAuthorization = ref(false)
     if(byAuthorization === "LOGIN") {
-        watch(() => stats.isLogin, () => { passAuthorization.value = stats.isLogin == true }, {immediate: true})
+        watch(() => stats.isLogin, () => { 
+            passAuthorization.value = stats.isLogin == true
+        }, {immediate: true})
     }else if(byAuthorization === "COMPLETED") {
         const stop = watch(() => stats.isLogin, () => {
             if(stats.isLogin != undefined) {
@@ -144,15 +146,16 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
 
     const fetcher: RequestParam = reactive({[method == 'GET' ? 'query' : 'data']: data || undefined, headers})
 
-    watch(() => [url, fetcher, passAuthorization, trigger], async (_v, _o, onInvalidate) => {
+    const watchSource = isRef(url) ? [url, fetcher, trigger, passAuthorization] : [fetcher, trigger, passAuthorization]
+
+    watch(watchSource, async (_v, _o, onInvalidate) => {
         if(!passAuthorization.value) { return }
 
         const unrefUrl = unref(url)
         if(!unrefUrl) { return }
 
         let validate = true
-        onInvalidate(() => {validate = false})
-
+        onInvalidate(() => { validate = false })
         loadingRef.value = true
         const r = await request0(baseUrl + unrefUrl, method, fetcher)
         if(!validate) { return }
