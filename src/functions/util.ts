@@ -42,3 +42,28 @@ export const cast = {
         }
     }
 }
+
+export const dates = {
+    onlyDay(date: Date): Date {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    },
+    onlyMonth(date: Date): Date {
+        return new Date(date.getFullYear(), date.getMonth())
+    },
+    onlyYear(date: Date): Date {
+        return new Date(date.getFullYear())
+    },
+    nextDay(date: Date, day: number = 1): Date {
+        date.setDate(date.getDate() + day)
+        return date
+    },
+    nextMonth(date: Date, month: number = 1): Date {
+        date.setDate(1)
+        date.setMonth(date.getMonth() + month)
+        return date
+    },
+    nextYear(date: Date, year: number = 1): Date {
+        date.setFullYear(date.getFullYear() + year, 0, 1)
+        return date
+    }
+}
