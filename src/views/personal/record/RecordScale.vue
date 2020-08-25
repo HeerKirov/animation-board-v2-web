@@ -17,7 +17,7 @@ div.ui.container
             a.ui.primary.tertiary.small.button.text-top(@click="onClickFastNext")
                 = '向后{{fastLabel}}'
                 i.double.right.angle.icon
-    ScalePanel(:data="data", :lower="panelBound.lower", :upper="panelBound.upper")
+    ScalePanel(:loading="loading", :data="data", :lower="panelBound.lower", :upper="panelBound.upper")
 </template>
 
 <script lang="ts">
@@ -55,13 +55,13 @@ export default defineComponent({
         watchQuery({'bound': queryToBound(bound)})
 
         const fetcher = useBoundFetcher(bound)
-        const { data: origin } = useSWR('/api/personal/records/scale', fetcher)
+        const { loading, data: origin } = useSWR('/api/personal/records/scale', fetcher)
         const data = computed(() => origin.value ? (origin.value as any[]).map(mapItem) : [])
 
         const { editorValue, onSearch, searchError } = useEditor(bound, updateQuery)
         const { fastLabel, onClickFastNext, onClickFastPrev } = useFastButton(bound, updateQuery)
 
-        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, data, panelBound}
+        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, panelBound, loading, data}
     }
 })
 

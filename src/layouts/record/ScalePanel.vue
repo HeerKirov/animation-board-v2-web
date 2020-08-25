@@ -2,7 +2,8 @@
 div.axis
     div.point(v-for="point in axisPoints", :style="{left: `${point.position}%`, height: `${point.label ? 20 : 10}px`}")
         label(v-if="point.label") {{point.label}}
-div.main-panel(:style="{height: `${rowCount * unitHeight}px`}")
+div.ui.inline.active.centered.loader.mt-4(v-if="loading")
+div.main-panel(v-else, :style="{height: `${rowCount * unitHeight}px`}")
     router-link.progress(v-for="(item, index) in items", :key="`${item.id}-${item.ordinal}`", :to="{name: 'Record.Detail', params: {id: item.id}}"
                         :class="{selected: tooltip.itemIndex === index}", :style="item.style", @mouseenter="onMouseOver(index)", @mouseleave="onMouseOut")
         div.gradient(v-if="!item.finished")
@@ -47,6 +48,7 @@ const colors = [colorCSS.red, colorCSS.orange, colorCSS.yellow, colorCSS.green, 
 
 export default defineComponent({
     props: {
+        loading: {type: Boolean, required: true},
         data: {type: (null as any) as PropType<Instance[]>, required: true},
         lower: {type: (null as any) as PropType<Date>, required: true},
         upper: {type: (null as any) as PropType<Date>, required: true}
