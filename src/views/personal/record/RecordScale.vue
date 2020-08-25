@@ -4,22 +4,19 @@ div.ui.container
         router-link.item(v-for="item in barItems", :class="{active: item.name === 'scale'}", :to="item.link")
             i(:class="item.icon")
             = '{{item.title}}'
-    div.ui.grid
-        div.ui.row
-            div.ui.two.wide.column
-                CalendarBox(max-width="140px", placeholder="最早时间点", v-model="editorValue.lower", first="day", until="day")
-            div.ui.two.wide.column
-                CalendarBox(max-width="140px", placeholder="最晚时间点", v-model="editorValue.upper", first="day", until="day")
-            div.ui.six.wide.column
-                a.ui.green.icon.button(@click="onSearch"): i.search.icon
-                div.ui.basic.red.label.ml-1(v-if="searchError") {{searchError}}
-                template(v-else)
-                    a.ui.primary.tertiary.small.button(@click="onClickFastPrev")
-                        i.double.left.angle.icon
-                        = '向前{{fastLabel}}'
-                    a.ui.primary.tertiary.small.button(@click="onClickFastNext")
-                        = '向后{{fastLabel}}'
-                        i.double.right.angle.icon
+    div
+        CalendarBox.is-inline-block(max-width="140px", placeholder="最早时间点", v-model="editorValue.lower", first="day", until="day")
+        i.arrow.right.icon.ml-1
+        CalendarBox.is-inline-block(max-width="140px", placeholder="最晚时间点", v-model="editorValue.upper", first="day", until="day")
+        a.ui.green.icon.button.ml-1.text-top(@click="onSearch"): i.search.icon
+        div.ui.basic.red.label.ml-1(v-if="searchError") {{searchError}}
+        template(v-else)
+            a.ui.primary.tertiary.small.button.text-top(@click="onClickFastPrev")
+                i.double.left.angle.icon
+                = '向前{{fastLabel}}'
+            a.ui.primary.tertiary.small.button.text-top(@click="onClickFastNext")
+                = '向后{{fastLabel}}'
+                i.double.right.angle.icon
     ScalePanel(:data="data", :lower="panelBound.lower", :upper="panelBound.upper")
 </template>
 

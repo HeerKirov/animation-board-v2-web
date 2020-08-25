@@ -70,8 +70,6 @@ export default defineComponent({
 
         const axisPoints = useAxisPoints(props)
 
-        watch(axisPoints, () => console.log(axisPoints.value), {immediate: true})
-
         return {items, rowCount, tooltip, axisPoints, onMouseOver, onMouseOut}
     }
 })
@@ -123,7 +121,7 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 initValue: dates.onlyMonth(new Date(lowerDay * msInDay)),
                 lower, upper,
                 step(d) { return dates.nextMonth(d) },
-                filter(d) { return d.getMonth() % 3 === 0 },
+                filter(d) { return d.getMonth() != 0 && d.getMonth() % 3 === 0 },
                 map() { return null }
             }))
         }else if(deltaDay >= 365) {
@@ -266,8 +264,10 @@ function calculateScale(startTimestamp: number, endTimestamp: number, lowerTimes
 }
 
 function calculateRealScale(originLeft: number, originRight: number) {
-    const f = 0.5//强制每行都拥有一个最小宽度，以免太窄看不清
-    return (100 - f < originLeft + originRight) ? (originRight <= 0 ? [100 - f, 0] : [originLeft, 100 - f - originLeft]) : [originLeft, originRight]
+    //强制每行都拥有一个最小宽度，以免太窄看不清
+    //因此溢出右侧版边的，使其贴紧版边
+    const f = 0.5
+    return (100 - f < originLeft + originRight) ? (100 < f + originLeft ? [100 - f, 0] : [originLeft, 100 - f - originLeft]) : [originLeft, originRight]
 }
 
 function calculateRadius(isFinished: boolean, startTimestamp: number, endTimestamp: number, lowerTimestamp: number, upperTimestamp: number) {
