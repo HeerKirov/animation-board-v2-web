@@ -29,6 +29,7 @@ import { useSWR } from '@/functions/server'
 import { Calendar, dateToCalendar, CalendarUntilPart, calendarToDate, dateToUTCString } from '@/functions/format'
 import { secondaryBarItems } from '@/definitions/secondary-bar'
 import cover from '@/plugins/cover'
+import { dates } from '@/functions/util'
 
 const msInDay = 86400000
 
@@ -48,7 +49,7 @@ export default defineComponent({
         const panelBound = computed(() => {
             return {
                 lower: calendarToDate(bound.value.lower),
-                upper: calendarToDate(bound.value.upper)
+                upper: dates.nextDay(calendarToDate(bound.value.upper), 1)
             }
         })
 
@@ -139,7 +140,7 @@ function useBoundFetcher(bound: Ref<{lower: Calendar, upper: Calendar}>) {
     return reactive(computed(() => {
         return {
             lower: dateToUTCString(calendarToDate(bound.value.lower)),
-            upper: dateToUTCString(calendarToDate(bound.value.upper))
+            upper: dateToUTCString(dates.nextDay(calendarToDate(bound.value.upper), 1))
         }
     }))
 }
@@ -168,11 +169,7 @@ function queryToBound(bound: Ref<{lower: Calendar, upper: Calendar}>) {
 
 function getBound(startDate?: Date, endDate?: Date) {
     const end =  endDate != undefined && !isNaN(endDate.getTime()) ? endDate : new Date()
-    const start = startDate != undefined && !isNaN(startDate.getTime()) ? startDate : (() => {
-        const d = new Date(end)
-        d.setMonth(d.getMonth() - 6)
-        return d
-    })()
+    const start = startDate != undefined && !isNaN(startDate.getTime()) ? startDate : dates.nextMonth(new Date(end), -6)
 
     return [start, end]
 }

@@ -62,7 +62,7 @@ function useBoard(items: Ref<TagItem[]>, editMode: Ref<boolean>) {
             let invalidate = false
             onInvalidate(() => { invalidate = true })
 
-            const r = await request('/api/database/tags', 'GET', {order: 'ordinal'})
+            const r = await request('/api/database/tags', 'GET', {order: 'group,ordinal'})
             if(invalidate) { return }
             if(r.ok) {
                 tagList.value = r.data['result'] as TagItem[]

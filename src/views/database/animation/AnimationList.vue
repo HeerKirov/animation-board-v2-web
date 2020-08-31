@@ -47,7 +47,7 @@ div.ui.container
                     div.twelve.wide.column.pt-1.pb-2
                         DateSelector(:value="publishTime", @changed="onPublishTimeChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 标签
-                    LabelPicker(url="/api/database/tags", placeholder="搜索标签", order="ordinal", :value="tag", @update:value="onTagChanged")
+                    LabelPicker(url="/api/database/tags", placeholder="搜索标签", order="group,ordinal", :value="tag", @update:value="onTagChanged")
                     div.four.wide.column.px-0.font-size-12.text-right.py-2 STAFF
                     LabelPicker(url="/api/database/staffs", placeholder="搜索STAFF", :value="staff", @update:value="onStaffChanged")
             PageSelector(:max="pageMax", :current="page", @changed="onPageChanged")
