@@ -153,13 +153,13 @@ export function useEditorForm<T>(swr: SWR, editMode: Ref<boolean>, map: (item: a
     return {updateLoading, editorValue, valueExists, onEditorChanged, onCancel, onSubmit, onDelete}
 }
 
-export function useEditorUploadImage<T>(getFile: (editorValue: T, data: any) => File | null, getURL: (editorValue: T, data: any) => string | null) {
+export function useEditorUploadImage<T>(getFile: (editorValue: T, data: any) => Blob | null, getURL: (editorValue: T, data: any) => string | null) {
     const { request } = useServer()
     const { notify } = useNotification()
 
-    const upload = async (file: File, url: string) => {
+    const upload = async (file: Blob, url: string) => {
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', file, 'cover.jpeg')
         const r2 = await request(url, 'POST', formData, {
             errorHandler(code, data, parent) {
                 if(code >= 400) {

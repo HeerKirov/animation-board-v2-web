@@ -14,7 +14,7 @@ div.ui.form
                     InputBox(v-model="data.remark", :max-length="64")
         div.ui.four.wide.field
             div.ui.card
-                a.image(@click="onClickUpload")
+                a.image(@click="onUploadCover")
                     img(:src="data.cover || emptyAvatar")
     div.ui.fields
         div.ui.four.wide.field
@@ -24,15 +24,18 @@ div.ui.form
             label 职业分类
             ItemSelector(:items="occupations", :show-none="false", v-model:selected="data.occupation")
     input.hidden-input(type="file", accept="image/png,image/jpeg", ref="uploader", @change="onUpload")
+    ImagePicker(ref="imagePicker")
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch, PropType } from 'vue'
 import InputBox from '@/components/InputBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
+import ImagePicker, { useImagePicker } from '@/components/ImagePicker.vue'
 import { isOrganizations, occupations } from '@/definitions/staff-definition'
 import { watchEditorValidate, useImageUploader } from '@/functions/editor'
 import { emptyAvatar } from '@/plugins/cover'
+import { blobToDataURL } from '@/functions/util'
 
 export interface Instance {
     id: number | null
@@ -42,7 +45,7 @@ export interface Instance {
     isOrganization: boolean
     occupation: string | null
     cover: string | null
-    coverFile: File | null
+    coverFile: Blob | null
 }
 
 export function defaultInstance(): Instance {
@@ -59,7 +62,7 @@ export function defaultInstance(): Instance {
 }
 
 export default defineComponent({
-    components: {InputBox, ItemSelector},
+    components: {InputBox, ItemSelector, ImagePicker},
     props:{
         value: (null as any) as PropType<Instance | null>
     },
@@ -84,9 +87,16 @@ export default defineComponent({
                 || v.remark === undefined
         })
 
-        const imageUploader = useImageUploader(data)
+        const { imagePicker, openImagePicker } = useImagePicker()
+        const onUploadCover = async () => {
+            const blob = await openImagePicker()
+            if(blob != null) {
+                data.value.coverFile = blob
+                data.value.cover = await blobToDataURL(blob)
+            }
+        }
 
-        return {data, ...imageUploader}
+        return {data, imagePicker, onUploadCover}
     }
 })
 </script>

@@ -67,3 +67,11 @@ export const dates = {
         return date
     }
 }
+
+export async function blobToDataURL(blob: Blob): Promise<string> {
+    const f = new FileReader()
+    return new Promise((resolve, _) => {
+        f.onload = e => resolve(e.target?.result?.toString())
+        f.readAsDataURL(blob)
+    })
+}

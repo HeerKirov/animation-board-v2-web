@@ -99,7 +99,7 @@ function mapItem(item: any): Instance {
         originTitle: item['origin_title'],
         otherTitle: item['other_title'],
         keyword: item['keyword'],
-        tags: (item['tags'] as any[]).map(i => { return {id: i['id'], name: i['name']} }),
+        tags: (item['tags'] as any[]).map(i => ({id: i['id'], name: i['name']})),
         sexLimitLevel: item['sex_limit_level'],
         violenceLimitLevel: item['violence_limit_level'],
         introduction: item['introduction'],

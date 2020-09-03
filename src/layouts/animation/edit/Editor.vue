@@ -18,7 +18,7 @@ div.ui.form
                     InputBox(placeholder="描绘动画独有特征的简单词组，使用空格分隔", v-model="data.keyword", :max-length="255")
             div.four.wide.field
                 div.ui.card
-                    a.image(@click="onClickUpload")
+                    a.image(@click="onUploadCover")
                         img(:src="data.cover || emptyCover")
         div.ui.field
             label 标签
@@ -41,7 +41,7 @@ div.ui.form
         div.ui.field
             label 简介
             textarea.ui.input(placeholder="用不长的一段文字简要介绍此动画", v-model="data.introduction")
-        input.hidden-input(type="file", accept="image/png,image/jpeg", ref="uploader", @change="onUpload")
+        ImagePicker(ref="imagePicker")
     template(v-if="panelIndex === 1")
         div.field
             label 放送类型
@@ -100,10 +100,12 @@ import StaffPicker, { AppendEvent } from './StaffPicker.vue'
 import TagEditor, { TagItem } from './TagEditor.vue'
 import StaffEditor, { StaffItem } from './StaffEditor.vue'
 import RelationEditor, { RelationItem } from './RelationEditor.vue'
+import ImagePicker, { useImagePicker } from '@/components/ImagePicker.vue'
 import { publishTypes, originalWorkTypes, sexLimitLevels, violenceLimitLevels, sexLimitIntroductions, violenceLimitIntroductions } from '@/definitions/animation-definition'
 import { watchEditorValidate, useImageUploader } from '@/functions/editor'
 import { Calendar } from '@/functions/format'
 import { emptyCover } from '@/plugins/cover'
+import { blobToDataURL } from '@/functions/util'
 
 export interface Instance {
     id: number | null
@@ -130,7 +132,7 @@ export interface Instance {
     relations: {[type: string]: RelationItem[]}
 
     cover: string | null
-    coverFile: File | null
+    coverFile: Blob | null
 }
 
 function defaultInstance(): Instance {
@@ -145,7 +147,7 @@ function defaultInstance(): Instance {
 }
 
 export default defineComponent({
-    components: {ItemSelector, InputBox, IntBox, CalendarBox, TagEditor, PublishPlanPicker, PublishPlanList, StaffPicker, StaffEditor, RelationEditor},
+    components: {ItemSelector, InputBox, IntBox, CalendarBox, TagEditor, PublishPlanPicker, PublishPlanList, StaffPicker, StaffEditor, RelationEditor, ImagePicker},
     props: {
         panelIndex: Number,
         value: (null as any) as PropType<Instance | null>
@@ -173,13 +175,20 @@ export default defineComponent({
             return v.title === undefined
         })
 
-        const imageUploader = useImageUploader(data)
+        const { imagePicker, openImagePicker } = useImagePicker()
+        const onUploadCover = async () => {
+            const blob = await openImagePicker()
+            if(blob != null) {
+                data.value.coverFile = blob
+                data.value.cover = await blobToDataURL(blob)
+            }
+        }
 
         const publishPlan = usePublishPlan(data)
 
         const staffEditor = useStaffEditor(data)
 
-        return {data, ...imageUploader, ...publishPlan, ...staffEditor}
+        return {data, ...publishPlan, ...staffEditor, imagePicker, onUploadCover}
     }
 })
 
