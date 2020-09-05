@@ -86,6 +86,8 @@ function useBoard() {
         queryData: searchBoxText
     })
 
+    requestForFirst()
+
     return {result, hasNext, requestForNext, requestForFirst, hasRequested, searchBoxText, clear}
 }
 

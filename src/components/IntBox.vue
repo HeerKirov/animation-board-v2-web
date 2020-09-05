@@ -17,13 +17,13 @@ export default defineComponent({
     },
     emits: ["update:modelValue"],
     setup(props, {emit}) {
-        const value: Ref<number | ""> = ref("")
+        const value: Ref<string> = ref("")
 
         const error: Ref<string | null> = ref(null)
 
         watch(() => props.modelValue, () => {
             if(props.modelValue !== undefined) {
-                value.value = props.modelValue
+                value.value = props.modelValue?.toString()
             }
         }, {immediate: true})
 
@@ -38,7 +38,7 @@ export default defineComponent({
                 }
             }else{
                 error.value = null
-                emit("update:modelValue", value.value)
+                emit("update:modelValue", parseInt(value.value))
             }
         })
 
