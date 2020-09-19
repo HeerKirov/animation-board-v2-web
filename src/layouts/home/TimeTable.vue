@@ -48,12 +48,12 @@ export default defineComponent({
             return ret
         })
 
-        const todayWeekday = getTodayWeekday(computed(() => originData.value?.['night_time_table'] ?? false))
+        const {todayWeekday, today} = getTodayWeekday(computed(() => originData.value?.['night_time_table'] ?? false))
 
-        const todayPlus = () => { todayWeekday.value = (todayWeekday.value + 1) % 7 }
-        const todayMinus = () => { todayWeekday.value = (todayWeekday.value + 6) % 7 }
+        const todayPlus = () => { today.value = (today.value + 1) % 7 }
+        const todayMinus = () => { today.value = (today.value + 6) % 7 }
 
-        const weekdays: Ref<Weekday[]> = computed(() => arrays.range(todayWeekday.value - 2, todayWeekday.value + 3).map(i => {
+        const weekdays: Ref<Weekday[]> = computed(() => arrays.range(today.value - 2, today.value + 3).map(i => {
             const weekday = (i + 7) % 7
             return {day: weekday, title: weekdayNames[weekday], items: data.value[weekday] ?? []}
         }))
@@ -69,16 +69,16 @@ function getHeader() {
     return `${year}年·${season}季`
 }
 
-function getTodayWeekday(nightTimeTable: Ref<boolean>): Ref<number> {
-    const today = ref()
-
-    watch(nightTimeTable, () => {
+function getTodayWeekday(nightTimeTable: Ref<boolean>) {
+    const todayWeekday = computed(() => {
         const now = new Date()
         if(nightTimeTable) now.setHours(now.getHours() - 2)
-        today.value = now.getDay()
-    }, {immediate: true})
-    
-    return today
+        return now.getDay()
+    })
+    const today: Ref<number> = ref(todayWeekday.value)
+    watch(todayWeekday, () => { today.value = todayWeekday.value })
+
+    return {todayWeekday, today}
 }
 
 function mapItem(item: any, nightTimeTable: boolean) {
