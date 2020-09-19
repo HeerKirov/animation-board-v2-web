@@ -43,7 +43,7 @@ interface AxisPoint {
 
 const msInDay = 86400000
 
-const unitHeight = 12
+const unitHeight = 15
 const colors = [colorCSS.red, colorCSS.orange, colorCSS.yellow, colorCSS.green, colorCSS.teal, colorCSS.blue, colorCSS.purple]
 
 export default defineComponent({
@@ -317,7 +317,7 @@ function getDateInfo(startTime: Date, endTime: Date) {
     }
     .main-panel .progress {
         position: absolute;
-        height: 10px;
+        height: 13px;
     }
     .main-panel .progress .gradient {
         background-image: linear-gradient(to right, #FFFFFF00, #FFFFFFFF);

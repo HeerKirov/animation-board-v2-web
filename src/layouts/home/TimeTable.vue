@@ -16,7 +16,7 @@ div.ui.segment.px-0
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, Ref } from 'vue'
+import { defineComponent, ref, computed, Ref, watch } from 'vue'
 import { useSWR } from '@/functions/server'
 import { arrays } from '@/functions/util'
 import { toTimeTableTime } from '@/functions/display'
@@ -49,12 +49,11 @@ export default defineComponent({
         })
 
         const todayWeekday = getTodayWeekday(computed(() => originData.value?.['night_time_table'] ?? false))
-        const today = ref(todayWeekday)
 
-        const todayPlus = () => { today.value = (today.value + 1) % 7 }
-        const todayMinus = () => { today.value = (today.value + 6) % 7 }
+        const todayPlus = () => { todayWeekday.value = (todayWeekday.value + 1) % 7 }
+        const todayMinus = () => { todayWeekday.value = (todayWeekday.value + 6) % 7 }
 
-        const weekdays: Ref<Weekday[]> = computed(() => arrays.range(today.value - 2, today.value + 3).map(i => {
+        const weekdays: Ref<Weekday[]> = computed(() => arrays.range(todayWeekday.value - 2, todayWeekday.value + 3).map(i => {
             const weekday = (i + 7) % 7
             return {day: weekday, title: weekdayNames[weekday], items: data.value[weekday] ?? []}
         }))
@@ -71,11 +70,15 @@ function getHeader() {
 }
 
 function getTodayWeekday(nightTimeTable: Ref<boolean>): Ref<number> {
-    return computed(() => {
+    const today = ref()
+
+    watch(nightTimeTable, () => {
         const now = new Date()
         if(nightTimeTable) now.setHours(now.getHours() - 2)
-        return now.getDay()
-    })
+        today.value = now.getDay()
+    }, {immediate: true})
+    
+    return today
 }
 
 function mapItem(item: any, nightTimeTable: boolean) {
