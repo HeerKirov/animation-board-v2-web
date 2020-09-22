@@ -1,19 +1,15 @@
-import { ref, Ref, onMounted, onUnmounted, watch, computed } from 'vue'
-import { Chart, ChartType, PositionType, ChartData, ChartOptions } from 'chart.js'
+import { Ref, computed, ref } from 'vue'
+import { PositionType, ChartData, ChartOptions, ChartType } from 'chart.js'
 
 export interface LegendOption {
     display?: boolean
     position?: PositionType
 }
 
-export interface GeneralOption {
+export interface DoughnutOption {
     title?: string,
     legend?: LegendOption,
     aspectRatio?: number
-}
-
-export interface DoughnutOption extends GeneralOption {
-    type?: 'doughnut' | 'pie' | 'polarArea'
 }
 
 export interface DoughnutData {
@@ -22,56 +18,23 @@ export interface DoughnutData {
     backgroundColor?: string[]
 }
 
-export function useDoughnut(data: Ref<DoughnutData>, options?: DoughnutOption) {
-    const d: Ref<ChartData> = computed(() => {
+export function useDoughnut(doughnutData: Ref<DoughnutData>, doughnutOptions?: DoughnutOption) {
+    const data: Ref<ChartData> = computed(() => {
         return {
-            labels: data.value.labels,
-            datasets: [{data: data.value.data, backgroundColor: data.value.backgroundColor}]
+            labels: doughnutData.value.labels,
+            datasets: [{data: doughnutData.value.data, backgroundColor: doughnutData.value.backgroundColor}]
         }
     })
-    return useChart(d, options?.type ?? 'doughnut', {
-        title: {display: options?.title != null, text: options?.title},
-        legend: !options?.legend ? undefined : {
-            display: options.legend.display ?? false,
-            position: options.legend.position ?? 'right',
+
+    const options = {
+        title: {display: doughnutOptions?.title != null, text: doughnutOptions?.title},
+        legend: !doughnutOptions?.legend ? undefined : {
+            display: doughnutOptions.legend.display ?? false,
+            position: doughnutOptions.legend.position ?? 'right',
             labels: {fontSize: 10, boxWidth: 10}
         },
-        aspectRatio: options?.aspectRatio
-    })
-}
-
-export function useChart(data: Ref<ChartData>, type: ChartType, options?: ChartOptions) {
-    const ctx: Ref<any> = ref(null)
-    let chart: Chart | null = null
-
-    onMounted(() => {
-        watch(ctx, () => {
-            if(ctx.value != null && chart == null) {
-                chart = new Chart(ctx.value, {
-                    type,
-                    data: data.value,
-                    options
-                })
-            }else if(ctx.value == null && chart != null) {
-                chart.destroy()
-                chart = null
-            }
-        }, {immediate: true})
-
-        watch(data, () => {
-            if(chart != null) {
-                chart.data = data.value
-                chart.update()
-            }
-        }, {deep: true})
-    })
-
-    onUnmounted(() => {
-        if(chart != null) {
-            chart.destroy()
-            chart = null
-        }
-    })
-
-    return {ctx}
+        aspectRatio: doughnutOptions?.aspectRatio
+    }
+    
+    return {data, options}
 }

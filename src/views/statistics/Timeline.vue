@@ -26,9 +26,9 @@ div.ui.container
                         CalendarBox.float-right(max-width="140px", placeholder="最晚时间点", v-model="bound.upper", first="year", until="month")
             div.ui.row
                 div.ui.column(v-if="currentView !== 'score'")
-                    canvas(ref="stackedCtx")
+                    ChartCanvas(type="bar", :data="stackedData", :options="stackedOptions")
                 div.ui.column(v-else)
-                    canvas(ref="tiledCtx")
+                    ChartCanvas(type="bar", :data="tiledData", :options="tiledOptions")
             div.ui.row
                 div.ui.column.text-right
                     span.ui.grey.text.font-size-11 上次更新时间 {{metadata.updateTime}}
@@ -52,10 +52,10 @@ div.ui.container
 <script lang="ts">
 import { ChartData } from 'chart.js'
 import { defineComponent, computed, ref, Ref, reactive, watch } from 'vue'
+import ChartCanvas from '@/components/ChartCanvas'
 import CalendarBox from '@/components/CalendarBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
-import { useChart } from '@/functions/chart'
 import { useSWR, useServer } from '@/functions/server'
 import { Calendar, digit } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
@@ -104,7 +104,7 @@ const aggregations: DefinitionItem[] = [
 ]
 
 export default defineComponent({
-    components: {CalendarBox, ItemSelector, StatisticModal},
+    components: {CalendarBox, ItemSelector, StatisticModal, ChartCanvas},
     computed: {
         barItems() { return secondaryBarItems.statistics },
         views() { return views },
@@ -117,7 +117,7 @@ export default defineComponent({
 
         const { data, updateData } = useData(bound, aggregateTimeUnit)
 
-        const { stackedCtx, tiledCtx } = useChartDisplay(data, currentView)
+        const chart = useChartDisplay(data, currentView)
 
         const showHelp = ref(false)
 
@@ -125,7 +125,7 @@ export default defineComponent({
             loading, updateLoading, notFound, showHelp,
             metadata,
             currentView, bound, aggregateTimeUnit,
-            stackedCtx, tiledCtx,
+            ...chart,
             async onFullUpdate() {
                 await onFullUpdate()
                 updateData()
@@ -216,14 +216,13 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
             }) : []
         }
     })
-
-    const { ctx: stackedCtx } = useChart(stackedData, 'bar', {
+    const stackedOptions = {
         aspectRatio: 3,
         scales: {
             yAxes: [{stacked: true, ticks: {beginAtZero: true}}],
             xAxes: [{stacked: true, gridLines: {display: false}}]
         }
-    })
+    }
 
     const tiledData: Ref<ChartData> = computed(() => {
         return currentView.value != 'score' || data.value == null ? {labels: [], datasets: []} : {
@@ -235,16 +234,15 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
             ]
         }
     })
-
-    const { ctx: tiledCtx } = useChart(tiledData, 'bar', {
+    const tiledOptions = {
         aspectRatio: 3,
         scales: {
             yAxes: [{ticks: {beginAtZero: true, suggestedMax: 10}}],
             xAxes: [{gridLines: {display: false}}]
         }
-    })
+    }
 
-    return {stackedCtx, tiledCtx}
+    return {stackedData, tiledData, stackedOptions, tiledOptions}
 }
 
 function dateToBoundString(date: Calendar, aggregateTimeUnit: string) {

@@ -24,8 +24,8 @@ div.ui.container
                     h2 未找到数据
             div(v-else)
                 div.ui.two.columns.grid.pt-6
-                    div.ui.column: canvas(ref="hourCtx")
-                    div.ui.column: canvas(ref="weekdayCtx")
+                    div.ui.column: ChartCanvas(type="radar", :options="hourOptions", :data="hourData")
+                    div.ui.column: ChartCanvas(type="radar", :options="weekdayOptions", :data="weekdayData")
             div.ui.column.text-right.mt-4(v-if="data")
                 span.ui.grey.text.font-size-11 上次更新时间 {{data.updateTime}}
     StatisticModal(title="周期", v-model:visible="showHelp", @refresh="onFullUpdate")
@@ -44,8 +44,8 @@ import { ChartData } from 'chart.js'
 import { defineComponent, computed, ref, Ref, reactive, watch, toRef } from 'vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import ItemSelector from '@/components/ItemSelector.vue'
+import ChartCanvas from '@/components/ChartCanvas'
 import StatisticModal from '@/layouts/StatisticModal.vue'
-import { useChart } from '@/functions/chart'
 import { useSWR, useServer } from '@/functions/server'
 import { Calendar } from '@/functions/format'
 import { toCNStringDate } from '@/functions/display'
@@ -68,7 +68,7 @@ const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六
 const hourLabels = arrays.range(0, 24).map(i => `${i}时`)
 
 export default defineComponent({
-    components: {CalendarBox, ItemSelector, StatisticModal},
+    components: {CalendarBox, ItemSelector, StatisticModal, ChartCanvas},
     computed: {
         barItems() { return secondaryBarItems.statistics }
     },
@@ -79,7 +79,7 @@ export default defineComponent({
 
         const { dataLoading, dataNotFound, data, updateData } = useData(bound)
 
-        const { hourCtx, weekdayCtx } = useChartDisplay(data)
+        const { hourData, hourOptions, weekdayData, weekdayOptions } = useChartDisplay(data)
 
         const showHelp = ref(false)
 
@@ -87,7 +87,7 @@ export default defineComponent({
             loading, updateLoading, notFound, showHelp,
             bound, boundList,
             dataLoading, dataNotFound, data,
-            hourCtx, weekdayCtx,
+            hourData, hourOptions, weekdayData, weekdayOptions,
             async onFullUpdate() {
                 await onFullUpdate()
                 updateData()
@@ -161,11 +161,11 @@ function useChartDisplay(data: Ref<DataResult | null>) {
         }
     })
 
-    const { ctx: hourCtx } = useChart(hourData, 'radar', {
+    const hourOptions = {
         title: {display: true, text: '24小时'},
         legend: {display: true},
         aspectRatio: 1,
-    })
+    }
 
     const weekdayData: Ref<ChartData> = computed(() => {
         return data.value == null ? {labels: [], datasets: []} : {
@@ -189,13 +189,13 @@ function useChartDisplay(data: Ref<DataResult | null>) {
         }
     })
 
-    const { ctx: weekdayCtx } = useChart(weekdayData, 'radar', {
+    const weekdayOptions = {
         title: {display: true, text: '7天'},
         legend: {display: true},
         aspectRatio: 1,
-    })
+    }
 
-    return {hourCtx, weekdayCtx}
+    return {hourData, hourOptions, weekdayData, weekdayOptions}
 }
 
 function mapData(data: any): DataResult {

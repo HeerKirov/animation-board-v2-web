@@ -12,7 +12,7 @@ div.ui.container
             = '提交'
     div.ui.grid
         div.ui.fourteen.wide.centered.column
-            Editor(@update:value="onEditorChanged", :value="defaultValue")
+            Editor(@update:value="onEditorChanged", :title="title")
 </template>
 
 <script lang="ts">
@@ -32,25 +32,21 @@ export default defineComponent({
         const router = useRouter()
         const route = useRoute()
 
-        const form = useCreatorForm('/api/personal/comments', remapData, {
+        const id = computed(() => route.params['id'] as string)
+        const { data: animation } = useSWR(computed(() => route.name === 'Comment.New' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
+        const title = computed(() => animation.value ? animation.value['title'] : null)
+
+        const form = useCreatorForm<Instance>('/api/personal/comments', i => remapData(i, id), {
             success(r) { router.push({name: 'Comment.Detail', params: {id: r.data['animation_id']}}) }
         })
 
-        const { data: animation } = useSWR(computed(() => route.name === 'Comment.New' && route.params['id'] ? `/api/database/animations/${route.params['id']}` : null))
-        const defaultValue: Ref<Instance | undefined> = computed(() => {
-            if(animation.value) {
-                return {id: animation.value['id'], title: animation.value['title'], articleTitle: null, article: null, score: null}
-            }
-            return undefined
-        })
-
-        return {...form, defaultValue}
+        return {...form, title}
     }
 })
 
-function remapData(item: Instance) {
+function remapData(item: Instance, id: Ref<string>) {
     return {
-        animation_id: item.id,
+        animation_id: parseInt(id.value),
         score: item.score,
         article_title: item.articleTitle,
         article: item.article

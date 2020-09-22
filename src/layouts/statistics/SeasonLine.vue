@@ -1,16 +1,16 @@
 <template lang="pug">
 div.ui.secondary.menu.mt-1
     a.item(v-for="view in views", :class="{active: currentView === view.name}", @click="currentView = view.name") {{view.title}}
-div: canvas(ref="ctx")
+div: ChartCanvas(type="bar", :data="chart.data", :options="chart.options")
 div.ui.column.text-right.mt-4(v-if="updateTime")
     span.ui.grey.text.font-size-11 上次更新时间 {{updateTime}}
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref, Ref, computed, reactive, watch } from 'vue'
+import ChartCanvas from '@/components/ChartCanvas'
 import { ChartData } from 'chart.js'
 import { useSWR } from '@/functions/server'
-import { useChart } from '@/functions/chart'
 import { toCNStringDate } from '@/functions/display'
 import { digit } from '@/functions/format'
 import { DefinitionItem } from '@/definitions/util'
@@ -34,6 +34,7 @@ const views: DefinitionItem[] = [
 ]
 
 export default defineComponent({
+    components: {ChartCanvas},
     props: {
         metadata: {type: (null as any) as PropType<Metadata>, required: true}
     },
@@ -45,9 +46,9 @@ export default defineComponent({
 
         const { data, updateTime, updateData } = useData(computed(() => props.metadata))
 
-        const { ctx } = useChartDisplay(data, currentView)
+        const chart = useChartDisplay(data, currentView)
 
-        return {currentView, ctx, updateTime, updateData}
+        return {currentView, chart, updateTime, updateData}
     }
 })
 
@@ -83,15 +84,15 @@ function useChartDisplay(data: Ref<DataItem[] | null>, currentView: Ref<string>)
         }
     })
 
-    const { ctx } = useChart(ctxData, 'bar', {
+    const options = {
         aspectRatio: 3,
         scales: {
             yAxes: [{ticks: {beginAtZero: true, suggestedMax: 5}}],
             xAxes: [{gridLines: {display: false}}]
         }
-    })
+    }
 
-    return {ctx}
+    return {data: ctxData, options}
 }
 
 function mapDataItem(item: any): DataItem {

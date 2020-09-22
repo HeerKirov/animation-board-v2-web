@@ -2,7 +2,7 @@
 div.ui.form
     div.ui.fields
         div.ui.eight.wide.field
-            span.ui.large.text 《{{data.title}}》
+            span.ui.large.text 《{{title || data.title}}》
         div.ui.seven.wide.field
             div.float-right(v-if="data.score")
                 Starlight(:value="data.score", :large="true")
@@ -47,6 +47,7 @@ export function defaultInstance(): Instance {
 export default defineComponent({
     components: {InputBox, Starlight, DigitalRoulette},
     props:{
+        title: String,
         value: (null as any) as PropType<Instance | null>
     },
     emits:['update:value'],

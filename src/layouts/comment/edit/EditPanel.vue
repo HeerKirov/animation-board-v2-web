@@ -19,14 +19,14 @@ div.ui.secondary.pointing.menu
             = '放弃更改'
 div.ui.grid
     div.ui.fourteen.wide.centered.column
-        Editor(:value="editorValue", @update:value="onEditorChanged")
+        Editor(:value="editorValue", :title="title", @update:value="onEditorChanged")
         button.ui.tertiary.button.float-right(@click="onDelete")
             i.trash.icon
             = '删除评价记录'
 </template>
 
 <script lang="ts">
-import { defineComponent, inject } from 'vue'
+import { defineComponent, inject, ref, Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Editor, { Instance } from './Editor.vue'
 import { topBarItems, editItem } from '@/definitions/secondary-bar'
@@ -44,16 +44,18 @@ export default defineComponent({
         const swr = inject(swrInjectionKey)!
         const editMode = inject(editInjectionKey)!
 
-        const form = useEditorForm<Instance>(swr, editMode, mapItem, remapData, {
+        const title: Ref<string|null> = ref(null)
+        const form = useEditorForm<Instance>(swr, editMode, i => mapItem(i, title), remapData, {
             method: "PATCH",
             afterDelete() { router.push({name: 'Comment.Activity'}) }
         })
 
-        return {...form}
+        return {...form, title}
     }
 })
 
-function mapItem(item: any): Instance {
+function mapItem(item: any, title: Ref<string|null>): Instance {
+    title.value = item['title']
     return {
         id: item['animation_id'],
         title: item['title'],

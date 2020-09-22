@@ -28,11 +28,11 @@ div.ui.container
                     div.label 平均分
             div.ui.row
                 div.ui.five.wide.column
-                    canvas(ref="originalWorkTypeCtx")
+                    ChartCanvas(type="doughnut", :data="originalWorkTypeMeta.data", :options="originalWorkTypeMeta.options")
                 div.ui.five.wide.column
-                    canvas(ref="publishTypeCtx")
+                    ChartCanvas(type="doughnut", :data="publishTypeMeta.data", :options="publishTypeMeta.options")
                 div.ui.six.wide.column
-                    canvas(ref="scoreCtx")
+                    ChartCanvas(type="doughnut", :data="scoreMeta.data", :options="scoreMeta.options")
             div.ui.row
                 div.ui.column
                     div.ui.secondary.pointing.two.item.menu
@@ -40,18 +40,18 @@ div.ui.container
                         a.item(:class="{active: mode === 'average'}", @click="mode = 'average'") 平均分
             div.ui.row(v-if="mode === 'count'")
                 div.ui.eight.wide.column.px-0
-                    canvas(ref="sexCtx")
+                    ChartCanvas(type="doughnut", :data="sexMeta.data", :options="sexMeta.options")
                 div.ui.eight.wide.column.px-0
-                    canvas(ref="violenceCtx")
+                    ChartCanvas(type="doughnut", :data="violenceMeta.data", :options="violenceMeta.options")
             div.ui.row(v-else)
                 div.ui.eight.wide.column.px-0
-                    canvas(ref="sexAvgCtx")
+                    ChartCanvas(type="polarArea", :data="sexAvgMeta.data", :options="sexAvgMeta.options")
                 div.ui.eight.wide.column.px-0
-                    canvas(ref="violenceAvgCtx")
+                    ChartCanvas(type="polarArea", :data="violenceAvgMeta.data", :options="violenceAvgMeta.options")
             div.ui.row(v-if="mode === 'count'"): div.ui.column
-                canvas(ref="tagCtx")
+                ChartCanvas(type="horizontalBar", :data="tagData", :options="tagOptions")
             div.ui.row(v-else): div.ui.column
-                canvas(ref="tagAvgCtx")
+                ChartCanvas(type="horizontalBar", :data="tagAvgData", :options="tagOptions")
             div.ui.row(v-if="basicData")
                 div.ui.column.text-right
                     span.ui.grey.text.font-size-11 上次更新时间 {{basicData.updateTime}}
@@ -72,7 +72,8 @@ div.ui.container
 import { ChartData } from 'chart.js'
 import { defineComponent, computed, ref, Ref } from 'vue'
 import StatisticModal from '@/layouts/StatisticModal.vue'
-import { useDoughnut, useChart } from '@/functions/chart'
+import ChartCanvas from '@/components/ChartCanvas'
+import { useDoughnut } from '@/functions/chart'
 import { useSWR } from '@/functions/server'
 import { toCNStringDate } from '@/functions/display'
 import { digit } from '@/functions/format'
@@ -92,7 +93,7 @@ const scoreLabels = {
 }
 
 export default defineComponent({
-    components: {StatisticModal},
+    components: {StatisticModal, ChartCanvas},
     computed: {
         barItems() { return secondaryBarItems.statistics }
     },
@@ -106,49 +107,52 @@ export default defineComponent({
         const basicData = computed(() => data.value ? mapBasicData(data.value) : null)
 
         const originalWorkTypeData = useDoughnutData(originalWorkTypeLabels, () => data.value?.['original_work_type_counts'])
-        const { ctx: originalWorkTypeCtx } = useDoughnut(originalWorkTypeData, {title: '原作类型', aspectRatio: 1.6, legend: {display: true, position: 'top'}})
+        const originalWorkTypeMeta = useDoughnut(originalWorkTypeData, {title: '原作类型', aspectRatio: 1.6, legend: {display: true, position: 'top'}})
 
         const publishTypeData = useDoughnutData(publishTypeLabels, () => data.value?.['publish_type_counts'])
-        const { ctx: publishTypeCtx } = useDoughnut(publishTypeData, {title: '放送时间', aspectRatio: 1.6, legend: {display: true, position: 'top'}})
+        const publishTypeMeta = useDoughnut(publishTypeData, {title: '放送时间', aspectRatio: 1.6, legend: {display: true, position: 'top'}})
 
         const scoreData = useDoughnutData(scoreLabels, () => data.value?.['score_counts'])
-        const { ctx: scoreCtx } = useDoughnut(scoreData, {title: '评分', aspectRatio: 1.92, legend: {display: true, position: 'top'}})
+        const scoreMeta = useDoughnut(scoreData, {title: '评分', aspectRatio: 1.92, legend: {display: true, position: 'top'}})
 
         const sexData = useDoughnutData(sexLimitLevelLabels, () => data.value?.['sex_limit_level_counts'])
-        const { ctx: sexCtx } = useDoughnut(sexData, {title: '分级·性', aspectRatio: 3, legend: {display: true}})
+        const sexMeta = useDoughnut(sexData, {title: '分级·性', aspectRatio: 3, legend: {display: true}})
 
         const violenceData = useDoughnutData(violenceLimitLevelLabels, () => data.value?.['violence_limit_level_counts'])
-        const { ctx: violenceCtx } = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}})
+        const violenceMeta = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}})
 
         const sexAvgData = useDoughnutData(sexLimitLevelLabels, () => data.value?.['sex_limit_level_avg_scores'], true)
-        const { ctx: sexAvgCtx } = useDoughnut(sexAvgData, {title: '分级·性', aspectRatio: 3, legend: {display: true}, type: 'polarArea'})
+        const sexAvgMeta = useDoughnut(sexAvgData, {title: '分级·性', aspectRatio: 3, legend: {display: true}})
 
         const violenceAvgData = useDoughnutData(violenceLimitLevelLabels, () => data.value?.['violence_limit_level_avg_scores'], true)
-        const { ctx: violenceAvgCtx } = useDoughnut(violenceAvgData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}, type: 'polarArea'})
+        const violenceAvgMeta = useDoughnut(violenceAvgData, {title: '分级·暴力', aspectRatio: 3, legend: {display: true}})
 
         const tagData = useSingleBarData(() => data.value?.['tag_counts'], {backgroundColor: colorCSS.blue})
-        const { ctx: tagCtx } = useTagBar(tagData)
-
         const tagAvgData = useSingleBarData(() => data.value?.['tag_avg_scores'], {backgroundColor(_, s) { return scoreLabels.backgroundColor[Math.round(s) - 1] }, fixed: true})
-        const { ctx: tagAvgCtx } = useTagBar(tagAvgData, {xMax: 10})
+        const tagOptions = getTagBarOption()
 
         const mode = ref("count")
         const showHelp = ref(false)
 
-        return {loading, updateLoading, onUpdate, notFound, mode, showHelp, basicData, originalWorkTypeCtx, publishTypeCtx, scoreCtx, sexCtx, violenceCtx, tagCtx, sexAvgCtx, violenceAvgCtx, tagAvgCtx}
+        return {
+            loading, updateLoading, onUpdate, notFound, mode, showHelp, basicData, 
+            tagData, tagAvgData, tagOptions,
+            originalWorkTypeMeta, publishTypeMeta, scoreMeta, 
+            sexMeta, sexAvgMeta, violenceMeta, violenceAvgMeta
+        }
     }
 })
 
-function useTagBar(data: Ref<ChartData>, options?: {xMax?: number}) {
-    return useChart(data, 'horizontalBar', {
+function getTagBarOption() {
+    return {
         title: {display: true, text: '标签'}, 
         legend: undefined, 
         aspectRatio: 0.7, 
         scales: {
             yAxes: [{ticks: {beginAtZero: true, stepSize: 1}, gridLines: {display: false}}], 
-            xAxes: [{ticks: {beginAtZero: true, suggestedMax: options?.xMax}}]
+            xAxes: [{ticks: {beginAtZero: true, suggestedMax: 10}}]
         }
-    })
+    }
 }
 
 function useSingleBarData(effect: () => {[key: string]: number} | null, options: {backgroundColor: string | ((string, number) => string), fixed?: boolean}) {

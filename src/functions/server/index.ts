@@ -136,7 +136,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         = options?.errorHandler != null ? ((code: number, data: any) => options.errorHandler?.(code, data, configuration.errorHandler))
         : configuration.errorHandler ?? throwErrorToConsole
 
-    const loadingRef = ref(false)
+    const loadingRef = ref(true)
     const dataRef = ref(null)
     const updateLoadingRef = ref(false)
     const errorRef: Ref<{code: number, data: any} | null> = ref(null)
@@ -160,7 +160,6 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
         const r = await request0(baseUrl + unrefUrl, method, fetcher)
         if(!validate) { return }
 
-        loadingRef.value = false
         if(r.status === 'OK') {
             dataRef.value = r.data
             errorRef.value = null
@@ -169,6 +168,7 @@ export function useSWR(url: Ref<string | null> | string, data?: any, options?: S
             errorRef.value = {code: r.code, data: r.data}
             throwError?.(r.code, r.data)
         }
+        loadingRef.value = false
     }, {deep: true, immediate: true})
 
     return {loading: loadingRef, error: errorRef, data: dataRef, updateLoading: updateLoadingRef, update, deleteInstance, manual}

@@ -39,8 +39,8 @@ div.ui.grid(v-else-if="data")
                             = '{{item.positivity}}'
                     div.font-size-13(v-if="item.time") {{item.time}}
         div.ui.five.wide.column
-            div: canvas(ref="sexCtx")
-            div: canvas(ref="violenceCtx")
+            div: ChartCanvas(type="doughnut", :data="sexMeta.data", :options="sexMeta.options")
+            div: ChartCanvas(type="doughnut", :data="violenceMeta.data", :options="violenceMeta.options")
             div.scroll-list.mt-3: div.ui.stackable.two.columns.grid.mt-0.mx-0
                 div.ui.column.pr-1.pl-0.pt-0.pb-1(v-for="tag in data.tagCounts")
                     div.ui.fluid.label.text-center.px-0 {{tag.name}}
@@ -52,6 +52,7 @@ div.ui.grid(v-else-if="data")
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
+import ChartCanvas from '@/components/ChartCanvas'
 import { useSWR } from '@/functions/server'
 import { useDoughnut } from '@/functions/chart'
 import { toCNStringDate } from '@/functions/display'
@@ -65,6 +66,7 @@ const sexLimitLevelLabels = generateLabelAndColor(sexLimitLevels)
 const violenceLimitLevelLabels = generateLabelAndColor(violenceLimitLevels)
 
 export default defineComponent({
+    components: {ChartCanvas},
     props: {
         season: {type: String, required: true}
     },
@@ -77,12 +79,12 @@ export default defineComponent({
         const data = computed(() => originData.value ? mapData(originData.value) : null)
 
         const sexData = useDoughnutData(sexLimitLevelLabels, () => originData.value?.['sex_limit_level_counts'])
-        const { ctx: sexCtx } = useDoughnut(sexData, {title: '分级·性', aspectRatio: 1.4, legend: {display: true}})
+        const sexMeta = useDoughnut(sexData, {title: '分级·性', aspectRatio: 1.4, legend: {display: true}})
 
         const violenceData = useDoughnutData(violenceLimitLevelLabels, () => originData.value?.['violence_limit_level_counts'])
-        const { ctx: violenceCtx } = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 1.4, legend: {display: true}})
+        const violenceMeta = useDoughnut(violenceData, {title: '分级·暴力', aspectRatio: 1.4, legend: {display: true}})
 
-        return {loading, updateLoading, notFound, data, updateData, sexCtx, violenceCtx}
+        return {loading, updateLoading, notFound, data, updateData, sexMeta, violenceMeta}
     }
 })
 
