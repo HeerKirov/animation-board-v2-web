@@ -22,7 +22,7 @@ import { arrays } from '@/functions/util'
 import { toTimeTableTime } from '@/functions/display'
 import cover from '@/plugins/cover'
 
-const weekdayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
 interface Weekday {
     day: number
@@ -54,7 +54,7 @@ export default defineComponent({
         const todayMinus = () => { today.value = (today.value + 6) % 7 }
 
         const weekdays: Ref<Weekday[]> = computed(() => arrays.range(today.value - 2, today.value + 3).map(i => {
-            const weekday = (i + 7) % 7
+            const weekday = (i + 6) % 7 + 1
             return {day: weekday, title: weekdayNames[weekday], items: data.value[weekday] ?? []}
         }))
 
