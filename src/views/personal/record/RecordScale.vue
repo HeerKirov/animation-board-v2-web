@@ -9,6 +9,10 @@ div.ui.container
         i.arrow.right.icon.ml-1
         CalendarBox.is-inline-block(max-width="140px", placeholder="最晚时间点", v-model="editorValue.upper", first="day", until="day")
         a.ui.green.icon.button.ml-1.text-top(@click="onSearch"): i.search.icon
+        div.float-right
+            a.ui.tertiary.small.button(@click="onGroupByChaseChanged", :class="{primary: groupByChase}") 
+                i.check.icon(v-if="groupByChase")
+                = '分组显示'
         div.ui.basic.red.label.ml-1(v-if="searchError") {{searchError}}
         template(v-else)
             a.ui.primary.tertiary.small.button.text-top(@click="onClickFastPrev")
@@ -17,7 +21,7 @@ div.ui.container
             a.ui.primary.tertiary.small.button.text-top(@click="onClickFastNext")
                 = '向后{{fastLabel}}'
                 i.double.right.angle.icon
-    ScalePanel(:loading="loading", :data="data", :lower="panelBound.lower", :upper="panelBound.upper")
+    ScalePanel(:loading="loading", :data="data", :lower="panelBound.lower", :upper="panelBound.upper", :groupByChase="groupByChase")
 </template>
 
 <script lang="ts">
@@ -41,6 +45,8 @@ export default defineComponent({
     setup() {
         const { updateQuery, watchQuery } = useRouterQueryUtil()
 
+        const groupByChase: Ref<boolean> = ref(false)
+
         const [lowerDate, upperDate] = getBound()
         const bound: Ref<{lower: Calendar, upper: Calendar}> = ref({
             lower: dateToCalendar(lowerDate, CalendarUntilPart.Day),
@@ -53,7 +59,12 @@ export default defineComponent({
             }
         })
 
-        watchQuery({'bound': queryToBound(bound)})
+        const onGroupByChaseChanged = () => updateQuery('group_by_chase', !groupByChase.value ? 'true' : undefined)
+
+        watchQuery({
+            'bound': queryToBound(bound), 
+            'group_by_chase'(value) { groupByChase.value = value == "true" }
+        })
 
         const fetcher = useBoundFetcher(bound)
         const { loading, data: origin } = useSWR('/api/personal/records/scale', fetcher)
@@ -62,7 +73,7 @@ export default defineComponent({
         const { editorValue, onSearch, searchError } = useEditor(bound, updateQuery)
         const { fastLabel, onClickFastNext, onClickFastPrev } = useFastButton(bound, updateQuery)
 
-        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, panelBound, loading, data}
+        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, panelBound, loading, data, groupByChase, onGroupByChaseChanged}
     }
 })
 
@@ -182,6 +193,7 @@ function mapItem(item: any): Instance {
         title: item['title'],
         cover: cover.animationOrEmpty(item['cover']),
         ordinal: item['ordinal'],
+        chaseType: item['chase_type'],
         finished: item['finished'],
         startTime, endTime
     }

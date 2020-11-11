@@ -5,8 +5,7 @@ div.axis
 div.ui.inline.active.centered.loader.mt-4(v-if="loading")
 div.main-panel(v-else, :style="{height: `${rowCount * unitHeight}px`}")
     router-link.progress(v-for="(item, index) in items", :key="`${item.id}-${item.ordinal}`", :to="{name: 'Record.Detail', params: {id: item.id}}"
-                        :class="{selected: tooltip.itemIndex === index}", :style="item.style", @mouseenter="onMouseOver(index)", @mouseleave="onMouseOut")
-        div.gradient(v-if="!item.finished")
+                        :style="item.style", @mouseenter="onMouseOver(index)", @mouseleave="onMouseOut")
     div.tooltip(v-if="tooltip.itemIndex != null", :style="{left: `${tooltip.x + 5}px`, top: `${tooltip.y + 5}px`}")
         img(:src="items[tooltip.itemIndex].cover")
         div.content
@@ -31,6 +30,7 @@ export interface Instance {
     title: string
     cover: string
     ordinal: number
+    chaseType: "CHASE"|"SUPPLEMENT"|"REWATCHED"
     finished: boolean
     startTime: Date
     endTime: Date
@@ -51,7 +51,8 @@ export default defineComponent({
         loading: {type: Boolean, required: true},
         data: {type: (null as any) as PropType<Instance[]>, required: true},
         lower: {type: (null as any) as PropType<Date>, required: true},
-        upper: {type: (null as any) as PropType<Date>, required: true}
+        upper: {type: (null as any) as PropType<Date>, required: true},
+        groupByChase: {type: Boolean, default: true}
     },
     computed: {
         unitHeight() { return unitHeight }
@@ -59,13 +60,29 @@ export default defineComponent({
     setup(props) {
         const items: Ref<any[]> = ref([])
         const rowCount: Ref<number> = ref(0)
-        watch(() => props.data, () => {
+        watch(() => [props.data, props.groupByChase], () => {
             const lowerTimestamp = props.lower.getTime()
             const upperTimestamp = props.upper.getTime()
-            //百分比方案 const { distribute, count } = createDistributor()
-            const { distribute, count } = createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay))
-            items.value = props.data.map(instance => mapItem(instance, lowerTimestamp, upperTimestamp, distribute))
-            rowCount.value = count()
+            if(props.groupByChase) {
+                const distributors = {
+                    "CHASE": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay)),
+                    "SUPPLEMENT": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay)),
+                    "REWATCHED": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay))
+                }
+                const tempItems = props.data.map(instance => mapRow(instance, distributors[instance.chaseType].distribute))
+                rowCount.value = distributors.CHASE.count() + distributors.SUPPLEMENT.count() + distributors.REWATCHED.count()
+                const supplementAddRow = distributors.CHASE.count(), rewatchedAddRow = distributors.CHASE.count() + distributors.SUPPLEMENT.count()
+                items.value = tempItems
+                    .map(({ instance, row }) => ({
+                        instance, 
+                        row: row + (instance.chaseType === "CHASE" ? 0 : instance.chaseType === "SUPPLEMENT" ? supplementAddRow : rewatchedAddRow)
+                    }))
+                    .map(({ instance, row }) => mapItem(instance, lowerTimestamp, upperTimestamp, row))
+            }else{
+                const { distribute, count } = createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay))
+                items.value = props.data.map(instance => mapRow(instance, distribute)).map(({ instance, row }) => mapItem(instance, lowerTimestamp, upperTimestamp, row))
+                rowCount.value = count()
+            }
         }, {immediate: true})
 
         const { tooltip, onMouseOver, onMouseOut } = useTooltip()
@@ -208,7 +225,14 @@ function useTooltip() {
     return {tooltip, onMouseOver, onMouseOut}
 }
 
-function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: number, distribute: (begin: number, end: number) => number) {
+function mapRow(instance: Instance, distribute: (begin: number, end: number) => number) {
+    const startTimestamp = instance.startTime.getTime()
+    const endTimestamp = instance.endTime.getTime()
+    const row = distribute(Math.floor(startTimestamp / msInDay), Math.ceil(endTimestamp / msInDay))
+    return {instance, row}
+}
+
+function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: number, row: number) {
     const startTimestamp = instance.startTime.getTime()
     const endTimestamp = instance.endTime.getTime()
 
@@ -216,7 +240,23 @@ function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: num
     const [left, right] = calculateRealScale(originLeft, originRight)
     const [leftRadius, rightRadius] = calculateRadius(instance.finished, startTimestamp, endTimestamp, lowerTimestamp, upperTimestamp)
     //百分比方案 const row = distribute(Math.floor(originLeft), 100 - Math.floor(originRight))
-    const row = distribute(Math.floor(startTimestamp / msInDay), Math.ceil(endTimestamp / msInDay))
+
+    const style = instance.chaseType === "CHASE" ? {
+        'background-color': colors[instance.id % colors.length] + '4F',
+        'border': `solid ${colors[instance.id % colors.length]} 2px`
+    } : instance.chaseType === "SUPPLEMENT" ? {
+        'background-color': colors[instance.id % colors.length]
+    } : {
+        'border': `solid ${colors[instance.id % colors.length]} 2px`,
+        'background': `linear-gradient(0deg, 
+            #fff 25%, 
+            ${colors[instance.id % colors.length]} 0, 
+            ${colors[instance.id % colors.length]} 50%, 
+            #fff 0, 
+            #fff 75%, 
+            ${colors[instance.id % colors.length]} 0)`,
+        'background-size': '5px 5px'
+    }
 
     return {
         id: instance.id,
@@ -229,8 +269,7 @@ function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: num
             left: `${left}%`,
             right: `${right}%`,
             top: `${row * unitHeight}px`,
-            'border-radius': `${leftRadius} ${rightRadius} ${rightRadius} ${leftRadius}`,
-            'background-color': colors[instance.id % colors.length]
+            ...style
         }
     }
 }
@@ -318,16 +357,10 @@ function getDateInfo(startTime: Date, endTime: Date) {
     .main-panel .progress {
         position: absolute;
         height: 13px;
+        border-radius: 1px;
     }
-    .main-panel .progress .gradient {
-        background-image: linear-gradient(to right, #FFFFFF00, #FFFFFFFF);
-        position: absolute;
-        right: 0;
-        width: 12px;
-        height: 100%;
-    }
-    .main-panel .progress.selected {
-        border: solid white 1px
+    .main-panel .progress:hover {
+        transform: translateY(-1px);
     }
     .main-panel .tooltip {
         padding: 4px;
