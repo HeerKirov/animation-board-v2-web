@@ -63,3 +63,7 @@ export function firstDayOfWeek(date: Date): Date {
 export function digit(n: number | null, w: number = 10): number | null {
     return n != null ? (Math.round(n * w) / w) : null
 }
+
+export function localTimestamp(d: Date): number {
+    return d.getTime() - d.getTimezoneOffset() * 60 * 1000
+}

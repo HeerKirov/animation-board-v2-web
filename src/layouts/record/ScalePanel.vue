@@ -5,7 +5,7 @@ div.axis
 div.ui.inline.active.centered.loader.mt-4(v-if="loading")
 div.main-panel(v-else, :style="{height: `${rowCount * unitHeight}px`}")
     router-link.progress(v-for="(item, index) in items", :key="`${item.id}-${item.ordinal}`", :to="{name: 'Record.Detail', params: {id: item.id}}"
-                        :style="item.style", @mouseenter="onMouseOver(index)", @mouseleave="onMouseOut")
+                        :style="item.style", :class="item.class", @mouseenter="onMouseOver(index)", @mouseleave="onMouseOut")
     div.tooltip(v-if="tooltip.itemIndex != null", :style="{left: `${tooltip.x + 5}px`, top: `${tooltip.y + 5}px`}")
         img(:src="items[tooltip.itemIndex].cover")
         div.content
@@ -22,6 +22,7 @@ import { defineComponent, PropType, ref, computed, ComputedRef, Ref, watch, reac
 import { useMousePosition } from '@/functions/document'
 import { toCNStringDate } from '@/functions/display'
 import { createMarkST, MarkSegmentTree } from '@/functions/segment-tree'
+import { localTimestamp } from '@/functions/format'
 import { dates } from '@/functions/util'
 import { colorCSS } from '@/definitions/fomantic-ui-colors'
 
@@ -46,6 +47,18 @@ const msInDay = 86400000
 const unitHeight = 15
 const colors = [colorCSS.red, colorCSS.orange, colorCSS.yellow, colorCSS.green, colorCSS.teal, colorCSS.blue, colorCSS.purple]
 
+function calcGranularity(boundRange: number) {
+    //粒度计算保证一个最小粒度不会发生显著重叠，但又不至于距离差过大。
+    if(boundRange <= 1000 * 60 * 60 * 200) return 1000 * 60 * 60 * 0.5  //200小时以内的范围只能用0.5小时的粒度了，不能再小了
+    else if(boundRange <= 1000 * 60 * 60 * 400) return 1000 * 60 * 60 * 1   //400小时以内的范围用1小时粒度
+    else if(boundRange <= 1000 * 60 * 60 * 800) return 1000 * 60 * 60 * 2   //800小时以内的范围用2小时粒度
+    else if(boundRange <= 1000 * 60 * 60 * 24 * 50) return 1000 * 60 * 60 * 3   //50天以内的范围用3小时粒度
+    else if(boundRange <= 1000 * 60 * 60 * 24 * 100) return 1000 * 60 * 60 * 6  //100天以内的范围用6小时粒度
+    else if(boundRange <= 1000 * 60 * 60 * 24 * 200) return 1000 * 60 * 60 * 12 //200天以内的范围用12小时粒度
+    else if(boundRange <= 1000 * 60 * 60 * 24 * 400) return 1000 * 60 * 60 * 24 //400天以内的范围用24小时粒度
+    else return 1000 * 60 * 60 * 48 //再多的范围就用48小时粒度
+}
+
 export default defineComponent({
     props: {
         loading: {type: Boolean, required: true},
@@ -61,15 +74,16 @@ export default defineComponent({
         const items: Ref<any[]> = ref([])
         const rowCount: Ref<number> = ref(0)
         watch(() => [props.data, props.groupByChase], () => {
-            const lowerTimestamp = props.lower.getTime()
-            const upperTimestamp = props.upper.getTime()
+            const lowerTimestamp = localTimestamp(props.lower)
+            const upperTimestamp = localTimestamp(props.upper)
+            const granularity = calcGranularity(upperTimestamp - lowerTimestamp)
             if(props.groupByChase) {
                 const distributors = {
-                    "CHASE": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay)),
-                    "SUPPLEMENT": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay)),
-                    "REWATCHED": createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay))
+                    "CHASE": createDistributor(Math.floor(lowerTimestamp / granularity), Math.ceil(upperTimestamp / granularity)),
+                    "SUPPLEMENT": createDistributor(Math.floor(lowerTimestamp / granularity), Math.ceil(upperTimestamp / granularity)),
+                    "REWATCHED": createDistributor(Math.floor(lowerTimestamp / granularity), Math.ceil(upperTimestamp / granularity))
                 }
-                const tempItems = props.data.map(instance => mapRow(instance, distributors[instance.chaseType].distribute))
+                const tempItems = props.data.map(instance => mapRow(instance, granularity, distributors[instance.chaseType].distribute))
                 rowCount.value = distributors.CHASE.count() + distributors.SUPPLEMENT.count() + distributors.REWATCHED.count()
                 const supplementAddRow = distributors.CHASE.count(), rewatchedAddRow = distributors.CHASE.count() + distributors.SUPPLEMENT.count()
                 items.value = tempItems
@@ -79,8 +93,8 @@ export default defineComponent({
                     }))
                     .map(({ instance, row }) => mapItem(instance, lowerTimestamp, upperTimestamp, row))
             }else{
-                const { distribute, count } = createDistributor(Math.floor(lowerTimestamp / msInDay), Math.ceil(upperTimestamp / msInDay))
-                items.value = props.data.map(instance => mapRow(instance, distribute)).map(({ instance, row }) => mapItem(instance, lowerTimestamp, upperTimestamp, row))
+                const { distribute, count } = createDistributor(Math.floor(lowerTimestamp / granularity), Math.ceil(upperTimestamp / granularity))
+                items.value = props.data.map(instance => mapRow(instance, granularity, distribute)).map(({ instance, row }) => mapItem(instance, lowerTimestamp, upperTimestamp, row))
                 rowCount.value = count()
             }
         }, {immediate: true})
@@ -108,8 +122,8 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
         const list: AxisPoint[] = []
         const delta = options.upper - options.lower
         let d = options.initValue
-        while (d.getTime() <= options.upper) {
-            const timestamp = d.getTime()
+        while (localTimestamp(d) <= options.upper) {
+            const timestamp = localTimestamp(d)
             if(timestamp >= options.lower && (!options.filter || options.filter(d, timestamp))) {
                 list.push({label: options.map(d, timestamp), position: (timestamp - options.lower) * 100 / delta})
             }
@@ -120,17 +134,17 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
     }
 
     return computed(() => {
-        const lower = bound.lower.getTime(), upper = bound.upper.getTime()
+        const lower = localTimestamp(bound.lower), upper = localTimestamp(bound.upper)
         const lowerDay = Math.ceil(lower / msInDay), upperDay = Math.floor(upper / msInDay) //ceil floor与别处相反是为了保证day的时间点都包在实际时间范围内
         const deltaDay = upperDay - lowerDay
-        if(deltaDay >= 1460) {
+        if(deltaDay >= 1460) {//超过4年只显示年刻度
             return iterator({
                 initValue: dates.onlyYear(new Date(lowerDay * msInDay)),
                 lower, upper,
                 step(d) { return dates.nextYear(d) },
                 map(d) { return `${d.getFullYear()}年` }
             })
-        }else if(deltaDay >= 730) {
+        }else if(deltaDay >= 730) {//超过2年显示年刻度和季度刻度
             return iterator({
                 initValue: dates.onlyYear(new Date(lowerDay * msInDay)),
                 lower, upper,
@@ -143,7 +157,7 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 filter(d) { return d.getMonth() != 0 && d.getMonth() % 3 === 0 },
                 map() { return null }
             }))
-        }else if(deltaDay >= 365) {
+        }else if(deltaDay >= 365) {//超过1年显示年刻度和月刻度，且4/7/10月会显示
             return iterator({
                 initValue: dates.onlyYear(new Date(lowerDay * msInDay)),
                 lower, upper,
@@ -154,16 +168,16 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 lower, upper,
                 step(d) { return dates.nextMonth(d) },
                 filter(d) { return d.getMonth() != 0 },
-                map() { return null }
+                map(d) { return d.getMonth() % 3 === 0 ? `${d.getMonth() + 1}月` : null }
             }))
-        }else if(deltaDay >= 90) {
+        }else if(deltaDay >= 90) {//超过3个月显示月刻度
             return iterator({
                 initValue: dates.onlyMonth(new Date(lowerDay * msInDay)),
                 lower, upper,
                 step(d) { return dates.nextMonth(d) },
                 map(d) { return `${d.getMonth() + 1}月` }
             })
-        }else if(deltaDay >= 60) {
+        }else if(deltaDay >= 60) {//超过2个月显示月刻度和奇数日刻度
             return iterator({
                 initValue: dates.onlyMonth(new Date(lowerDay * msInDay)),
                 lower, upper,
@@ -176,7 +190,7 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 filter(d) { return d.getDate() !== 1 && d.getDate() % 2 === 1 },
                 map() { return null }
             }))
-        }else if(deltaDay >= 30) {
+        }else if(deltaDay >= 30) {//超过30天显示月刻度和日刻度
             return iterator({
                 initValue: dates.onlyMonth(new Date(lowerDay * msInDay)),
                 lower, upper,
@@ -189,7 +203,7 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 filter(d) { return d.getDate() != 1 },
                 map() { return null }
             }))
-        }else if(deltaDay >= 18) {
+        }else if(deltaDay >= 18) {//超过18天隔天显示月+日刻度
             let main = false
             return iterator({
                 initValue: dates.onlyDay(new Date(lowerDay * msInDay)),
@@ -197,7 +211,7 @@ function useAxisPoints(bound: {lower: Date, upper: Date}): ComputedRef<AxisPoint
                 step(d) { return dates.nextDay(d) },
                 map(d) { return (main = !main) ? `${d.getMonth() + 1}月${d.getDate()}日` : null }
             })
-        }else{
+        }else{//再短显示月+日刻度
             return iterator({
                 initValue: dates.onlyDay(new Date(lowerDay * msInDay)),
                 lower, upper,
@@ -225,29 +239,27 @@ function useTooltip() {
     return {tooltip, onMouseOver, onMouseOut}
 }
 
-function mapRow(instance: Instance, distribute: (begin: number, end: number) => number) {
-    const startTimestamp = instance.startTime.getTime()
-    const endTimestamp = instance.endTime.getTime()
-    const row = distribute(Math.floor(startTimestamp / msInDay), Math.ceil(endTimestamp / msInDay))
+function mapRow(instance: Instance, granularity: number, distribute: (begin: number, end: number) => number) {
+    const startTimestamp = localTimestamp(instance.startTime)
+    const endTimestamp = localTimestamp(instance.endTime)
+    const row = distribute(Math.floor(startTimestamp / granularity), Math.ceil(endTimestamp / granularity))
     return {instance, row}
 }
 
 function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: number, row: number) {
-    const startTimestamp = instance.startTime.getTime()
-    const endTimestamp = instance.endTime.getTime()
+    const startTimestamp = localTimestamp(instance.startTime)
+    const endTimestamp = localTimestamp(instance.endTime)
 
     const [originLeft, originRight] = calculateScale(startTimestamp, endTimestamp, lowerTimestamp, upperTimestamp)
     const [left, right] = calculateRealScale(originLeft, originRight)
-    const [leftRadius, rightRadius] = calculateRadius(instance.finished, startTimestamp, endTimestamp, lowerTimestamp, upperTimestamp)
-    //百分比方案 const row = distribute(Math.floor(originLeft), 100 - Math.floor(originRight))
 
     const style = instance.chaseType === "CHASE" ? {
         'background-color': colors[instance.id % colors.length] + '4F',
-        'border': `solid ${colors[instance.id % colors.length]} 2px`
+        'border-color': colors[instance.id % colors.length]
     } : instance.chaseType === "SUPPLEMENT" ? {
         'background-color': colors[instance.id % colors.length]
     } : {
-        'border': `solid ${colors[instance.id % colors.length]} 2px`,
+        'border-color': colors[instance.id % colors.length],
         'background': `linear-gradient(0deg, 
             #fff 25%, 
             ${colors[instance.id % colors.length]} 0, 
@@ -265,6 +277,11 @@ function mapItem(instance: Instance, lowerTimestamp: number, upperTimestamp: num
         ordinal: instance.ordinal,
         finished: instance.finished,
         date: getDateInfo(instance.startTime, instance.endTime),
+        class: {
+            [instance.chaseType.toLowerCase()]: true,
+            'left-border': startTimestamp >= lowerTimestamp,
+            'right-border': endTimestamp <= upperTimestamp
+        },
         style: {
             left: `${left}%`,
             right: `${right}%`,
@@ -307,15 +324,8 @@ function calculateScale(startTimestamp: number, endTimestamp: number, lowerTimes
 function calculateRealScale(originLeft: number, originRight: number) {
     //强制每行都拥有一个最小宽度，以免太窄看不清
     //因此溢出右侧版边的，使其贴紧版边
-    const f = 0.5
+    const f = 0.4
     return (100 - f < originLeft + originRight) ? (100 < f + originLeft ? [100 - f, 0] : [originLeft, 100 - f - originLeft]) : [originLeft, originRight]
-}
-
-function calculateRadius(isFinished: boolean, startTimestamp: number, endTimestamp: number, lowerTimestamp: number, upperTimestamp: number) {
-    const leftRadius = startTimestamp >= lowerTimestamp ? '3px' : '0'
-    const rightRadius = endTimestamp <= upperTimestamp && isFinished ? '3px' : '0'
-
-    return [leftRadius, rightRadius]
 }
 
 function getDateInfo(startTime: Date, endTime: Date) {
@@ -326,77 +336,77 @@ function getDateInfo(startTime: Date, endTime: Date) {
 }
 </script>
 
-<style scoped>
-    .axis {
-        margin-top: 20px;
-        position: relative;
-        width: 100%;
-        height: 40px;
-    }
-    .axis .point {
-        position: absolute;
-        width: 1px;
-        background-color: black;
-    }
-    .axis .point label {
-        position: absolute;
-        min-width: 45px;
-        top: 20px;
-        transform: translateX(-50%);
-        font-size: 10px;
-        text-align: center;
-    }
-    .main-panel {
-        position: relative;
-        width: 100%;
-        min-height: 50px;
-        border-color: black;
-        border-style: solid;
-        border-width: 0 1px;
-    }
-    .main-panel .progress {
-        position: absolute;
-        height: 13px;
-        border-radius: 1px;
-    }
-    .main-panel .progress:hover {
-        transform: translateY(-1px);
-    }
-    .main-panel .tooltip {
-        padding: 4px;
-        position: fixed;
-    }
-    .main-panel .tooltip img {
-        height: 40px;
-        width: 40px;
-        border-radius: 2px;
-        margin: 2px;
-        vertical-align: top;
-    }
-    .main-panel .tooltip .content {
-        display: inline-block;
-        min-width: 50px;
-        max-width: 250px;
-        min-height: 40px;
-        margin: 2px;
-        padding-right: 2px;
-        border-radius: 3px;
-        background-color: #0000008F;
-        color: white;
-    }
-    .main-panel .tooltip .title {
-        font-size: 12px;
-        padding: 0 2px;
-    }
-    .main-panel .tooltip .tag {
-        font-size: 10px;
-        color: wheat;
-        display: inline-block;
-        padding: 0 2px;
-    }
-    .main-panel .tooltip .date {
-        font-size: 10px;
-        padding: 0 2px;
-        color:azure;
-    }
+<style lang="sass" scoped>
+.axis
+    margin-top: 20px
+    position: relative
+    width: 100%
+    height: 40px
+    .point
+        position: absolute
+        width: 1px
+        background-color: black
+        label
+            position: absolute
+            min-width: 45px
+            top: 20px
+            transform: translateX(-50%)
+            font-size: 10px
+            text-align: center
+
+.main-panel
+    position: relative
+    width: 100%
+    min-height: 50px
+    border-color: black
+    border-style: solid
+    border-width: 0 1px
+    .progress
+        position: absolute
+        height: 13px
+        border-radius: 1px
+        border-width: 0px
+        &:hover
+            transform: translateY(-1px)
+        &.supplement
+        &.rewatched,
+        &.chase
+            border-style: solid
+            border-top-width: 2px
+            border-bottom-width: 2px
+        &.left-border
+            border-left-width: 2px
+        &.right-border
+            border-right-width: 2px
+    .tooltip
+        padding: 4px
+        position: fixed
+        img
+            height: 40px
+            width: 40px
+            border-radius: 2px
+            margin: 2px
+            vertical-align: top
+        .content
+            display: inline-block
+            min-width: 50px
+            max-width: 250px
+            min-height: 40px
+            margin: 2px
+            padding-right: 2px
+            border-radius: 3px
+            background-color: #0000008F
+            color: white
+        .title
+            font-size: 12px
+            padding: 0 2px
+        .tag
+            font-size: 10px
+            color: wheat
+            display: inline-block
+            padding: 0 2px
+        .date
+            font-size: 10px
+            padding: 0 2px
+            color: azure
 </style>

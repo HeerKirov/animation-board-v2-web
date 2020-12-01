@@ -21,6 +21,9 @@ div.ui.container
             a.ui.primary.tertiary.small.button.text-top(@click="onClickFastNext")
                 = '向后{{fastLabel}}'
                 i.double.right.angle.icon
+            a.ui.primary.tertiary.small.button.text-top(@click="onClickCurrentYear")
+                i.calendar.alternate.outline.icon
+                = '今年'
     ScalePanel(:loading="loading", :data="data", :lower="panelBound.lower", :upper="panelBound.upper", :groupByChase="groupByChase")
 </template>
 
@@ -71,9 +74,9 @@ export default defineComponent({
         const data = computed(() => origin.value ? (origin.value as any[]).map(mapItem) : [])
 
         const { editorValue, onSearch, searchError } = useEditor(bound, updateQuery)
-        const { fastLabel, onClickFastNext, onClickFastPrev } = useFastButton(bound, updateQuery)
+        const { fastLabel, onClickFastNext, onClickFastPrev, onClickCurrentYear } = useFastButton(bound, updateQuery)
 
-        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, panelBound, loading, data, groupByChase, onGroupByChaseChanged}
+        return {editorValue, onSearch, searchError, fastLabel, onClickFastNext, onClickFastPrev, onClickCurrentYear, panelBound, loading, data, groupByChase, onGroupByChaseChanged}
     }
 })
 
@@ -144,7 +147,12 @@ function useFastButton(bound: Ref<{lower: Calendar, upper: Calendar}>, updateQue
         updateQuery('bound', `${lower.getFullYear()}-${lower.getMonth() + 1}-${lower.getDate()}~${upper.getFullYear()}-${upper.getMonth() + 1}-${upper.getDate()}`)
     }
 
-    return {fastLabel, onClickFastPrev, onClickFastNext}
+    const onClickCurrentYear = () => {
+        const year = new Date().getFullYear()
+        updateQuery('bound', `${year}-01-01~${year}-12-31`)
+    }
+
+    return {fastLabel, onClickFastPrev, onClickFastNext, onClickCurrentYear}
 }
 
 function useBoundFetcher(bound: Ref<{lower: Calendar, upper: Calendar}>) {

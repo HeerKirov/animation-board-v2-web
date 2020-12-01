@@ -25,7 +25,7 @@ export interface OpenImagePicker {
 
 export default defineComponent({
     setup() {
-        let callback: ((value?: Blob | null) => void) | null = null
+        let callback: ((value: Blob | PromiseLike<Blob | null> | null) => void) | null = null
 
         const open: OpenImagePicker = async () => {
             openInputUpload()
@@ -95,8 +95,8 @@ function useCropper() {
         cropper?.replace(blob ?? "")
     }
 
-    const croppedData = async (): Promise<Blob> => new Promise((resolve, reject) => {
-        cropper?.getCroppedCanvas().toBlob(blob => resolve(blob ?? undefined), 'image/jpeg')
+    const croppedData = async (): Promise<Blob | null> => new Promise((resolve, reject) => {
+        cropper?.getCroppedCanvas().toBlob(blob => resolve(blob), 'image/jpeg')
     })
 
     return {cropperImage, src, load, croppedData}
