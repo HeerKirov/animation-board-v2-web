@@ -368,7 +368,6 @@ function getDateInfo(startTime: Date, endTime: Date) {
         border-width: 0px
         &:hover
             transform: translateY(-1px)
-        &.supplement
         &.rewatched,
         &.chase
             border-style: solid

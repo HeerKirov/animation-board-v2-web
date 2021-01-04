@@ -23,7 +23,7 @@ div.ui.centered.grid
                     span {{obj.articleTitle}}
                     i.right.quote.icon
             div.four.wide.column
-                div.float-right(v-if="obj.score")
+                div.score-area(v-if="obj.score")
                     Starlight(:value="obj.score", :large="true")
                     div.text-right.mt-1: span.ui.large.text {{scoreDescriptions[obj.score].header}}
                     div.text-right: span.ui.grey.text {{scoreDescriptions[obj.score].content}}
@@ -79,5 +79,9 @@ function mapItem(item: any) {
     .article-title {
         position: absolute;
         bottom: 22px;
+    }
+    .score-area {
+        float: right;
+        max-width: 200px;
     }
 </style>
