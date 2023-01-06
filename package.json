@@ -18,7 +18,7 @@
     "@types/chart.js": "^2.9.27",
     "@vue/cli-plugin-babel": "^4.5.8",
     "@vue/cli-plugin-typescript": "^4.5.8",
-    "@vue/cli-service": "^4.5.8",
+    "@vue/cli-service": "^5.0.8",
     "@vue/compiler-sfc": "^3.0.5",
     "node-sass": "^5.0.0",
     "pug": "^3.0.1",
