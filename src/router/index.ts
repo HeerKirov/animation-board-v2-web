@@ -5,8 +5,10 @@ import comment from './comment'
 import statistics from './statistics'
 import general from './general'
 
+console.log(process.env.VUE_APP_BASE_PATH)
+
 export default createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(process.env.VUE_APP_BASE_PATH),
     routes: [
         ...general,
         ...database,

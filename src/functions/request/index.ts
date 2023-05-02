@@ -34,7 +34,7 @@ export async function request(url: string, method: Method, requestParam?: Reques
                 data: res.data
             }
         }
-    }catch(e) {
+    }catch(e: any) {
         if(e.response) {
             return {
                 status: 'ERROR',

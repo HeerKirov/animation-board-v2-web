@@ -50,7 +50,7 @@ export function watchRouterTitle() {
 
     watch(() => route.meta, (value) => {
         titleFromPage.value = null
-        titleFromRoute.value = value['title']
+        titleFromRoute.value = value['title'] as string
     })
 }
 

@@ -83,12 +83,16 @@ function useAuthorizations(auth: AuthResult | (() => AuthResult) | undefined, by
             passAuthorization.value = stats.isLogin == true
         }, {immediate: true})
     }else if(byAuthorization === "COMPLETED") {
-        const stop = watch(() => stats.isLogin, () => {
-            if(stats.isLogin != undefined) {
-                passAuthorization.value = true
-                stop?.()
-            }
-        }, {immediate: true})
+        if(stats.isLogin == undefined) {
+            const stop = watch(() => stats.isLogin, () => {
+                if(stats.isLogin != undefined) {
+                    passAuthorization.value = true
+                    stop?.()
+                }
+            }, {immediate: true})
+        }else{
+            passAuthorization.value = true
+        }
     }else{
         passAuthorization.value = true
     }

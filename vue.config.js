@@ -9,5 +9,6 @@ module.exports = {
         '__VUE_PROD_DEVTOOLS__': false
       })
     ]
-  }
+  },
+  publicPath: process.env.VUE_APP_BASE_PATH
 }
